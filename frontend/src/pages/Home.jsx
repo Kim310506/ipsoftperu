@@ -22,7 +22,7 @@ export default function Home() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-[1200px] w-full">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 max-w-[1200px] w-full">
           {cards.map((card, index) => (
             <Card key={index} {...card} />
           ))}
