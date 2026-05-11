@@ -27,7 +27,7 @@ export default function ContactForm() {
               Central telefónica
             </p>
 
-            <h3 className="text-5xl font-extrabold tracking-tight">
+            <h3 className="text-3xl font-extrabold tracking-tight">
               (01) 317-1000
             </h3>
           </div>
@@ -37,11 +37,11 @@ export default function ContactForm() {
               Central admisión
             </p>
 
-            <h3 className="text-5xl font-extrabold leading-tight tracking-tight">
+            <h3 className="text-3xl font-extrabold leading-tight tracking-tight">
               (01) 317 - 1050 USIL
             </h3>
 
-            <p className="text-3xl font-bold mt-2">
+            <p className="text-2xl font-bold mt-2">
               anexo: opción 1
             </p>
           </div>
