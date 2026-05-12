@@ -4,7 +4,7 @@ import {
   FaBars,
   FaChevronDown,
   FaArrowRight,
-  FaFilePdf,
+  FaFilePdf,FaGear
 } from "react-icons/fa6";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -354,6 +354,28 @@ export default function Navbar() {
             </div>
             </div>
         </div>
+        </li>
+        {/* ADMINISTRACIÓN */}
+        {/* BOTÓN */}
+        <li className="mt-4 md:mt-0">
+
+          <a
+            href="/administracion"
+            className="
+              bg-[#2833a8]
+              hover:bg-[#1f2887]
+              transition-all
+              px-6 py-3
+              rounded-full
+              flex items-center gap-3
+              text-sm
+              shadow-lg
+            "
+          >
+            <FaGear />
+            ADMINISTRACIÓN
+          </a>
+
         </li>
 
             {/* BOTÓN */}
