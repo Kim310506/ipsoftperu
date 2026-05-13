@@ -20,7 +20,7 @@ const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
 
   const [menuActivo, setMenuActivo] = useState("usuarios");
-
+const [openSidebar, setOpenSidebar] = useState(false);
   const usuarioLogueado = JSON.parse(
     localStorage.getItem("usuario")
   );
@@ -32,7 +32,10 @@ const [pisoSeleccionado, setPisoSeleccionado] = useState(null);
 const [sedeFiltro, setSedeFiltro] = useState("TODOS");
 
 const [moduloFiltro, setModuloFiltro] = useState("TODOS");
+const [openEditModal, setOpenEditModal] = useState(false);
+const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
+const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 const obtenerNombreSede = (id) => {
   const sede = sedes.find((s) => s.id === id);
 
@@ -45,129 +48,217 @@ const cerrarSesion = () => {
   navigate("/administracion");
 
 };
+const [paginaActual, setPaginaActual] = useState(1);
+
+const usuariosPorPagina = 5;
   return (
 
-    <div className="min-h-screen bg-[#f4f6fb] flex">
+    <div className="min-h-screen bg-[#f4f6fb] flex flex-col lg:flex-row">
 
       {/* SIDEBAR */}
-      <aside className="w-[290px] bg-[#0456b3] min-h-screen text-white flex flex-col">
+      
+{/* BOTÓN HAMBURGUESA SOLO MOBILE */}
+<button
+  onClick={() => setOpenSidebar(true)}
+  className="
+    lg:hidden
+    fixed
+    top-5
+    right-5
+    z-50
+    w-14
+    h-14
+    rounded-full
+    bg-[#345ccf]
+    text-white
+    flex
+    items-center
+    justify-center
+    shadow-xl
+  "
+>
+  <div className="flex flex-col gap-1">
+    <span className="w-6 h-[3px] bg-white rounded-full"></span>
+    <span className="w-6 h-[3px] bg-white rounded-full"></span>
+    <span className="w-6 h-[3px] bg-white rounded-full"></span>
+  </div>
+</button>
 
-        {/* LOGO */}
-        <div className="p-10 border-b border-white/10">
-          <img
-            src="/iconos/logoUSIL.png"
-            alt=""
-            className="h-16"
-          />
-        </div>
+{/* FONDO OSCURO */}
+{openSidebar && (
+  <div
+    onClick={() => setOpenSidebar(false)}
+    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+  />
+)}
 
-        {/* PERFIL */}
-        <div className="px-8 py-8 border-b border-white/10">
+{/* SIDEBAR */}
+<aside
+  className={`
+    fixed
+    top-0
+    right-0
+    min-h-screen
+    w-[290px]
+    bg-[#0456b3]
+    text-white
+    flex
+    flex-col
+    z-50
+    transition-all
+    duration-300
 
-          <div className="flex items-center gap-4">
+    ${
+      openSidebar
+        ? "translate-x-0"
+        : "translate-x-full"
+    }
 
-            <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
-              <FaUsers className="text-2xl" />
-            </div>
+    lg:translate-x-0
+    lg:static
+    lg:min-h-screen
+  `}
+>
 
-            <div>
-
-              <p className="text-xs uppercase opacity-70">
-                {usuarioLogueado?.rol}
-              </p>
-
-              <h3 className="font-bold text-lg">
-                {usuarioLogueado?.nombre}
-              </h3>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* MENU */}
-        <div className="flex flex-col gap-4 p-5">
-
-          {/* USUARIOS */}
-          <button
-            onClick={() => setMenuActivo("usuarios")}
-            className={`
-              rounded-2xl
-              px-5
-              py-5
-              font-bold
-              flex
-              items-center
-              gap-4
-              transition-all
-
-              ${
-                menuActivo === "usuarios"
-                  ? "bg-white text-[#0456b3] shadow-lg"
-                  : "text-white/80 hover:bg-white/10"
-              }
-            `}
-          >
-            <FaUsers />
-            USUARIOS
-          </button>
-
-          {/* INFRAESTRUCTURA */}
-          <button
-            onClick={() => setMenuActivo("infraestructura")}
-            className={`
-              rounded-2xl
-              px-5
-              py-5
-              font-bold
-              flex
-              items-center
-              gap-4
-              transition-all
-
-              ${
-                menuActivo === "infraestructura"
-                  ? "bg-white text-[#0456b3] shadow-lg"
-                  : "text-white/80 hover:bg-white/10"
-              }
-            `}
-          >
-            <FaBuilding />
-            INFRAESTRUCTURA
-          </button>
-
-        </div>
-{/* BOTÓN CERRAR SESIÓN */}
-<div className="mt-auto p-5">
-
+  {/* CERRAR MOBILE */}
   <button
-    onClick={cerrarSesion}
+    onClick={() => setOpenSidebar(false)}
     className="
-      w-full
-      bg-white/10
-      hover:bg-white
-      hover:text-[#0456b3]
+      lg:hidden
+      absolute
+      top-5
+      right-5
+      text-3xl
       text-white
-      py-4
-      rounded-2xl
-      font-bold
-      flex
-      items-center
-      justify-center
-      gap-3
-      transition-all
     "
   >
-    <FaRightFromBracket />
-    CERRAR SESIÓN
+    <FaXmark />
   </button>
 
-</div>
-      </aside>
+  {/* LOGO */}
+  <div className="p-10 border-b border-white/10">
+    <img
+      src="/iconos/logoUSIL.png"
+      alt=""
+      className="h-16"
+    />
+  </div>
+
+  {/* PERFIL */}
+  <div className="px-8 py-8 border-b border-white/10">
+
+    <div className="flex items-center gap-4">
+
+      <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
+        <FaUsers className="text-2xl" />
+      </div>
+
+      <div>
+
+        <p className="text-xs uppercase opacity-70">
+          {usuarioLogueado?.rol}
+        </p>
+
+        <h3 className="font-bold text-lg">
+          {usuarioLogueado?.nombre}
+        </h3>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {/* MENU */}
+  <div className="flex flex-col gap-4 p-5">
+
+    {/* USUARIOS */}
+    <button
+      onClick={() => {
+        setMenuActivo("usuarios");
+        setOpenSidebar(false);
+      }}
+      className={`
+        rounded-2xl
+        px-5
+        py-5
+        font-bold
+        flex
+        items-center
+        gap-4
+        transition-all
+
+        ${
+          menuActivo === "usuarios"
+            ? "bg-white text-[#0456b3] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }
+      `}
+    >
+      <FaUsers />
+      USUARIOS
+    </button>
+
+    {/* INFRAESTRUCTURA */}
+    <button
+      onClick={() => {
+        setMenuActivo("infraestructura");
+        setOpenSidebar(false);
+      }}
+      className={`
+        rounded-2xl
+        px-5
+        py-5
+        font-bold
+        flex
+        items-center
+        gap-4
+        transition-all
+
+        ${
+          menuActivo === "infraestructura"
+            ? "bg-white text-[#0456b3] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }
+      `}
+    >
+      <FaBuilding />
+      INFRAESTRUCTURA
+    </button>
+
+  </div>
+
+  {/* CERRAR SESIÓN */}
+  <div className="mt-auto p-5">
+
+    <button
+      onClick={cerrarSesion}
+      className="
+        w-full
+        bg-white/10
+        hover:bg-white
+        hover:text-[#0456b3]
+        text-white
+        py-4
+        rounded-2xl
+        font-bold
+        flex
+        items-center
+        justify-center
+        gap-3
+        transition-all
+      "
+    >
+      <FaRightFromBracket />
+      CERRAR SESIÓN
+    </button>
+
+  </div>
+
+</aside>
 
       {/* CONTENIDO */}
-      <main className="flex-1 p-10">
+     <main className="flex-1 p-5 lg:p-10"> 
 
         {/* ========================= */}
         {/* USUARIOS */}
@@ -178,7 +269,7 @@ const cerrarSesion = () => {
           <>
 
             {/* TOP */}
-            <div className="flex justify-between items-start mb-10">
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-5 mb-10">
 
               <div>
 
@@ -186,7 +277,7 @@ const cerrarSesion = () => {
                   Administración
                 </p>
 
-                <h1 className="text-4xl font-black text-[#0456b3] italic">
+                <h1 className="text-2xl lg:text-4xl font-black text-[#0456b3] italic">
                   BIENVENIDO, {usuarioLogueado?.nombre}
                 </h1>
 
@@ -217,7 +308,7 @@ const cerrarSesion = () => {
             </div>
 
             {/* FILTROS */}
-            <div className="flex gap-5 mb-8">
+            <div className="flex flex-col lg:flex-row gap-5 mb-8">
 
             {/* FILTRO SEDE */}
             <select
@@ -227,6 +318,7 @@ const cerrarSesion = () => {
                 bg-white
                 px-5
                 py-4
+                w-full lg:w-auto
                 rounded-2xl
                 border
                 border-gray-200
@@ -258,6 +350,7 @@ const cerrarSesion = () => {
                 onChange={(e) => setModuloFiltro(e.target.value)}
                 className="
                 bg-white
+                w-full lg:w-auto
                 px-5
                 py-4
                 rounded-2xl
@@ -289,7 +382,7 @@ const cerrarSesion = () => {
             </div>
 
             {/* CABECERA */}
-            <div className="grid grid-cols-5 px-10 mb-5 text-gray-400 font-bold text-sm uppercase">
+            <div className="hidden lg:grid grid-cols-5 px-10 mb-5 text-gray-400 font-bold text-sm uppercase">
 
             <p>Usuario</p>
             <p>Rol</p>
@@ -302,39 +395,48 @@ const cerrarSesion = () => {
             {/* LISTA */}
             <div className="flex flex-col gap-6">
 
-              {users
+             {
+  users
+    .filter((user) => {
 
-  .filter((user) => {
+      const filtroSede =
+        sedeFiltro === "TODOS"
+          ? true
+          : user.sedeId === Number(sedeFiltro);
 
-    const filtroSede =
-      sedeFiltro === "TODOS"
-        ? true
-        : user.sedeId === Number(sedeFiltro);
+      const filtroModulo =
+        moduloFiltro === "TODOS"
+          ? true
+          : user.modulo === moduloFiltro;
 
-    const filtroModulo =
-      moduloFiltro === "TODOS"
-        ? true
-        : user.modulo === moduloFiltro;
-
-    return filtroSede && filtroModulo;
-  })
-
-  .map((user, index) => (
+      return filtroSede && filtroModulo;
+    })
+    .slice(
+      (paginaActual - 1) * usuariosPorPagina,
+      paginaActual * usuariosPorPagina
+    )
+    .map((user, index) => (
 
                 <div
-                  key={index}
-                  className="
-                    bg-white
-                    rounded-[35px]
-                    p-8
-                    shadow-sm
-                    border
-                    border-gray-100
-                    grid
-                    grid-cols-5
-                    items-center
-                  "
-                >
+                key={index}
+                className="
+                  bg-white
+                  rounded-[35px]
+                  p-5
+                  lg:p-8
+                  shadow-sm
+                  border
+                  border-gray-100
+
+                  flex
+                  flex-col
+                  gap-5
+
+                  lg:grid
+                  lg:grid-cols-5
+                  lg:items-center
+                "
+              >
 
                   {/* USUARIO */}
                   <div className="flex items-center gap-5">
@@ -396,13 +498,27 @@ const cerrarSesion = () => {
                   {/* ACCIONES */}
                   <div className="flex justify-end gap-6 text-gray-400 text-xl">
 
-                    <button className="hover:text-[#0456b3] transition-all">
-                      <FaPenToSquare />
-                    </button>
+                   {/* EDITAR */}
+<button
+  onClick={() => {
+    setUsuarioSeleccionado(user);
+    setOpenEditModal(true);
+  }}
+  className="hover:text-[#0456b3] transition-all"
+>
+  <FaPenToSquare />
+</button>
 
-                    <button className="hover:text-red-500 transition-all">
-                      <FaTrash />
-                    </button>
+{/* ELIMINAR */}
+<button
+  onClick={() => {
+    setUsuarioSeleccionado(user);
+    setOpenDeleteModal(true);
+  }}
+  className="hover:text-red-500 transition-all"
+>
+  <FaTrash />
+</button>
 
                   </div>
 
@@ -411,11 +527,369 @@ const cerrarSesion = () => {
               ))}
 
             </div>
+{/* PAGINACIÓN */}
+<div className="flex justify-center items-center gap-3 mt-10 flex-wrap">
 
+  <button
+    onClick={() =>
+      setPaginaActual((prev) =>
+        prev > 1 ? prev - 1 : prev
+      )
+    }
+    className="
+      px-5
+      py-3
+      rounded-2xl
+      bg-white
+      border
+      border-gray-200
+      font-bold
+      hover:bg-[#0456b3]
+      hover:text-white
+      transition-all
+    "
+  >
+    ← Anterior
+  </button>
+
+  {Array.from({
+    length: Math.ceil(
+      users.filter((user) => {
+
+        const filtroSede =
+          sedeFiltro === "TODOS"
+            ? true
+            : user.sedeId === Number(sedeFiltro);
+
+        const filtroModulo =
+          moduloFiltro === "TODOS"
+            ? true
+            : user.modulo === moduloFiltro;
+
+        return filtroSede && filtroModulo;
+
+      }).length / usuariosPorPagina
+    ),
+  }).map((_, index) => (
+
+    <button
+      key={index}
+      onClick={() => setPaginaActual(index + 1)}
+      className={`
+        w-12
+        h-12
+        rounded-2xl
+        font-black
+        transition-all
+
+        ${
+          paginaActual === index + 1
+            ? "bg-[#0456b3] text-white"
+            : "bg-white border border-gray-200 text-[#132238]"
+        }
+      `}
+    >
+      {index + 1}
+    </button>
+
+  ))}
+
+  <button
+    onClick={() =>
+      setPaginaActual((prev) =>
+        prev <
+        Math.ceil(
+          users.filter((user) => {
+
+            const filtroSede =
+              sedeFiltro === "TODOS"
+                ? true
+                : user.sedeId === Number(sedeFiltro);
+
+            const filtroModulo =
+              moduloFiltro === "TODOS"
+                ? true
+                : user.modulo === moduloFiltro;
+
+            return filtroSede && filtroModulo;
+
+          }).length / usuariosPorPagina
+        )
+          ? prev + 1
+          : prev
+      )
+    }
+    className="
+      px-5
+      py-3
+      rounded-2xl
+      bg-white
+      border
+      border-gray-200
+      font-bold
+      hover:bg-[#0456b3]
+      hover:text-white
+      transition-all
+    "
+  >
+    Siguiente →
+  </button>
+
+</div>
           </>
 
         )}
+{/* ========================= */}
+{/* MODAL EDITAR */}
+{/* ========================= */}
 
+{openEditModal && (
+
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-5">
+
+    <div
+  className="
+    bg-white
+    w-full
+    max-w-2xl
+    rounded-[30px]
+    lg:rounded-[40px]
+    p-5
+    lg:p-10
+    relative
+    shadow-2xl
+    max-h-[95vh]
+    overflow-y-auto
+  "
+>
+
+      {/* CERRAR */}
+      <button
+        onClick={() => setOpenEditModal(false)}
+        className="absolute top-7 right-7 text-3xl text-gray-400 hover:text-black transition"
+      >
+        <FaXmark />
+      </button>
+
+      {/* HEADER */}
+      <div className="mb-10">
+
+        <h1 className="text-4xl font-black text-[#1d2b4f]">
+          EDITAR ACCESO
+        </h1>
+
+        <p className="text-sm uppercase tracking-[3px] text-gray-400 font-bold mt-2">
+          Modificando permisos en iCURA
+        </p>
+
+      </div>
+
+      <div className="space-y-6">
+
+        {/* NOMBRE */}
+        <div>
+
+          <label className="text-xs uppercase font-black text-[#7184a3]">
+            Nombre completo
+          </label>
+
+          <div className="mt-3 bg-[#f5f7fb] rounded-2xl px-5 flex items-center gap-4">
+
+            <FaUser className="text-[#7184a3]" />
+
+            <input
+              type="text"
+              defaultValue={usuarioSeleccionado?.nombre}
+              className="w-full bg-transparent p-5 outline-none font-semibold"
+            />
+
+          </div>
+
+        </div>
+
+        {/* CORREO */}
+        <div>
+
+          <label className="text-xs uppercase font-black text-[#7184a3]">
+            Correo electrónico
+          </label>
+
+          <div className="mt-3 bg-[#f5f7fb] rounded-2xl px-5 flex items-center gap-4">
+
+            <FaEnvelope className="text-[#7184a3]" />
+
+            <input
+              type="email"
+              defaultValue={usuarioSeleccionado?.correo}
+              className="w-full bg-transparent p-5 outline-none font-semibold"
+            />
+
+          </div>
+
+        </div>
+
+        {/* PASSWORD */}
+        <div>
+
+          <label className="text-xs uppercase font-black text-[#7184a3]">
+            Contraseña
+          </label>
+
+          <div className="mt-3 bg-[#f5f7fb] rounded-2xl px-5 flex items-center gap-4">
+
+            <FaLock className="text-[#7184a3]" />
+
+            <input
+              type="password"
+              defaultValue={usuarioSeleccionado?.password}
+              className="w-full bg-transparent p-5 outline-none font-semibold"
+            />
+
+          </div>
+
+        </div>
+
+        {/* GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+          {/* ROL */}
+          <div>
+
+            <label className="text-xs uppercase font-black text-[#7184a3]">
+              Rol
+            </label>
+
+            <select
+              defaultValue={usuarioSeleccionado?.rol}
+              className="mt-3 w-full bg-[#f5f7fb] w-full lg:w-auto rounded-2xl p-5 font-bold outline-none"
+            >
+              <option>USUARIO</option>
+              <option>ADMIN</option>
+              <option>INVITADO</option>
+            </select>
+
+          </div>
+
+          {/* MODULO */}
+          <div>
+
+            <label className="text-xs uppercase font-black text-[#7184a3]">
+              Módulo
+            </label>
+
+            <select
+              defaultValue={usuarioSeleccionado?.modulo}
+              className="mt-3 w-full bg-[#f5f7fb] w-full lg:w-auto rounded-2xl p-5 font-bold outline-none"
+            >
+              <option>CONFIGURACION</option>
+              <option>EXTINTORES</option>
+              <option>INVENTARIO, EXTINTORES</option>
+            </select>
+
+          </div>
+
+        </div>
+
+        {/* BOTÓN */}
+        <button
+          className="
+            w-full
+            mt-6
+            bg-[#345ccf]
+            hover:bg-[#284dbd]
+            text-white
+            rounded-2xl
+            py-5
+            font-black
+            tracking-[2px]
+            transition-all
+          "
+        >
+          GUARDAR CAMBIOS
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+{/* ========================= */}
+{/* MODAL ELIMINAR */}
+{/* ========================= */}
+
+{openDeleteModal && (
+
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-5">
+
+    <div className="bg-white w-full max-w-md rounded-[35px] p-10 shadow-2xl text-center relative">
+
+      {/* CERRAR */}
+      <button
+        onClick={() => setOpenDeleteModal(false)}
+        className="absolute top-6 right-6 text-2xl text-gray-400 hover:text-black"
+      >
+        <FaXmark />
+      </button>
+
+      {/* ICONO */}
+      <div className="w-24 h-24 mx-auto rounded-full bg-red-100 flex items-center justify-center mb-8">
+
+        <FaTrash className="text-4xl text-red-500" />
+
+      </div>
+
+      {/* TEXTO */}
+      <h1 className="text-3xl font-black text-[#132238] mb-4">
+        ELIMINAR USUARIO
+      </h1>
+
+      <p className="text-gray-500 font-semibold leading-relaxed">
+        ¿Deseas eliminar a
+        <span className="font-black text-[#132238]">
+          {" "} {usuarioSeleccionado?.nombre}
+        </span>?
+      </p>
+
+      {/* BOTONES */}
+      <div className="grid grid-cols-2 gap-4 mt-10">
+
+        <button
+          onClick={() => setOpenDeleteModal(false)}
+          className="
+            bg-gray-100
+            hover:bg-gray-200
+            py-4
+            rounded-2xl
+            font-black
+            transition-all
+          "
+        >
+          CANCELAR
+        </button>
+
+        <button
+          className="
+            bg-red-500
+            hover:bg-red-600
+            text-white
+            py-4
+            rounded-2xl
+            font-black
+            transition-all
+          "
+        >
+          ELIMINAR
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
         {/* ========================= */}
         {/* INFRAESTRUCTURA */}
         {/* ========================= */}
@@ -436,11 +910,11 @@ const cerrarSesion = () => {
           Sistema ICURA
         </p>
 
-        <h1 className="text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
           BIENVENIDO, {usuarioLogueado?.nombre}
         </h1>
 
-        <div className="grid grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
 
           {/* SEDES */}
           <div
@@ -548,11 +1022,11 @@ const cerrarSesion = () => {
           Gestión de sedes
         </p>
 
-        <h1 className="text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
           SEDES
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
           {sedes.map((sede) => (
 
@@ -595,11 +1069,11 @@ const cerrarSesion = () => {
           ← VOLVER A SEDES
         </button>
 
-        <h1 className="text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
           {sedeSeleccionada?.nombre}
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
           {sedeSeleccionada?.pabellones.map((pabellon) => (
 
@@ -642,11 +1116,11 @@ const cerrarSesion = () => {
           ← VOLVER A PABELLONES
         </button>
 
-        <h1 className="text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
           {pabellonSeleccionado?.nombre}
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
           {pabellonSeleccionado?.pisos.map((piso) => (
 
@@ -689,11 +1163,11 @@ const cerrarSesion = () => {
           ← VOLVER A PISOS
         </button>
 
-        <h1 className="text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
           {pisoSeleccionado?.nombre}
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
           {pisoSeleccionado?.ambientes.map((ambiente) => (
 
@@ -736,11 +1210,11 @@ const cerrarSesion = () => {
           ← VOLVER
         </button>
 
-        <h1 className="text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
           PABELLONES
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
           {sedes.flatMap((sede) =>
             sede.pabellones.map((pabellon) => (
@@ -784,11 +1258,11 @@ const cerrarSesion = () => {
           ← VOLVER
         </button>
 
-        <h1 className="text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
           PISOS
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
           {sedes.flatMap((sede) =>
             sede.pabellones.flatMap((pabellon) =>
@@ -834,11 +1308,11 @@ const cerrarSesion = () => {
           ← VOLVER
         </button>
 
-        <h1 className="text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
           AMBIENTES
         </h1>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
           {sedes.flatMap((sede) =>
             sede.pabellones.flatMap((pabellon) =>
@@ -884,7 +1358,21 @@ const cerrarSesion = () => {
       {openModal && (
   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-5">
     
-    <div className="bg-white w-full max-w-2xl rounded-[40px] p-10 relative shadow-2xl">
+    <div
+  className="
+    bg-white
+    w-full
+    max-w-2xl
+    rounded-[30px]
+    lg:rounded-[40px]
+    p-5
+    lg:p-10
+    relative
+    shadow-2xl
+    max-h-[95vh]
+    overflow-y-auto
+  "
+>
 
       {/* BOTÓN CERRAR */}
       <button
@@ -960,7 +1448,7 @@ const cerrarSesion = () => {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
           {/* ROL */}
           <div>
@@ -969,7 +1457,7 @@ const cerrarSesion = () => {
             </label>
 
             <select
-              className="mt-3 w-full bg-[#f5f7fb] rounded-2xl p-5 font-bold outline-none"
+              className="mt-3 w-full bg-[#f5f7fb] w-full lg:w-auto rounded-2xl p-5 font-bold outline-none"
             >
               <option>USUARIO</option>
               <option>ADMIN</option>
@@ -1031,7 +1519,7 @@ const cerrarSesion = () => {
             </label>
 
             <select
-              className="mt-3 w-full bg-[#f5f7fb] rounded-2xl p-5 font-bold outline-none"
+              className="mt-3 w-full bg-[#f5f7fb] w-full lg:w-auto rounded-2xl p-5 font-bold outline-none"
             >
               <option>LIMA</option>
               <option>AREQUIPA</option>

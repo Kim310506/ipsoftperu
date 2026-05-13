@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUser, FaLock } from "react-icons/fa6";
+import {
+  FaUser,
+  FaLock,
+  FaArrowLeft
+} from "react-icons/fa6";
+
 import { users } from "../data/users";
 
 export default function LoginAdmin() {
@@ -19,20 +24,21 @@ export default function LoginAdmin() {
         user.correo === correo &&
         user.password === password
     );
-if (usuarioValido) {
 
-  localStorage.setItem(
-    "usuario",
-    JSON.stringify(usuarioValido)
-  );
+    if (usuarioValido) {
 
-  navigate("/dashboard");
+      localStorage.setItem(
+        "usuario",
+        JSON.stringify(usuarioValido)
+      );
 
-} else {
+      navigate("/dashboard");
 
-  alert("Credenciales incorrectas");
+    } else {
 
-}
+      alert("Credenciales incorrectas");
+
+    }
 
   };
 
@@ -40,7 +46,23 @@ if (usuarioValido) {
 
     <div className="min-h-screen bg-[#f5f7fb] flex items-center justify-center px-6">
 
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-10">
+      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-10 relative">
+
+        {/* BOTÓN REGRESAR */}
+        <button
+          onClick={() => navigate("/")}
+          className="
+            absolute
+            top-6
+            left-6
+            text-[#2833a8]
+            hover:text-[#1f2887]
+            transition-all
+            text-xl
+          "
+        >
+          <FaArrowLeft />
+        </button>
 
         <div className="flex justify-center mb-6">
           <img
