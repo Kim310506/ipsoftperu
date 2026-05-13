@@ -10,11 +10,11 @@ import {
   FaUser,
   FaEnvelope,
   FaLock,
-  FaRightFromBracket
+  FaRightFromBracket,
+  FaChevronDown
 } from "react-icons/fa6";
-
 import { users } from "../data/users";
-import { sedes } from "../data/infraestructura";
+import { zonales } from "../data/infraestructura";
 export default function DashboardAdmin() {
 const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
@@ -34,7 +34,7 @@ const [sedeFiltro, setSedeFiltro] = useState("TODOS");
 const [moduloFiltro, setModuloFiltro] = useState("TODOS");
 const [openEditModal, setOpenEditModal] = useState(false);
 const [openDeleteModal, setOpenDeleteModal] = useState(false);
-
+const sedes = zonales.flatMap((zonal) => zonal.sedes);
 const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 const obtenerNombreSede = (id) => {
   const sede = sedes.find((s) => s.id === id);
@@ -381,152 +381,177 @@ const usuariosPorPagina = 5;
 
             </div>
 
-            {/* CABECERA */}
-            <div className="hidden lg:grid grid-cols-5 px-10 mb-5 text-gray-400 font-bold text-sm uppercase">
+         {/* CABECERA */}
+<div
+  className="
+    hidden
+    xl:grid
+    xl:grid-cols-[2.2fr_1fr_1.4fr_1.2fr_0.7fr]
+    xl:gap-8
+    px-10
+    mb-5
+    text-gray-400
+    font-bold
+    text-sm
+    uppercase
+  "
+>
 
-            <p>Usuario</p>
-            <p>Rol</p>
-            <p>Módulo</p>
-            <p>Sede</p>
-            <p className="text-right">Acciones</p>
+  <p>Usuario</p>
+  <p>Rol</p>
+  <p>Módulo</p>
+  <p>Sede</p>
+  <p className="text-right">Acciones</p>
+
+</div>
+
+{/* LISTA */}
+<div className="flex flex-col gap-6">
+
+  {
+    users
+      .filter((user) => {
+
+        const filtroSede =
+          sedeFiltro === "TODOS"
+            ? true
+            : user.sedeId === Number(sedeFiltro);
+
+        const filtroModulo =
+          moduloFiltro === "TODOS"
+            ? true
+            : user.modulo === moduloFiltro;
+
+        return filtroSede && filtroModulo;
+
+      })
+      .slice(
+        (paginaActual - 1) * usuariosPorPagina,
+        paginaActual * usuariosPorPagina
+      )
+      .map((user, index) => (
+
+        <div
+          key={index}
+          className="
+            bg-white
+            rounded-[35px]
+            p-5
+            xl:p-8
+            shadow-sm
+            border
+            border-gray-100
+
+            flex
+            flex-col
+            gap-5
+
+            xl:grid
+            xl:grid-cols-[2.2fr_1fr_1.4fr_1.2fr_0.7fr]
+            xl:gap-8
+            xl:items-center
+          "
+        >
+
+          {/* USUARIO */}
+          <div className="flex items-center gap-5 min-w-0">
+
+            <div className="w-14 h-14 rounded-2xl bg-[#eef5ff] flex items-center justify-center flex-shrink-0">
+              <FaUsers className="text-[#0456b3]" />
+            </div>
+
+            <div className="min-w-0">
+
+              <h3 className="font-black italic text-lg 2xl:text-xl text-[#132238] break-words">
+                {user.nombre}
+              </h3>
+
+              <p className="text-gray-400 font-semibold break-all text-sm">
+                {user.correo}
+              </p>
 
             </div>
 
-            {/* LISTA */}
-            <div className="flex flex-col gap-6">
+          </div>
 
-             {
-  users
-    .filter((user) => {
+          {/* ROL */}
+          <div>
 
-      const filtroSede =
-        sedeFiltro === "TODOS"
-          ? true
-          : user.sedeId === Number(sedeFiltro);
+            <span
+              className={`
+                px-6
+                py-2
+                rounded-full
+                text-xs
+                font-black
+                whitespace-nowrap
 
-      const filtroModulo =
-        moduloFiltro === "TODOS"
-          ? true
-          : user.modulo === moduloFiltro;
+                ${
+                  user.rol === "ADMIN"
+                    ? "bg-purple-100 text-purple-600"
+                    : user.rol === "INVITADO"
+                    ? "bg-gray-200 text-gray-600"
+                    : "bg-blue-100 text-[#0456b3]"
+                }
+              `}
+            >
+              {user.rol}
+            </span>
 
-      return filtroSede && filtroModulo;
-    })
-    .slice(
-      (paginaActual - 1) * usuariosPorPagina,
-      paginaActual * usuariosPorPagina
-    )
-    .map((user, index) => (
+          </div>
 
-                <div
-                key={index}
-                className="
-                  bg-white
-                  rounded-[35px]
-                  p-5
-                  lg:p-8
-                  shadow-sm
-                  border
-                  border-gray-100
+          {/* MODULO */}
+          <div>
 
-                  flex
-                  flex-col
-                  gap-5
+            <p className="font-black italic text-[#25364f] break-words">
+              {user.modulo}
+            </p>
 
-                  lg:grid
-                  lg:grid-cols-5
-                  lg:items-center
-                "
-              >
+          </div>
 
-                  {/* USUARIO */}
-                  <div className="flex items-center gap-5">
+          {/* SEDE */}
+          <div>
 
-                    <div className="w-14 h-14 rounded-2xl bg-[#eef5ff] flex items-center justify-center">
-                      <FaUsers className="text-[#0456b3]" />
-                    </div>
+            <p className="font-black italic text-[#0456b3] break-words">
+              {obtenerNombreSede(user.sedeId)}
+            </p>
 
-                    <div>
+          </div>
 
-                      <h3 className="font-black italic text-xl text-[#132238]">
-                        {user.nombre}
-                      </h3>
+          {/* ACCIONES */}
+          <div className="flex xl:justify-end gap-6 text-gray-400 text-xl">
 
-                      <p className="text-gray-400 font-semibold">
-                        {user.correo}
-                      </p>
+            {/* EDITAR */}
+            <button
+              onClick={() => {
+                setUsuarioSeleccionado(user);
+                setOpenEditModal(true);
+              }}
+              className="hover:text-[#0456b3] transition-all"
+            >
+              <FaPenToSquare />
+            </button>
 
-                    </div>
+            {/* ELIMINAR */}
+            <button
+              onClick={() => {
+                setUsuarioSeleccionado(user);
+                setOpenDeleteModal(true);
+              }}
+              className="hover:text-red-500 transition-all"
+            >
+              <FaTrash />
+            </button>
 
-                  </div>
+          </div>
 
-                  {/* ROL */}
-                  <div>
+        </div>
 
-                    <span
-                      className={`
-                        px-6 py-2 rounded-full text-xs font-black
-                        ${
-                          user.rol === "ADMIN"
-                            ? "bg-purple-100 text-purple-600"
-                            : user.rol === "INVITADO"
-                            ? "bg-gray-200 text-gray-600"
-                            : "bg-blue-100 text-[#0456b3]"
-                        }
-                      `}
-                    >
-                      {user.rol}
-                    </span>
+      ))
+  }
 
-                  </div>
+</div>
 
-                  {/* MODULO */}
-                  <div>
-
-                    <p className="font-black italic text-[#25364f]">
-                      {user.modulo}
-                    </p>
-
-                  </div>
-                    {/* SEDE */}
-                    <div>
-
-                    <p className="font-black italic text-[#0456b3]">
-                        {obtenerNombreSede(user.sedeId)}
-                    </p>
-
-                    </div>
-                  {/* ACCIONES */}
-                  <div className="flex justify-end gap-6 text-gray-400 text-xl">
-
-                   {/* EDITAR */}
-<button
-  onClick={() => {
-    setUsuarioSeleccionado(user);
-    setOpenEditModal(true);
-  }}
-  className="hover:text-[#0456b3] transition-all"
->
-  <FaPenToSquare />
-</button>
-
-{/* ELIMINAR */}
-<button
-  onClick={() => {
-    setUsuarioSeleccionado(user);
-    setOpenDeleteModal(true);
-  }}
-  className="hover:text-red-500 transition-all"
->
-  <FaTrash />
-</button>
-
-                  </div>
-
-                </div>
-
-              ))}
-
-            </div>
 {/* PAGINACIÓN */}
 <div className="flex justify-center items-center gap-3 mt-10 flex-wrap">
 
@@ -749,46 +774,139 @@ const usuariosPorPagina = 5;
 
         </div>
 
-        {/* GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+       {/* GRID */}
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-          {/* ROL */}
-          <div>
+  {/* ROL */}
+  <div className="w-full relative">
+    <label className="block text-[12px] uppercase font-black text-[#7184a3] tracking-wide mb-2">
+      Rol
+    </label>
 
-            <label className="text-xs uppercase font-black text-[#7184a3]">
-              Rol
-            </label>
+    <select
+      defaultValue={usuarioSeleccionado?.rol}
+      className="w-full bg-[#f5f7fb] rounded-[22px]
+      px-6 py-5 pr-14
+      font-bold text-[#8b97ad]
+      outline-none appearance-none
+      cursor-pointer border-none"
+    >
+      <option>USUARIO</option>
+      <option>ADMIN</option>
+      <option>INVITADO</option>
+    </select>
 
-            <select
-              defaultValue={usuarioSeleccionado?.rol}
-              className="mt-3 w-full bg-[#f5f7fb] w-full lg:w-auto rounded-2xl p-5 font-bold outline-none"
-            >
-              <option>USUARIO</option>
-              <option>ADMIN</option>
-              <option>INVITADO</option>
-            </select>
+    {/* FLECHA */}
+    <FaChevronDown
+      className="absolute right-5 top-[58px]
+      text-[13px] text-[#8b97ad]
+      pointer-events-none"
+    />
+  </div>
 
-          </div>
+  {/* ACCESOS */}
+  <div className="relative w-full">
+    <label className="block text-[12px] uppercase font-black text-[#7184a3] tracking-wide mb-2">
+      Accesos a módulos
+    </label>
 
-          {/* MODULO */}
-          <div>
+    <details className="group relative">
 
-            <label className="text-xs uppercase font-black text-[#7184a3]">
-              Módulo
-            </label>
+      {/* SELECT */}
+      <summary
+        className="list-none bg-[#f5f7fb] rounded-[22px]
+        px-6 py-5
+        font-bold text-[#8b97ad]
+        cursor-pointer select-none
+        flex items-center justify-between"
+      >
+        <span>Seleccionar módulos</span>
 
-            <select
-              defaultValue={usuarioSeleccionado?.modulo}
-              className="mt-3 w-full bg-[#f5f7fb] w-full lg:w-auto rounded-2xl p-5 font-bold outline-none"
-            >
-              <option>CONFIGURACION</option>
-              <option>EXTINTORES</option>
-              <option>INVENTARIO, EXTINTORES</option>
-            </select>
+        <FaChevronDown
+          className="text-[13px] text-[#8b97ad]
+          transition-transform duration-300
+          group-open:rotate-180"
+        />
+      </summary>
 
-          </div>
+      {/* OPCIONES */}
+      <div
+        className="absolute mt-3 w-full bg-white rounded-[24px]
+        shadow-[0_10px_35px_rgba(0,0,0,0.08)]
+        border border-[#edf1f7]
+        p-5 flex flex-col gap-5 z-50"
+      >
 
-        </div>
+        {/* CONFIGURACION */}
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            className="w-5 h-5 accent-[#0456b3]"
+          />
+
+          <span className="font-bold text-[#25364f] text-sm">
+            CONFIGURACIÓN
+          </span>
+        </label>
+
+        {/* EXTINTORES */}
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            className="w-5 h-5 accent-[#0456b3]"
+          />
+
+          <span className="font-bold text-[#25364f] text-sm">
+            EXTINTORES
+          </span>
+        </label>
+
+        {/* INVENTARIO */}
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            className="w-5 h-5 accent-[#0456b3]"
+          />
+
+          <span className="font-bold text-[#25364f] text-sm">
+            INVENTARIO
+          </span>
+        </label>
+
+      </div>
+    </details>
+  </div>
+
+  {/* SEDE */}
+  <div className="w-full relative">
+    <label className="block text-[12px] uppercase font-black text-[#7184a3] tracking-wide mb-2">
+      Sede
+    </label>
+
+    <select
+      defaultValue={usuarioSeleccionado?.sede}
+      className="w-full bg-[#f5f7fb] rounded-[22px]
+      px-6 py-5 pr-14
+      font-bold text-[#8b97ad]
+      outline-none appearance-none
+      cursor-pointer border-none"
+    >
+      <option>LIMA</option>
+      <option>AREQUIPA</option>
+      <option>TRUJILLO</option>
+      <option>CUSCO</option>
+    </select>
+
+    {/* FLECHA */}
+    <FaChevronDown
+      className="absolute right-5 top-[58px]
+      text-[13px] text-[#8b97ad]
+      pointer-events-none"
+    />
+  </div>
+
+</div>
+
 
         {/* BOTÓN */}
         <button
@@ -915,6 +1033,25 @@ const usuariosPorPagina = 5;
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+          {/* zonal */}
+          <div
+            onClick={() => setVistaInfra("zonal")}
+            className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
+          >
+
+            <div className="w-16 h-16 rounded-2xl bg-[#eef5ff] flex items-center justify-center mb-8">
+              <FaBuilding className="text-2xl text-[#0456b3]" />
+            </div>
+
+            <h2 className="text-3xl font-black italic text-[#132238]">
+              ZONAL
+            </h2>
+
+            <p className="mt-3 text-[#0456b3] font-black text-sm tracking-[2px] uppercase">
+              Ver zonales
+            </p>
+
+          </div>
 
           {/* SEDES */}
           <div
@@ -1001,247 +1138,483 @@ const usuariosPorPagina = 5;
       </>
 
     )}
+{/* ======================= */}
+{/* ZONALES */}
+{/* ======================= */}
 
-    {/* ======================= */}
-    {/* SEDES */}
-    {/* ======================= */}
+{vistaInfra === "zonal" && (
 
-     {/* SEDES */}
-    {vistaInfra === "sedes" && (
+  <>
 
-      <>
+    <button
+      onClick={() => setVistaInfra("menu")}
+      className="mb-8 text-[#7184a3] font-black"
+    >
+      ← VOLVER AL MENÚ
+    </button>
 
-        <button
-          onClick={() => setVistaInfra("menu")}
-          className="mb-8 text-[#7184a3] font-black"
+    <p className="uppercase text-sm tracking-[6px] text-gray-400 font-bold mb-2">
+      Gestión de zonales
+    </p>
+
+    <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
+      ZONALES
+    </h1>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+      {zonales.map((zonal) => (
+
+        <div
+          key={zonal.id}
+          onClick={() => {
+            setSedeSeleccionada(zonal);
+            setVistaInfra("sedes");
+          }}
+          className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
         >
-          ← VOLVER AL MENÚ
-        </button>
 
-        <p className="uppercase text-sm tracking-[6px] text-gray-400 font-bold mb-2">
-          Gestión de sedes
-        </p>
+          <div className="w-16 h-16 rounded-2xl bg-[#eef5ff] flex items-center justify-center mb-8">
+            <FaBuilding className="text-2xl text-[#0456b3]" />
+          </div>
 
-        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
-          SEDES
-        </h1>
+          <h2 className="text-3xl font-black italic text-[#132238]">
+            {zonal.nombre}
+          </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-
-          {sedes.map((sede) => (
-
-            <div
-              key={sede.id}
-              onClick={() => {
-                setSedeSeleccionada(sede);
-                setVistaInfra("pabellones");
-              }}
-              className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
-            >
-
-              <h2 className="text-3xl font-black italic text-[#132238]">
-                {sede.nombre}
-              </h2>
-
-              <p className="mt-3 text-[#8a9aba] font-black text-sm uppercase">
-                Click para entrar
-              </p>
-
-            </div>
-
-          ))}
+          <p className="mt-3 text-[#0456b3] font-black text-sm tracking-[2px] uppercase">
+            Ver sedes
+          </p>
 
         </div>
 
-      </>
+      ))}
 
-    )}
+    </div>
+
+  </>
+
+)}
+    {/* ======================= */}
+{/* SEDES */}
+{/* ======================= */}
+
+{vistaInfra === "sedes" && (
+
+  <>
+
+    <button
+      onClick={() => setVistaInfra("zonal")}
+      className="mb-8 text-[#7184a3] font-black"
+    >
+      ← VOLVER A ZONALES
+    </button>
+
+    <p className="uppercase text-sm tracking-[6px] text-gray-400 font-bold mb-2">
+      Gestión de sedes
+    </p>
+
+    <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
+      {sedeSeleccionada?.nombre}
+    </h1>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+      {sedeSeleccionada?.sedes.map((sede) => (
+
+        <div
+          key={sede.id}
+          onClick={() => {
+            setPabellonSeleccionado(sede);
+            setVistaInfra("pabellones");
+          }}
+          className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
+        >
+
+          <h2 className="text-3xl font-black italic text-[#132238]">
+            {sede.nombre}
+          </h2>
+
+          <p className="mt-3 text-[#8a9aba] font-black text-sm uppercase">
+            Click para entrar
+          </p>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </>
+
+)}
 
     {/* PABELLONES */}
-    {vistaInfra === "pabellones" && (
+{vistaInfra === "pabellones" && (
 
-      <>
+  <>
 
-        <button
-          onClick={() => setVistaInfra("sedes")}
-          className="mb-8 text-[#7184a3] font-black"
+    <button
+      onClick={() => setVistaInfra("sedes")}
+      className="mb-8 text-[#7184a3] font-black"
+    >
+      ← VOLVER A SEDES
+    </button>
+
+    <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
+      {pabellonSeleccionado?.nombre}
+    </h1>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+      {pabellonSeleccionado?.pabellones.map((pabellon) => (
+
+        <div
+          key={pabellon.id}
+          onClick={() => {
+            setPisoSeleccionado(pabellon);
+            setVistaInfra("pisos");
+          }}
+          className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
         >
-          ← VOLVER A SEDES
-        </button>
 
-        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
-          {sedeSeleccionada?.nombre}
-        </h1>
+          <h2 className="text-3xl font-black italic text-[#132238]">
+            {pabellon.nombre}
+          </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-
-          {sedeSeleccionada?.pabellones.map((pabellon) => (
-
-            <div
-              key={pabellon.id}
-              onClick={() => {
-                setPabellonSeleccionado(pabellon);
-                setVistaInfra("pisos");
-              }}
-              className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
-            >
-
-              <h2 className="text-3xl font-black italic text-[#132238]">
-                {pabellon.nombre}
-              </h2>
-
-              <p className="mt-3 text-[#8a9aba] font-black text-sm uppercase">
-                Click para entrar
-              </p>
-
-            </div>
-
-          ))}
+          <p className="mt-3 text-[#8a9aba] font-black text-sm uppercase">
+            Click para entrar
+          </p>
 
         </div>
 
-      </>
+      ))}
 
-    )}
+    </div>
 
-    {/* PISOS */}
-    {vistaInfra === "pisos" && (
+  </>
 
-      <>
+)}
 
-        <button
-          onClick={() => setVistaInfra("pabellones")}
-          className="mb-8 text-[#7184a3] font-black"
+ {/* PISOS */}
+{vistaInfra === "pisos" && (
+
+  <>
+
+    <button
+      onClick={() => setVistaInfra("pabellones")}
+      className="mb-8 text-[#7184a3] font-black"
+    >
+      ← VOLVER A PABELLONES
+    </button>
+
+    <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
+      {pisoSeleccionado?.nombre}
+    </h1>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+      {pisoSeleccionado?.pisos.map((piso) => (
+
+        <div
+          key={piso.id}
+          onClick={() => {
+            setVistaInfra("ambientes");
+            setSedeFiltro(piso);
+          }}
+          className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
         >
-          ← VOLVER A PABELLONES
-        </button>
 
-        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
-          {pabellonSeleccionado?.nombre}
-        </h1>
+          <h2 className="text-3xl font-black italic text-[#132238]">
+            {piso.nombre}
+          </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-
-          {pabellonSeleccionado?.pisos.map((piso) => (
-
-            <div
-              key={piso.id}
-              onClick={() => {
-                setPisoSeleccionado(piso);
-                setVistaInfra("ambientes");
-              }}
-              className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
-            >
-
-              <h2 className="text-3xl font-black italic text-[#132238]">
-                {piso.nombre}
-              </h2>
-
-              <p className="mt-3 text-[#8a9aba] font-black text-sm uppercase">
-                Click para entrar
-              </p>
-
-            </div>
-
-          ))}
+          <p className="mt-3 text-[#8a9aba] font-black text-sm uppercase">
+            Click para entrar
+          </p>
 
         </div>
 
-      </>
+      ))}
 
-    )}
+    </div>
 
-    {/* AMBIENTES */}
-    {vistaInfra === "ambientes" && (
+  </>
 
-      <>
+)}
+  {/* AMBIENTES */}
+{vistaInfra === "ambientes" && (
 
-        <button
-          onClick={() => setVistaInfra("pisos")}
-          className="mb-8 text-[#7184a3] font-black"
+  <>
+
+    <button
+      onClick={() => setVistaInfra("pisos")}
+      className="mb-8 text-[#7184a3] font-black"
+    >
+      ← VOLVER A PISOS
+    </button>
+
+    <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
+      {sedeFiltro?.nombre}
+    </h1>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+
+      {sedeFiltro?.ambientes.map((ambiente) => (
+
+        <div
+          key={ambiente.id}
+          className="bg-white rounded-[35px] p-8 shadow-md"
         >
-          ← VOLVER A PISOS
-        </button>
 
-        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
-          {pisoSeleccionado?.nombre}
-        </h1>
+          <h2 className="text-3xl font-black italic text-[#132238]">
+            {ambiente.nombre}
+          </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-
-          {pisoSeleccionado?.ambientes.map((ambiente) => (
-
-            <div
-              key={ambiente.id}
-              className="bg-white rounded-[35px] p-8 shadow-md"
-            >
-
-              <h2 className="text-3xl font-black italic text-[#132238]">
-                {ambiente.nombre}
-              </h2>
-
-              <p className="mt-3 text-[#8a9aba] font-black text-sm uppercase">
-                Ambiente registrado
-              </p>
-
-            </div>
-
-          ))}
+          <p className="mt-3 text-[#8a9aba] font-black text-sm uppercase">
+            Ambiente registrado
+          </p>
 
         </div>
 
-      </>
+      ))}
 
-    )}
+    </div>
+
+  </>
+
+)}
 
 
     {/* ======================= */}
     {/* LISTA GLOBAL PABELLONES */}
     {/* ======================= */}
 
-    {vistaInfra === "listaPabellones" && (
+    {/* ======================= */}
+{/* LISTA GLOBAL PABELLONES */}
+{/* ======================= */}
 
-      <>
+{vistaInfra === "listaPabellones" && (
+
+  <>
+
+    {/* HEADER */}
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-10">
+
+      <div>
 
         <button
           onClick={() => setVistaInfra("menu")}
-          className="mb-8 text-[#7184a3] font-black"
+          className="mb-5 text-[#7184a3] font-black"
         >
           ← VOLVER
         </button>
 
-        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238]">
           PABELLONES
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      </div>
 
-          {sedes.flatMap((sede) =>
-            sede.pabellones.map((pabellon) => (
+      {/* FILTROS */}
+      <div className="flex flex-col lg:flex-row gap-4">
 
-              <div
-                key={pabellon.id}
-                className="bg-white rounded-[35px] p-8 shadow-md"
+        {/* BUSCADOR */}
+        <input
+          type="text"
+          placeholder="Buscar pabellón..."
+          className="
+            bg-white
+            px-5
+            py-4
+            rounded-2xl
+            border
+            border-gray-200
+            outline-none
+            font-bold
+            w-full lg:w-[280px]
+          "
+        />
+
+        {/* FILTRO SEDE */}
+        <select
+          className="
+            bg-white
+            px-5
+            py-4
+            rounded-2xl
+            border
+            border-gray-200
+            outline-none
+            font-bold
+          "
+        >
+
+          <option>
+            TODAS LAS SEDES
+          </option>
+
+          {sedes.map((sede) => (
+
+            <option key={sede.id}>
+              {sede.nombre}
+            </option>
+
+          ))}
+
+        </select>
+
+      </div>
+
+    </div>
+
+    {/* CABECERA */}
+    <div
+      className="
+        hidden
+        xl:grid
+        xl:grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr]
+        gap-8
+        px-8
+        mb-5
+        text-gray-400
+        font-black
+        text-sm
+        uppercase
+      "
+    >
+
+      <p>Pabellón</p>
+      <p>Sede</p>
+      <p>Pisos</p>
+      <p>Ambientes</p>
+      <p className="text-right">
+        Acción
+      </p>
+
+    </div>
+
+    {/* LISTA */}
+    <div className="flex flex-col gap-5">
+
+      {sedes.flatMap((sede) =>
+
+        sede.pabellones.map((pabellon) => (
+
+          <div
+            key={pabellon.id}
+            className="
+              bg-white
+              rounded-[30px]
+              p-6
+              shadow-sm
+              border
+              border-gray-100
+
+              flex
+              flex-col
+              gap-5
+
+              xl:grid
+              xl:grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr]
+              xl:items-center
+              xl:gap-8
+            "
+          >
+
+            {/* PABELLON */}
+            <div>
+
+              <h2 className="text-2xl font-black italic text-[#132238]">
+                {pabellon.nombre}
+              </h2>
+
+              <p className="text-sm text-[#8a9aba] font-bold uppercase mt-2">
+                Infraestructura
+              </p>
+
+            </div>
+
+            {/* SEDE */}
+            <div>
+
+              <span
+                className="
+                  bg-orange-100
+                  text-orange-600
+                  px-5
+                  py-2
+                  rounded-full
+                  text-xs
+                  font-black
+                "
               >
+                {sede.nombre}
+              </span>
 
-                <h2 className="text-3xl font-black italic text-[#132238]">
-                  {pabellon.nombre}
-                </h2>
+            </div>
 
-                <p className="mt-3 text-orange-500 font-black text-sm uppercase">
-                  {sede.nombre}
-                </p>
+            {/* PISOS */}
+            <div>
 
-              </div>
+              <p className="font-black text-[#132238] text-lg">
+                {pabellon.pisos.length}
+              </p>
 
-            ))
-          )}
+            </div>
 
-        </div>
+            {/* AMBIENTES */}
+            <div>
 
-      </>
+              <p className="font-black text-[#0456b3] text-lg">
 
-    )}
+                {
+                  pabellon.pisos.reduce(
+                    (acc, piso) =>
+                      acc + piso.ambientes.length,
+                    0
+                  )
+                }
+
+              </p>
+
+            </div>
+
+            {/* BOTON */}
+            <div className="flex xl:justify-end">
+
+              <button
+                onClick={() => {
+                  setPabellonSeleccionado(pabellon);
+                  setVistaInfra("pisos");
+                }}
+                className="
+                  bg-[#0456b3]
+                  hover:bg-[#034696]
+                  text-white
+                  px-5
+                  py-3
+                  rounded-2xl
+                  font-black
+                  transition-all
+                "
+              >
+                VER
+              </button>
+
+            </div>
+
+          </div>
+
+        ))
+
+      )}
+
+    </div>
+
+  </>
+
+)}
 
     {/* ======================= */}
     {/* LISTA GLOBAL PISOS */}
@@ -1352,7 +1725,7 @@ const usuariosPorPagina = 5;
       </main>
 
       {/* ========================= */}
-      {/* MODAL */}
+      {/* MODAL CREAR*/}
       {/* ========================= */}
 
       {openModal && (
@@ -1450,83 +1823,111 @@ const usuariosPorPagina = 5;
         {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-          {/* ROL */}
-          <div>
-            <label className="text-xs uppercase font-black text-[#7184a3]">
+         {/* ROL */}
+          <div className="w-full relative">
+            <label className="block text-[12px] uppercase font-black text-[#7184a3] tracking-wide mb-2">
               Rol
             </label>
 
             <select
-              className="mt-3 w-full bg-[#f5f7fb] w-full lg:w-auto rounded-2xl p-5 font-bold outline-none"
+              className="w-full bg-[#f5f7fb] rounded-[22px]
+              px-6 py-5 pr-14
+              font-bold text-[#8b97ad]
+              outline-none appearance-none
+              cursor-pointer border-none"
             >
               <option>USUARIO</option>
               <option>ADMIN</option>
               <option>INVITADO</option>
             </select>
+
+            {/* FLECHA */}
+            <FaChevronDown
+              className="absolute right-5 top-[58px]
+              text-[13px] text-[#8b97ad]
+              pointer-events-none"
+            />
           </div>
 
           {/* ACCESOS */}
-          <div className="relative">
-            <label className="text-xs uppercase font-black text-[#7184a3]">
-              Accesos
-            </label>
+          <div className="relative w-full">
+  <label className="block text-[12px] uppercase font-black text-[#7184a3] tracking-wide mb-2">
+    Accesos a módulos
+  </label>
 
-            <details className="mt-3">
-              
-              {/* SELECT */}
-              <summary
-                className="list-none bg-[#f5f7fb] rounded-2xl p-5 font-bold text-[#7184a3] cursor-pointer select-none"
-              >
-                Seleccionar accesos...
-              </summary>
+  <details className="group relative">
+    
+    {/* SELECT */}
+    <summary
+      className="list-none bg-[#f5f7fb] rounded-[22px] px-6 py-5
+      font-bold text-[#8b97ad] cursor-pointer select-none
+      flex items-center justify-between"
+    >
+      <span>Seleccionar módulos</span>
 
-              {/* OPCIONES */}
-              <div
-                className="absolute mt-3 w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-5 flex flex-col gap-4 z-50"
-              >
-                
-                {/* USUARIOS */}
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-5 h-5 accent-[#0456b3]"
-                  />
+      <FaChevronDown
+        className="text-[13px] text-[#8b97ad]
+        transition-transform duration-300 group-open:rotate-180"
+      />
+    </summary>
 
-                  <span className="font-bold text-[#25364f]">
-                    USUARIOS
-                  </span>
-                </label>
+    {/* OPCIONES */}
+    <div
+      className="absolute mt-3 w-full bg-white rounded-[24px]
+      shadow-[0_10px_35px_rgba(0,0,0,0.08)]
+      border border-[#edf1f7]
+      p-5 flex flex-col gap-5 z-50"
+    >
+      
+      {/* USUARIOS */}
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          className="w-5 h-5 accent-[#0456b3]"
+        />
 
-                {/* UBICACIONES */}
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-5 h-5 accent-[#0456b3]"
-                  />
+        <span className="font-bold text-[#25364f] text-sm">
+          USUARIOS
+        </span>
+      </label>
 
-                  <span className="font-bold text-[#25364f]">
-                    UBICACIONES
-                  </span>
-                </label>
-              </div>
-            </details>
-          </div>
+      {/* UBICACIONES */}
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          className="w-5 h-5 accent-[#0456b3]"
+        />
+
+        <span className="font-bold text-[#25364f] text-sm">
+          UBICACIONES
+        </span>
+      </label>
+    </div>
+  </details>
+</div>
 
           {/* SEDE */}
-          <div>
-            <label className="text-xs uppercase font-black text-[#7184a3]">
-              Sede
-            </label>
+<div className="w-full relative">
+  <label className="block text-[12px] uppercase font-black text-[#7184a3] tracking-wide mb-2">
+    Sede
+  </label>
 
-            <select
-              className="mt-3 w-full bg-[#f5f7fb] w-full lg:w-auto rounded-2xl p-5 font-bold outline-none"
-            >
-              <option>LIMA</option>
-              <option>AREQUIPA</option>
-              <option>TRUJILLO</option>
-              <option>CUSCO</option>
-            </select>
-          </div>
+  <select
+    className="w-full bg-[#f5f7fb] rounded-[22px] px-6 py-5 pr-14
+    font-bold text-[#8b97ad] outline-none appearance-none
+    cursor-pointer border-none"
+  >
+    <option>LIMA</option>
+    <option>AREQUIPA</option>
+    <option>TRUJILLO</option>
+    <option>CUSCO</option>
+  </select>
+
+  {/* FLECHA */}
+  <FaChevronDown
+    className="absolute right-5 top-[58px] text-[13px] text-[#8b97ad] pointer-events-none"
+  />
+</div>
         </div>
 
         {/* BOTÓN */}
