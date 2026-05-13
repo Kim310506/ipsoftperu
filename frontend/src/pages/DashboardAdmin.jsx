@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 import {
   FaUsers,
   FaBuilding,
@@ -9,13 +9,14 @@ import {
   FaXmark,
   FaUser,
   FaEnvelope,
-  FaLock
+  FaLock,
+  FaRightFromBracket
 } from "react-icons/fa6";
 
 import { users } from "../data/users";
 import { sedes } from "../data/infraestructura";
 export default function DashboardAdmin() {
-
+const navigate = useNavigate();
   const [openModal, setOpenModal] = useState(false);
 
   const [menuActivo, setMenuActivo] = useState("usuarios");
@@ -28,6 +29,22 @@ const [vistaInfra, setVistaInfra] = useState("menu");
 const [sedeSeleccionada, setSedeSeleccionada] = useState(null);
 const [pabellonSeleccionado, setPabellonSeleccionado] = useState(null);
 const [pisoSeleccionado, setPisoSeleccionado] = useState(null);
+const [sedeFiltro, setSedeFiltro] = useState("TODOS");
+
+const [moduloFiltro, setModuloFiltro] = useState("TODOS");
+
+const obtenerNombreSede = (id) => {
+  const sede = sedes.find((s) => s.id === id);
+
+  return sede ? sede.nombre : "SIN SEDE";
+};
+const cerrarSesion = () => {
+
+  localStorage.removeItem("usuario");
+
+  navigate("/administracion");
+
+};
   return (
 
     <div className="min-h-screen bg-[#f4f6fb] flex">
@@ -121,7 +138,32 @@ const [pisoSeleccionado, setPisoSeleccionado] = useState(null);
           </button>
 
         </div>
+{/* BOTÓN CERRAR SESIÓN */}
+<div className="mt-auto p-5">
 
+  <button
+    onClick={cerrarSesion}
+    className="
+      w-full
+      bg-white/10
+      hover:bg-white
+      hover:text-[#0456b3]
+      text-white
+      py-4
+      rounded-2xl
+      font-bold
+      flex
+      items-center
+      justify-center
+      gap-3
+      transition-all
+    "
+  >
+    <FaRightFromBracket />
+    CERRAR SESIÓN
+  </button>
+
+</div>
       </aside>
 
       {/* CONTENIDO */}
@@ -174,20 +216,110 @@ const [pisoSeleccionado, setPisoSeleccionado] = useState(null);
 
             </div>
 
-            {/* CABECERA */}
-            <div className="grid grid-cols-4 px-10 mb-5 text-gray-400 font-bold text-sm uppercase">
+            {/* FILTROS */}
+            <div className="flex gap-5 mb-8">
 
-              <p>Usuario</p>
-              <p>Rol</p>
-              <p>Módulo</p>
-              <p className="text-right">Acciones</p>
+            {/* FILTRO SEDE */}
+            <select
+                value={sedeFiltro}
+                onChange={(e) => setSedeFiltro(e.target.value)}
+                className="
+                bg-white
+                px-5
+                py-4
+                rounded-2xl
+                border
+                border-gray-200
+                font-bold
+                outline-none
+                "
+            >
+
+                <option value="TODOS">
+                TODAS LAS SEDES
+                </option>
+
+                {sedes.map((sede) => (
+
+                <option
+                    key={sede.id}
+                    value={sede.id}
+                >
+                    {sede.nombre}
+                </option>
+
+                ))}
+
+            </select>
+
+            {/* FILTRO MODULO */}
+            <select
+                value={moduloFiltro}
+                onChange={(e) => setModuloFiltro(e.target.value)}
+                className="
+                bg-white
+                px-5
+                py-4
+                rounded-2xl
+                border
+                border-gray-200
+                font-bold
+                outline-none
+                "
+            >
+
+                <option value="TODOS">
+                TODOS LOS MÓDULOS
+                </option>
+
+                <option value="CONFIGURACION">
+                CONFIGURACION
+                </option>
+
+                <option value="EXTINTORES">
+                EXTINTORES
+                </option>
+
+                <option value="INVENTARIO, EXTINTORES">
+                INVENTARIO, EXTINTORES
+                </option>
+
+            </select>
+
+            </div>
+
+            {/* CABECERA */}
+            <div className="grid grid-cols-5 px-10 mb-5 text-gray-400 font-bold text-sm uppercase">
+
+            <p>Usuario</p>
+            <p>Rol</p>
+            <p>Módulo</p>
+            <p>Sede</p>
+            <p className="text-right">Acciones</p>
 
             </div>
 
             {/* LISTA */}
             <div className="flex flex-col gap-6">
 
-              {users.map((user, index) => (
+              {users
+
+  .filter((user) => {
+
+    const filtroSede =
+      sedeFiltro === "TODOS"
+        ? true
+        : user.sedeId === Number(sedeFiltro);
+
+    const filtroModulo =
+      moduloFiltro === "TODOS"
+        ? true
+        : user.modulo === moduloFiltro;
+
+    return filtroSede && filtroModulo;
+  })
+
+  .map((user, index) => (
 
                 <div
                   key={index}
@@ -199,7 +331,7 @@ const [pisoSeleccionado, setPisoSeleccionado] = useState(null);
                     border
                     border-gray-100
                     grid
-                    grid-cols-4
+                    grid-cols-5
                     items-center
                   "
                 >
@@ -253,7 +385,14 @@ const [pisoSeleccionado, setPisoSeleccionado] = useState(null);
                     </p>
 
                   </div>
+                    {/* SEDE */}
+                    <div>
 
+                    <p className="font-black italic text-[#0456b3]">
+                        {obtenerNombreSede(user.sedeId)}
+                    </p>
+
+                    </div>
                   {/* ACCIONES */}
                   <div className="flex justify-end gap-6 text-gray-400 text-xl">
 
