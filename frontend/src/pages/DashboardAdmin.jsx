@@ -17,27 +17,27 @@ import { users } from "../data/users";
 import { zonales } from "../data/infraestructura";
 export default function DashboardAdmin() {
 const navigate = useNavigate();
-  const [openModal, setOpenModal] = useState(false);
-
-  const [menuActivo, setMenuActivo] = useState("usuarios");
+const [openModal, setOpenModal] = useState(false);
+const [menuActivo, setMenuActivo] = useState("usuarios");
 const [openSidebar, setOpenSidebar] = useState(false);
   const usuarioLogueado = JSON.parse(
     localStorage.getItem("usuario")
   );
 const [vistaInfra, setVistaInfra] = useState("menu");
-
+const [openPabellonModal, setOpenPabellonModal] = useState(false);
 const [sedeSeleccionada, setSedeSeleccionada] = useState(null);
 const [pabellonSeleccionado, setPabellonSeleccionado] = useState(null);
 const [pisoSeleccionado, setPisoSeleccionado] = useState(null);
 const [sedeFiltro, setSedeFiltro] = useState("TODOS");
-
+const [buscarPabellon, setBuscarPabellon] = useState("");
+const [filtroSede, setFiltroSede] = useState("TODAS");
 const [moduloFiltro, setModuloFiltro] = useState("TODOS");
 const [openEditModal, setOpenEditModal] = useState(false);
 const [openDeleteModal, setOpenDeleteModal] = useState(false);
 const sedes = zonales.flatMap((zonal) => zonal.sedes);
 const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 const obtenerNombreSede = (id) => {
-  const sede = sedes.find((s) => s.id === id);
+const sede = sedes.find((s) => s.id === id);
 
   return sede ? sede.nombre : "SIN SEDE";
 };
@@ -49,8 +49,112 @@ const cerrarSesion = () => {
 
 };
 const [paginaActual, setPaginaActual] = useState(1);
-
+const [buscarAmbiente, setBuscarAmbiente] = useState("");
+const [openAmbienteModal, setOpenAmbienteModal] = useState(false);
+const [ambienteSeleccionado, setAmbienteSeleccionado] = useState(null);
 const usuariosPorPagina = 5;
+const sedesGlobales = zonales.flatMap((zonal) =>
+
+  zonal.sedes.map((sede) => ({
+    ...sede,
+    zonalNombre: zonal.nombre
+  }))
+
+);
+const [buscarSede, setBuscarSede] = useState("");
+const [openSedeModal, setOpenSedeModal] = useState(false);
+const [sedeSeleccionadaGlobal, setSedeSeleccionadaGlobal] = useState(null);
+const sedesFiltradas = sedesGlobales.filter((sede) =>
+
+  sede.nombre
+    .toLowerCase()
+    .includes(
+      buscarSede.toLowerCase()
+    )
+
+);
+const pabellonesFiltrados = sedes.flatMap((sede) =>
+  sede.pabellones
+    .filter((pabellon) => {
+
+      // BUSCADOR
+      const coincideBusqueda =
+        pabellon.nombre
+          .toLowerCase()
+          .includes(
+            buscarPabellon.toLowerCase()
+          );
+// FILTRO SEDE
+const coincideSede =
+        filtroSede === "TODAS" ||
+        sede.nombre === filtroSede;
+
+      return coincideBusqueda && coincideSede;
+
+    })
+
+    .map((pabellon) => ({
+      ...pabellon,
+      sedeNombre: sede.nombre
+    }))
+
+);
+const [buscarPiso, setBuscarPiso] = useState("");
+const [openPisoModal, setOpenPisoModal] = useState(false);
+const [pisoSeleccionadoGlobal, setPisoSeleccionadoGlobal] = useState(null);
+const ambientesFiltrados = sedes.flatMap((sede) =>
+
+  sede.pabellones.flatMap((pabellon) =>
+
+    pabellon.pisos.flatMap((piso) =>
+
+      piso.ambientes
+        .filter((ambiente) =>
+
+          ambiente.nombre
+            .toLowerCase()
+            .includes(
+              buscarAmbiente.toLowerCase()
+            )
+
+        )
+
+        .map((ambiente) => ({
+          ...ambiente,
+          pisoNombre: piso.nombre,
+          pabellonNombre: pabellon.nombre,
+          sedeNombre: sede.nombre
+        }))
+
+    )
+
+  )
+
+);
+const pisosFiltrados = sedes.flatMap((sede) =>
+
+  sede.pabellones.flatMap((pabellon) =>
+
+    pabellon.pisos
+      .filter((piso) =>
+
+        piso.nombre
+          .toLowerCase()
+          .includes(
+            buscarPiso.toLowerCase()
+          )
+
+      )
+
+      .map((piso) => ({
+        ...piso,
+        sedeNombre: sede.nombre,
+        pabellonNombre: pabellon.nombre
+      }))
+
+  )
+
+);
   return (
 
     <div className="min-h-screen bg-[#f4f6fb] flex flex-col lg:flex-row">
@@ -1055,7 +1159,7 @@ const usuariosPorPagina = 5;
 
           {/* SEDES */}
           <div
-            onClick={() => setVistaInfra("sedes")}
+            onClick={() => setVistaInfra("listaSedes")}
             className="bg-white rounded-[35px] p-8 shadow-md hover:scale-105 transition-all cursor-pointer"
           >
 
@@ -1384,12 +1488,338 @@ const usuariosPorPagina = 5;
   </>
 
 )}
+{/* ======================= */}
+{/* LISTA GLOBAL SEDES */}
+{/* ======================= */}
 
+{vistaInfra === "listaSedes" && (
 
-    {/* ======================= */}
-    {/* LISTA GLOBAL PABELLONES */}
-    {/* ======================= */}
+  <>
 
+    {/* HEADER */}
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-10">
+
+      <div>
+
+        <button
+          onClick={() => {
+            setVistaInfra("menu");
+
+            setBuscarSede("");
+          }}
+          className="mb-5 text-[#7184a3] font-black"
+        >
+          ← VOLVER
+        </button>
+
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238]">
+          SEDES
+        </h1>
+
+      </div>
+
+      {/* FILTROS */}
+      <div className="flex flex-col lg:flex-row gap-4">
+
+        {/* BUSCADOR */}
+        <input
+          type="text"
+          placeholder="Buscar sede..."
+          value={buscarSede}
+          onChange={(e) =>
+            setBuscarSede(e.target.value)
+          }
+          className="
+            bg-white
+            px-5
+            py-4
+            rounded-2xl
+            border
+            border-gray-200
+            outline-none
+            font-bold
+            w-full lg:w-[280px]
+          "
+        />
+
+      </div>
+
+    </div>
+
+    {/* CABECERA */}
+    <div
+      className="
+        hidden
+        xl:grid
+        xl:grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr]
+        gap-8
+        px-8
+        mb-5
+        text-gray-400
+        font-black
+        text-sm
+        uppercase
+      "
+    >
+
+      <p>Sede / Local</p>
+      <p>Zonal</p>
+      <p>Pabellones</p>
+      <p>Pisos</p>
+      <p className="text-right">
+        Acción
+      </p>
+
+    </div>
+
+    {/* LISTA */}
+    <div className="flex flex-col gap-5">
+
+      {sedesFiltradas.map((sede) => (
+
+        <div
+          key={sede.id}
+          className="
+            bg-white
+            rounded-[30px]
+            p-6
+            shadow-sm
+            border
+            border-gray-100
+
+            flex
+            flex-col
+            gap-5
+
+            xl:grid
+            xl:grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr]
+            xl:items-center
+            xl:gap-8
+          "
+        >
+
+          {/* SEDE */}
+          <div>
+
+            <h2 className="text-2xl font-black italic text-[#132238]">
+              {sede.nombre}
+            </h2>
+
+            <p className="text-sm text-[#8a9aba] font-bold uppercase mt-2">
+              Infraestructura
+            </p>
+
+          </div>
+
+          {/* ZONAL */}
+          <div>
+
+            <span
+              className="
+                bg-orange-100
+                text-orange-600
+                px-5
+                py-2
+                rounded-full
+                text-xs
+                font-black
+              "
+            >
+              {sede.zonalNombre}
+            </span>
+
+          </div>
+
+          {/* PABELLONES */}
+          <div>
+
+            <p className="font-black text-[#132238] text-lg">
+              {sede.pabellones.length}
+            </p>
+
+          </div>
+
+          {/* PISOS */}
+          <div>
+
+            <p className="font-black text-[#0456b3] text-lg">
+
+              {
+                sede.pabellones.reduce(
+                  (acc, pabellon) =>
+                    acc + pabellon.pisos.length,
+                  0
+                )
+              }
+
+            </p>
+
+          </div>
+
+          {/* BOTON */}
+          <div className="flex xl:justify-end">
+
+            <button
+              onClick={() => {
+                setSedeSeleccionadaGlobal(sede);
+                setOpenSedeModal(true);
+              }}
+              className="
+                bg-[#0456b3]
+                hover:bg-[#034696]
+                text-white
+                px-5
+                py-3
+                rounded-2xl
+                font-black
+                transition-all
+              "
+            >
+              VER
+            </button>
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </>
+
+)}
+{/* MODAL SEDE */}
+{openSedeModal && sedeSeleccionadaGlobal && (
+
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+
+    <div
+      className="
+        bg-white
+        w-full
+        max-w-5xl
+        rounded-[35px]
+        p-8
+        max-h-[90vh]
+        overflow-y-auto
+        relative
+      "
+    >
+
+      {/* CERRAR */}
+      <button
+        onClick={() => setOpenSedeModal(false)}
+        className="
+          absolute
+          top-6
+          right-6
+          bg-red-100
+          text-red-500
+          w-10
+          h-10
+          rounded-full
+          flex
+          items-center
+          justify-center
+          text-lg
+        "
+      >
+        <FaXmark />
+      </button>
+
+      {/* TITULO */}
+      <div className="mb-10">
+
+        <h1 className="text-4xl font-black italic text-[#132238]">
+          {sedeSeleccionadaGlobal.nombre}
+        </h1>
+
+        <p className="text-[#8a9aba] font-bold mt-2 uppercase">
+          {sedeSeleccionadaGlobal.zonalNombre}
+        </p>
+
+      </div>
+
+      {/* PABELLONES */}
+      <div className="flex flex-col gap-8">
+
+        {sedeSeleccionadaGlobal.pabellones.map((pabellon) => (
+
+          <div
+            key={pabellon.id}
+            className="
+              border
+              border-gray-200
+              rounded-[30px]
+              p-6
+            "
+          >
+
+            <div className="flex items-center justify-between mb-6">
+
+              <h2 className="text-2xl font-black text-[#132238]">
+                {pabellon.nombre}
+              </h2>
+
+              <span
+                className="
+                  bg-[#0456b3]/10
+                  text-[#0456b3]
+                  px-4
+                  py-2
+                  rounded-full
+                  text-sm
+                  font-black
+                "
+              >
+                {pabellon.pisos.length} PISOS
+              </span>
+
+            </div>
+
+            {/* PISOS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+              {pabellon.pisos.map((piso) => (
+
+                <div
+                  key={piso.id}
+                  className="
+                    bg-[#f5f7fb]
+                    border
+                    border-gray-200
+                    rounded-2xl
+                    px-5
+                    py-4
+                  "
+                >
+
+                  <h2 className="font-black text-[#132238]">
+                    {piso.nombre}
+                  </h2>
+
+                  <p className="text-sm text-[#8a9aba] font-bold mt-2">
+                    {piso.ambientes.length} ambientes
+                  </p>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
     {/* ======================= */}
 {/* LISTA GLOBAL PABELLONES */}
 {/* ======================= */}
@@ -1404,8 +1834,14 @@ const usuariosPorPagina = 5;
       <div>
 
         <button
-          onClick={() => setVistaInfra("menu")}
+          onClick={() => {
+            setVistaInfra("menu");
+
+            setBuscarPabellon("");
+            setFiltroSede("TODAS");
+          }}
           className="mb-5 text-[#7184a3] font-black"
+          
         >
           ← VOLVER
         </button>
@@ -1423,6 +1859,10 @@ const usuariosPorPagina = 5;
         <input
           type="text"
           placeholder="Buscar pabellón..."
+          value={buscarPabellon}
+          onChange={(e) =>
+            setBuscarPabellon(e.target.value)
+          }
           className="
             bg-white
             px-5
@@ -1438,6 +1878,10 @@ const usuariosPorPagina = 5;
 
         {/* FILTRO SEDE */}
         <select
+          value={filtroSede}
+          onChange={(e) =>
+            setFiltroSede(e.target.value)
+          }
           className="
             bg-white
             px-5
@@ -1450,13 +1894,16 @@ const usuariosPorPagina = 5;
           "
         >
 
-          <option>
+          <option value="TODAS">
             TODAS LAS SEDES
           </option>
 
           {sedes.map((sede) => (
 
-            <option key={sede.id}>
+            <option
+              key={sede.id}
+              value={sede.nombre}
+            >
               {sede.nombre}
             </option>
 
@@ -1497,9 +1944,7 @@ const usuariosPorPagina = 5;
     {/* LISTA */}
     <div className="flex flex-col gap-5">
 
-      {sedes.flatMap((sede) =>
-
-        sede.pabellones.map((pabellon) => (
+      {pabellonesFiltrados.map((pabellon) => (
 
           <div
             key={pabellon.id}
@@ -1549,7 +1994,7 @@ const usuariosPorPagina = 5;
                   font-black
                 "
               >
-                {sede.nombre}
+                {pabellon.sedeNombre}
               </span>
 
             </div>
@@ -1586,7 +2031,7 @@ const usuariosPorPagina = 5;
               <button
                 onClick={() => {
                   setPabellonSeleccionado(pabellon);
-                  setVistaInfra("pisos");
+                  setOpenPabellonModal(true);
                 }}
                 className="
                   bg-[#0456b3]
@@ -1606,117 +2051,548 @@ const usuariosPorPagina = 5;
 
           </div>
 
-        ))
+        
 
-      )}
+      ))}
 
     </div>
 
   </>
 
 )}
+{/* MODAL PABELLON */}
+{openPabellonModal && pabellonSeleccionado && (
 
-    {/* ======================= */}
-    {/* LISTA GLOBAL PISOS */}
-    {/* ======================= */}
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
 
-    {vistaInfra === "listaPisos" && (
+    <div
+      className="
+        bg-white
+        w-full
+        max-w-5xl
+        rounded-[35px]
+        p-8
+        max-h-[90vh]
+        overflow-y-auto
+        relative
+      "
+    >
 
-      <>
+      {/* CERRAR */}
+      <button
+        onClick={() => setOpenPabellonModal(false)}
+        className="
+          absolute
+          top-6
+          right-6
+          bg-red-100
+          text-red-500
+          w-10
+          h-10
+          rounded-full
+          flex
+          items-center
+          justify-center
+          text-lg
+        "
+      >
+        <FaXmark />
+      </button>
+
+      {/* TITULO */}
+      <div className="mb-10">
+
+        <h1 className="text-4xl font-black italic text-[#132238]">
+          {pabellonSeleccionado.nombre}
+        </h1>
+
+        <p className="text-[#8a9aba] font-bold mt-2 uppercase">
+          Infraestructura
+        </p>
+
+      </div>
+
+      {/* PISOS */}
+      <div className="flex flex-col gap-8">
+
+        {pabellonSeleccionado.pisos.map((piso) => (
+
+          <div
+            key={piso.id}
+            className="
+              border
+              border-gray-200
+              rounded-[30px]
+              p-6
+            "
+          >
+
+            {/* PISO */}
+            <div className="flex items-center justify-between mb-6">
+
+              <h2 className="text-2xl font-black text-[#132238]">
+                {piso.nombre}
+              </h2>
+
+              <span
+                className="
+                  bg-[#0456b3]/10
+                  text-[#0456b3]
+                  px-4
+                  py-2
+                  rounded-full
+                  text-sm
+                  font-black
+                "
+              >
+                {piso.ambientes.length} AMBIENTES
+              </span>
+
+            </div>
+
+            {/* AMBIENTES */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+              {piso.ambientes.map((ambiente) => (
+
+                <div
+                  key={ambiente.id}
+                  className="
+                    bg-[#f5f7fb]
+                    border
+                    border-gray-200
+                    rounded-2xl
+                    px-5
+                    py-4
+                    font-black
+                    text-[#132238]
+                  "
+                >
+                  {ambiente.nombre}
+                </div>
+
+              ))}
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+
+{/* ======================= */}
+{/* LISTA GLOBAL PISOS */}
+{/* ======================= */}
+
+{vistaInfra === "listaPisos" && (
+
+  <>
+
+    {/* HEADER */}
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-10">
+
+      <div>
 
         <button
-          onClick={() => setVistaInfra("menu")}
-          className="mb-8 text-[#7184a3] font-black"
+          onClick={() => {
+            setVistaInfra("menu");
+            setBuscarPiso("");
+          }}
+          className="mb-5 text-[#7184a3] font-black"
         >
           ← VOLVER
         </button>
 
-        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238]">
           PISOS
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      </div>
 
-          {sedes.flatMap((sede) =>
-            sede.pabellones.flatMap((pabellon) =>
-              pabellon.pisos.map((piso) => (
+      {/* BUSCADOR */}
+      <input
+        type="text"
+        placeholder="Buscar piso..."
+        value={buscarPiso}
+        onChange={(e) =>
+          setBuscarPiso(e.target.value)
+        }
+        className="
+          bg-white
+          px-5
+          py-4
+          rounded-2xl
+          border
+          border-gray-200
+          outline-none
+          font-bold
+          w-full
+          lg:w-[320px]
+        "
+      />
 
-                <div
-                  key={piso.id}
-                  className="bg-white rounded-[35px] p-8 shadow-md"
-                >
+    </div>
 
-                  <h2 className="text-3xl font-black italic text-[#132238]">
-                    {piso.nombre}
-                  </h2>
+    {/* GRID */}
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
-                  <p className="mt-3 text-green-500 font-black text-sm uppercase">
-                    {pabellon.nombre}
-                  </p>
+      {pisosFiltrados.map((piso) => (
 
-                </div>
+        <div
+          key={`${piso.nombre}-${piso.pabellonNombre}`}
+          className="
+            bg-white
+            rounded-[35px]
+            p-8
+            shadow-md
+            border
+            border-gray-100
+          "
+        >
 
-              ))
-            )
-          )}
+          <h2 className="text-3xl font-black italic text-[#132238]">
+            {piso.nombre}
+          </h2>
+
+          <p className="mt-3 text-green-500 font-black text-sm uppercase">
+            {piso.pabellonNombre}
+          </p>
+
+          <p className="mt-2 text-[#8a9aba] font-bold text-sm uppercase">
+            {piso.sedeNombre}
+          </p>
+
+          <button
+            onClick={() => {
+              setPisoSeleccionadoGlobal(piso);
+              setOpenPisoModal(true);
+            }}
+            className="
+              mt-8
+              bg-[#0456b3]
+              hover:bg-[#034696]
+              text-white
+              px-5
+              py-3
+              rounded-2xl
+              font-black
+              transition-all
+              w-full
+            "
+          >
+            VER AMBIENTES
+          </button>
 
         </div>
 
-      </>
+      ))}
 
-    )}
+    </div>
 
-    {/* ======================= */}
-    {/* LISTA GLOBAL AMBIENTES */}
-    {/* ======================= */}
+  </>
 
-    {vistaInfra === "listaAmbientes" && (
+)}
+{/* MODAL PISO */}
+{openPisoModal && pisoSeleccionadoGlobal && (
 
-      <>
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+
+    <div
+      className="
+        bg-white
+        w-full
+        max-w-4xl
+        rounded-[35px]
+        p-8
+        relative
+      "
+    >
+
+      {/* CERRAR */}
+      <button
+        onClick={() => setOpenPisoModal(false)}
+        className="
+          absolute
+          top-6
+          right-6
+          bg-red-100
+          text-red-500
+          w-10
+          h-10
+          rounded-full
+          flex
+          items-center
+          justify-center
+          text-lg
+        "
+      >
+        <FaXmark />
+      </button>
+
+      {/* TITULO */}
+      <div className="mb-10">
+
+        <h1 className="text-4xl font-black italic text-[#132238]">
+          {pisoSeleccionadoGlobal.nombre}
+        </h1>
+
+        <p className="mt-2 text-[#8a9aba] font-bold uppercase">
+          {pisoSeleccionadoGlobal.pabellonNombre}
+        </p>
+
+      </div>
+
+      {/* AMBIENTES */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+        {pisoSeleccionadoGlobal.ambientes.map((ambiente) => (
+
+          <div
+            key={ambiente.id}
+            className="
+              bg-[#f5f7fb]
+              border
+              border-gray-200
+              rounded-2xl
+              px-5
+              py-5
+            "
+          >
+
+            <h2 className="font-black text-[#132238]">
+              {ambiente.nombre}
+            </h2>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+{/* ======================= */}
+{/* LISTA GLOBAL AMBIENTES */}
+{/* ======================= */}
+
+{vistaInfra === "listaAmbientes" && (
+
+  <>
+
+    {/* HEADER */}
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-10">
+
+      <div>
 
         <button
-          onClick={() => setVistaInfra("menu")}
-          className="mb-8 text-[#7184a3] font-black"
+          onClick={() => {
+            setVistaInfra("menu");
+            setBuscarAmbiente("");
+          }}
+          className="mb-5 text-[#7184a3] font-black"
         >
           ← VOLVER
         </button>
 
-        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
+        <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238]">
           AMBIENTES
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      </div>
 
-          {sedes.flatMap((sede) =>
-            sede.pabellones.flatMap((pabellon) =>
-              pabellon.pisos.flatMap((piso) =>
-                piso.ambientes.map((ambiente) => (
+      {/* BUSCADOR */}
+      <input
+        type="text"
+        placeholder="Buscar ambiente..."
+        value={buscarAmbiente}
+        onChange={(e) =>
+          setBuscarAmbiente(e.target.value)
+        }
+        className="
+          bg-white
+          px-5
+          py-4
+          rounded-2xl
+          border
+          border-gray-200
+          outline-none
+          font-bold
+          w-full
+          lg:w-[320px]
+        "
+      />
 
-                  <div
-                    key={ambiente.id}
-                    className="bg-white rounded-[35px] p-8 shadow-md"
-                  >
+    </div>
 
-                    <h2 className="text-3xl font-black italic text-[#132238]">
-                      {ambiente.nombre}
-                    </h2>
+    {/* GRID */}
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
-                    <p className="mt-3 text-purple-500 font-black text-sm uppercase">
-                      {piso.nombre}
-                    </p>
+      {ambientesFiltrados.map((ambiente) => (
 
-                  </div>
+        <div
+          key={`${ambiente.nombre}-${ambiente.pisoNombre}`}
+          className="
+            bg-white
+            rounded-[35px]
+            p-8
+            shadow-md
+            border
+            border-gray-100
+          "
+        >
 
-                ))
-              )
-            )
-          )}
+          <h2 className="text-3xl font-black italic text-[#132238]">
+            {ambiente.nombre}
+          </h2>
+
+          <p className="mt-3 text-purple-500 font-black text-sm uppercase">
+            {ambiente.pisoNombre}
+          </p>
+
+          <p className="mt-2 text-[#8a9aba] font-bold text-sm uppercase">
+            {ambiente.pabellonNombre}
+          </p>
+
+          <button
+            onClick={() => {
+              setAmbienteSeleccionado(ambiente);
+              setOpenAmbienteModal(true);
+            }}
+            className="
+              mt-8
+              bg-[#0456b3]
+              hover:bg-[#034696]
+              text-white
+              px-5
+              py-3
+              rounded-2xl
+              font-black
+              transition-all
+              w-full
+            "
+          >
+            VER DETALLE
+          </button>
 
         </div>
 
-      </>
+      ))}
 
-    )}
+    </div>
+
+  </>
+
+)}
+{/* MODAL AMBIENTE */}
+{openAmbienteModal && ambienteSeleccionado && (
+
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+
+    <div
+      className="
+        bg-white
+        w-full
+        max-w-3xl
+        rounded-[35px]
+        p-8
+        relative
+      "
+    >
+
+      {/* CERRAR */}
+      <button
+        onClick={() => setOpenAmbienteModal(false)}
+        className="
+          absolute
+          top-6
+          right-6
+          bg-red-100
+          text-red-500
+          w-10
+          h-10
+          rounded-full
+          flex
+          items-center
+          justify-center
+          text-lg
+        "
+      >
+        <FaXmark />
+      </button>
+
+      {/* TITULO */}
+      <div className="mb-10">
+
+        <h1 className="text-4xl font-black italic text-[#132238]">
+          {ambienteSeleccionado.nombre}
+        </h1>
+
+        <p className="mt-3 text-purple-500 font-black uppercase">
+          {ambienteSeleccionado.pisoNombre}
+        </p>
+
+      </div>
+
+      {/* INFO */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div
+          className="
+            bg-[#f5f7fb]
+            border
+            border-gray-200
+            rounded-2xl
+            p-6
+          "
+        >
+
+          <p className="text-sm text-[#8a9aba] font-black uppercase mb-2">
+            PABELLÓN
+          </p>
+
+          <h2 className="text-xl font-black text-[#132238]">
+            {ambienteSeleccionado.pabellonNombre}
+          </h2>
+
+        </div>
+
+        <div
+          className="
+            bg-[#f5f7fb]
+            border
+            border-gray-200
+            rounded-2xl
+            p-6
+          "
+        >
+
+          <p className="text-sm text-[#8a9aba] font-black uppercase mb-2">
+            SEDE
+          </p>
+
+          <h2 className="text-xl font-black text-[#132238]">
+            {ambienteSeleccionado.sedeNombre}
+          </h2>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
 
   </>
 
