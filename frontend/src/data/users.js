@@ -7,7 +7,7 @@ export const users = [
     password: "123456",
     rol: "ADMIN",
     modulo: "CONFIGURACION",
-    sedeId: 1
+    sedeId: 101
   },
 
   {
@@ -17,7 +17,7 @@ export const users = [
     password: "seguridad2026",
     rol: "USER",
     modulo: "INVENTARIO, EXTINTORES",
-    sedeId: 2
+    sedeId: 102
   },
 
   {
@@ -27,7 +27,7 @@ export const users = [
     password: "admin789",
     rol: "INVITADO",
     modulo: "EXTINTORES",
-    sedeId: 3
+    sedeId: 103
   },
 
   {
@@ -37,7 +37,7 @@ export const users = [
     password: "michel123",
     rol: "USER",
     modulo: "INVENTARIO, EXTINTORES",
-    sedeId: 1
+    sedeId: 101
   },
 
   {
@@ -47,7 +47,7 @@ export const users = [
     password: "jhon123",
     rol: "INVITADO",
     modulo: "EXTINTORES",
-    sedeId: 2
+    sedeId: 102
   },
 
   {
@@ -57,7 +57,7 @@ export const users = [
     password: "ysrael123",
     rol: "INVITADO",
     modulo: "EXTINTORES",
-    sedeId: 3
+    sedeId: 103
   },
 
   {
@@ -67,7 +67,7 @@ export const users = [
     password: "hugo123",
     rol: "USER",
     modulo: "INVENTARIO, EXTINTORES",
-    sedeId: 1
+    sedeId: 101
   },
 
   {
@@ -77,7 +77,7 @@ export const users = [
     password: "kimberly123",
     rol: "ADMIN",
     modulo: "CONFIGURACION",
-    sedeId: 2
+    sedeId: 102
   }
 
 ];
