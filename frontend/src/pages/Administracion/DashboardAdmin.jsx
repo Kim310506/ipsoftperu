@@ -13,27 +13,28 @@ import {
   FaRightFromBracket,
   FaChevronDown
 } from "react-icons/fa6";
-import { users } from "../data/users";
-import SidebarAdmin from "../components/layout/SidebarAdmin";
-import { zonales } from "../data/infraestructura";
-import UsuariosAdmin from "../components/usuarios/UsuariosSection";
-import ModalCrearUsuario from "../components/usuarios/ModalCrearUsuario";
-import ModalEliminarUsuario from "../components/usuarios/ModalEliminarUsuario";
-import ModalEditarUsuario from "../components/usuarios/ModalEditarUsuario";
-import MenuInfraestructura from "../components/infraestructura/MenuInfraestructura";
-import Zonales from "../components/infraestructura/Zonales";
-import Sedes from "../components/infraestructura/Sedes";
-import Pabellones from "../components/infraestructura/Pabellones";
-import Pisos from "../components/infraestructura/Pisos";
-import Ambientes from "../components/infraestructura/Ambientes";
-import ListaSedes from "../components/infraestructura/ListaSedes";
-import ModalSede from "../components/infraestructura/ModalSede";
-import ListaPabellones from "../components/infraestructura/ListaPabellones";
-import ModalPabellon from "../components/infraestructura/ModalPabellon";
-import ListaPisos from "../components/infraestructura/ListaPisos";
-import ModalPiso from "../components/infraestructura/ModalPiso";
-import ListaAmbientes from "../components/infraestructura/ListaAmbientes";
-import ModalAmbiente from "../components/infraestructura/ModalAmbiente";
+import { users } from "../../data/users";
+import SidebarAdmin from "./components/SidebarAdmin";
+import { zonales } from "../../data/infraestructura";
+import UsuariosAdmin from "./components/usuarios/UsuariosSection";
+import ModalCrearUsuario from "./components/usuarios/ModalCrearUsuario";
+import ModalEliminarUsuario from "./components/usuarios/ModalEliminarUsuario";
+import ModalEditarUsuario from "./components/usuarios/ModalEditarUsuario";
+import MenuInfraestructura from "./components/infraestructura/MenuInfraestructura";
+import Zonales from "./components/infraestructura/Zonales";
+import Sedes from "./components/infraestructura/Sedes";
+import Pabellones from "./components/infraestructura/Pabellones";
+import Pisos from "./components/infraestructura/Pisos";
+import Ambientes from "./components/infraestructura/Ambientes";
+import ListaSedes from "./components/infraestructura/ListaSedes";
+import ModalSede from "./components/infraestructura/ModalSede";
+import ListaPabellones from "./components/infraestructura/ListaPabellones";
+import ModalPabellon from "./components/infraestructura/ModalPabellon";
+import ListaPisos from "./components/infraestructura/ListaPisos";
+import ModalPiso from "./components/infraestructura/ModalPiso";
+import ListaAmbientes from "./components/infraestructura/ListaAmbientes";
+import ModalAmbiente from "./components/infraestructura/ModalAmbiente";
+import CrearUbicacion from "./components/infraestructura/CrearUbicacion";
 export default function DashboardAdmin() {
 const navigate = useNavigate();
 const [openModal, setOpenModal] = useState(false);
@@ -213,8 +214,15 @@ const pisosFiltrados = sedes.flatMap((sede) =>
           <MenuInfraestructura
       usuarioLogueado={usuarioLogueado}
       setVistaInfra={setVistaInfra}
+      
     />
         )}
+  {/* CREAR UBICACION */}
+{vistaInfra === "crear" && (
+  <CrearUbicacion
+    setVistaInfra={setVistaInfra}
+  />
+)}
     {/* ZONALES */}
     {vistaInfra === "zonal" && (
           <Zonales
@@ -272,7 +280,7 @@ const pisosFiltrados = sedes.flatMap((sede) =>
       setOpenSedeModal={setOpenSedeModal}
       sedeSeleccionadaGlobal={sedeSeleccionadaGlobal}
     />
-    {/* ======================= */}
+{/* ======================= */}
 {/* LISTA GLOBAL PABELLONES */}
 {/* ======================= */}
 <ListaPabellones

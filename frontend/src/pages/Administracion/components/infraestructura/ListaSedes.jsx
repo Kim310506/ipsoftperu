@@ -1,3 +1,5 @@
+import { useState, useMemo } from "react";
+
 export default function ListaSedes({
   vistaInfra,
   setVistaInfra,
@@ -8,6 +10,28 @@ export default function ListaSedes({
   setOpenSedeModal
 }) {
   if (vistaInfra !== "listaSedes") return null;
+
+  // 🔥 FILTRO ZONAL
+  const [zonalFiltro, setZonalFiltro] = useState("TODOS");
+
+  // 🔥 obtener zonales únicos
+  const zonalesUnicos = useMemo(() => {
+    const set = new Set();
+    sedesFiltradas.forEach((s) => set.add(s.zonalNombre));
+    return ["TODOS", ...Array.from(set)];
+  }, [sedesFiltradas]);
+
+  // 🔥 filtro final combinado
+  const sedesFinales = sedesFiltradas.filter((sede) => {
+    const coincideNombre = sede.nombre
+      .toLowerCase()
+      .includes(buscarSede.toLowerCase());
+
+    const coincideZonal =
+      zonalFiltro === "TODOS" || sede.zonalNombre === zonalFiltro;
+
+    return coincideNombre && coincideZonal;
+  });
 
   return (
     <>
@@ -30,14 +54,32 @@ export default function ListaSedes({
           </h1>
         </div>
 
-        {/* BUSCADOR */}
-        <input
-          type="text"
-          placeholder="Buscar sede..."
-          value={buscarSede}
-          onChange={(e) => setBuscarSede(e.target.value)}
-          className="bg-white px-5 py-4 rounded-2xl border border-gray-200 font-bold w-full lg:w-[280px]"
-        />
+        {/* FILTROS */}
+        <div className="flex flex-col lg:flex-row gap-4">
+
+          {/* BUSCADOR */}
+          <input
+            type="text"
+            placeholder="Buscar sede..."
+            value={buscarSede}
+            onChange={(e) => setBuscarSede(e.target.value)}
+            className="bg-white px-5 py-4 rounded-2xl border border-gray-200 font-bold w-full lg:w-[280px]"
+          />
+
+          {/* FILTRO ZONAL */}
+          <select
+            value={zonalFiltro}
+            onChange={(e) => setZonalFiltro(e.target.value)}
+            className="bg-white px-5 py-4 rounded-2xl border border-gray-200 font-bold"
+          >
+            {zonalesUnicos.map((z) => (
+              <option key={z} value={z}>
+                {z}
+              </option>
+            ))}
+          </select>
+
+        </div>
       </div>
 
       {/* CABECERA */}
@@ -54,7 +96,7 @@ export default function ListaSedes({
       {/* LISTA */}
       <div className="flex flex-col gap-5">
 
-        {sedesFiltradas.map((sede) => (
+        {sedesFinales.map((sede) => (
           <div
             key={sede.id}
             className="bg-white rounded-[30px] p-6 shadow-sm border border-gray-100 flex flex-col gap-5 xl:grid xl:grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr] xl:items-center xl:gap-8"

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaBuilding } from "react-icons/fa6";
+import { FaBuilding,FaPlus } from "react-icons/fa6";
 export default function MenuInfraestructura({
   usuarioLogueado,
   setVistaInfra
@@ -16,7 +16,34 @@ export default function MenuInfraestructura({
             <h1 className="text-3xl lg:text-5xl font-black italic text-[#132238] mb-10">
               BIENVENIDO, {usuarioLogueado?.nombre}
             </h1>
-    
+    <div className="flex justify-center md:justify-end mb-8">
+
+  <button
+    onClick={() => setVistaInfra("crear")}
+    className="
+      w-full md:w-auto
+      bg-[#25D366]
+      hover:bg-[#1ebe57]
+      text-white
+      px-6 md:px-7
+      py-4
+      rounded-2xl
+      font-black
+      flex
+      items-center
+      justify-center
+      gap-3
+      shadow-lg
+      transition-all
+      hover:scale-105
+      text-sm md:text-base
+    "
+  >
+    <FaPlus className="text-lg" />
+    NUEVO AMBIENTE
+  </button>
+
+</div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
               {/* zonal */}
               <div
@@ -115,7 +142,6 @@ export default function MenuInfraestructura({
                 <p className="mt-3 text-purple-500 font-black text-sm tracking-[2px] uppercase">
                   Lista global
                 </p>
-    
               </div>
     
             </div>

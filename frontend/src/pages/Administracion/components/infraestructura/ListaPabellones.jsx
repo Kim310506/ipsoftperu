@@ -1,16 +1,54 @@
-export default function ListaPabellones({
+import { useMemo, useState } from "react";
+import { zonales as zonalesData } from "../../../../data/infraestructura";export default function ListaPabellones({
   vistaInfra,
   setVistaInfra,
   buscarPabellon,
   setBuscarPabellon,
   filtroSede,
   setFiltroSede,
-  sedes,
   pabellonesFiltrados,
   setPabellonSeleccionado,
   setOpenPabellonModal
 }) {
   if (vistaInfra !== "listaPabellones") return null;
+
+  // 🔥 ZONAL STATE
+  const [filtroZonal, setFiltroZonal] = useState("TODOS");
+
+  // 🔥 ZONALES
+  const zonales = useMemo(() => {
+    return ["TODOS", ...zonalesData.map((z) => z.nombre)];
+  }, []);
+
+  // 🔥 SEDES SEGÚN ZONAL
+  const sedesFiltradas = useMemo(() => {
+    if (filtroZonal === "TODOS") {
+      return zonalesData.flatMap((z) => z.sedes);
+    }
+
+    const zona = zonalesData.find((z) => z.nombre === filtroZonal);
+    return zona ? zona.sedes : [];
+  }, [filtroZonal]);
+
+  // 🔥 FILTRO FINAL DE PABELLONES
+  const pabellonesFinales = pabellonesFiltrados.filter((pabellon) => {
+    const coincideBusqueda =
+      pabellon.nombre
+        .toLowerCase()
+        .includes(buscarPabellon.toLowerCase());
+
+    const coincideSede =
+      filtroSede === "TODAS" ||
+      pabellon.sedeNombre === filtroSede;
+
+    const coincideZonal =
+      filtroZonal === "TODOS" ||
+      sedesFiltradas.some(
+        (sede) => sede.nombre === pabellon.sedeNombre
+      );
+
+    return coincideBusqueda && coincideSede && coincideZonal;
+  });
 
   return (
     <>
@@ -23,6 +61,7 @@ export default function ListaPabellones({
               setVistaInfra("menu");
               setBuscarPabellon("");
               setFiltroSede("TODAS");
+              setFiltroZonal("TODOS");
             }}
             className="mb-5 text-[#7184a3] font-black"
           >
@@ -46,7 +85,23 @@ export default function ListaPabellones({
             className="bg-white px-5 py-4 rounded-2xl border border-gray-200 font-bold w-full lg:w-[280px]"
           />
 
-          {/* FILTRO SEDE */}
+          {/* ZONAL */}
+          <select
+            value={filtroZonal}
+            onChange={(e) => {
+              setFiltroZonal(e.target.value);
+              setFiltroSede("TODAS");
+            }}
+            className="bg-white px-5 py-4 rounded-2xl border border-gray-200 font-bold"
+          >
+            {zonales.map((z) => (
+              <option key={z} value={z}>
+                {z}
+              </option>
+            ))}
+          </select>
+
+          {/* SEDE */}
           <select
             value={filtroSede}
             onChange={(e) => setFiltroSede(e.target.value)}
@@ -54,7 +109,7 @@ export default function ListaPabellones({
           >
             <option value="TODAS">TODAS LAS SEDES</option>
 
-            {sedes.map((sede) => (
+            {sedesFiltradas.map((sede) => (
               <option key={sede.id} value={sede.nombre}>
                 {sede.nombre}
               </option>
@@ -66,56 +121,43 @@ export default function ListaPabellones({
 
       {/* CABECERA */}
       <div className="hidden xl:grid xl:grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr] gap-8 px-8 mb-5 text-gray-400 font-black text-sm uppercase">
-
         <p>Pabellón</p>
         <p>Sede</p>
         <p>Pisos</p>
         <p>Ambientes</p>
         <p className="text-right">Acción</p>
-
       </div>
 
       {/* LISTA */}
       <div className="flex flex-col gap-5">
 
-        {pabellonesFiltrados.map((pabellon) => (
+        {pabellonesFinales.map((pabellon) => (
           <div
             key={pabellon.id}
             className="bg-white rounded-[30px] p-6 shadow-sm border border-gray-100 flex flex-col gap-5 xl:grid xl:grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr] xl:items-center xl:gap-8"
           >
 
-            {/* PABELLÓN */}
-            <div>
-              <h2 className="text-2xl font-black italic text-[#132238]">
-                {pabellon.nombre}
-              </h2>
+            <div className="font-black italic text-[#132238] text-2xl">
+              {pabellon.nombre}
             </div>
 
-            {/* SEDE */}
             <div>
               <span className="bg-orange-100 text-orange-600 px-5 py-2 rounded-full text-xs font-black">
                 {pabellon.sedeNombre}
               </span>
             </div>
 
-            {/* PISOS */}
-            <div>
-              <p className="font-black text-[#132238] text-lg">
-                {pabellon.pisos.length}
-              </p>
+            <div className="font-black">
+              {pabellon.pisos.length}
             </div>
 
-            {/* AMBIENTES */}
-            <div>
-              <p className="font-black text-[#0456b3] text-lg">
-                {pabellon.pisos.reduce(
-                  (acc, piso) => acc + piso.ambientes.length,
-                  0
-                )}
-              </p>
+            <div className="font-black text-[#0456b3]">
+              {pabellon.pisos.reduce(
+                (acc, p) => acc + p.ambientes.length,
+                0
+              )}
             </div>
 
-            {/* BOTÓN */}
             <div className="flex xl:justify-end">
               <button
                 onClick={() => {
