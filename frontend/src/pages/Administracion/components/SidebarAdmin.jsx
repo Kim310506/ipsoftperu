@@ -2,7 +2,8 @@ import {
   FaUsers,
   FaBuilding,
   FaRightFromBracket,
-  FaXmark
+  FaXmark,
+  FaSitemap
 } from "react-icons/fa6";
 
 export default function SidebarAdmin({
@@ -183,7 +184,31 @@ export default function SidebarAdmin({
             <FaBuilding />
             INFRAESTRUCTURA
           </button>
+          <button
+            onClick={() => {
+              setMenuActivo("uunn");
+              setOpenSidebar(false);
+            }}
+            className={`
+              rounded-2xl
+              px-5
+              py-5
+              font-bold
+              flex
+              items-center
+              gap-4
+              transition-all
 
+              ${
+                menuActivo === "uunn"
+                  ? "bg-white text-[#0456b3] shadow-lg"
+                  : "text-white/80 hover:bg-white/10"
+              }
+            `}
+          >
+            <FaSitemap/>
+            UNIDAD DE NEGOCIO
+          </button>        
         </div>
 
         {/* CERRAR SESIÓN */}

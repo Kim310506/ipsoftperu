@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { zonales } from "../../../../data/infraestructura";
+import { uunn as uunnData } from "../../../../data/uunn";
 
 export default function CrearUbicacion({ setVistaInfra }) {
 
@@ -83,6 +84,21 @@ ${nuevoAmbiente}`
     setFormPiso("");
 
   };
+{/* ========================= */}
+{/* UUNN */}
+{/* ========================= */}
+
+const [formUunn, setFormUunn] =
+  useState("");
+
+const [crearNuevaUunn, setCrearNuevaUunn] =
+  useState(false);
+
+// BUSCAR SI LA ZONAL YA TIENE UUNN
+const uunnDeLaZonal = uunnData.find(
+  (u) =>
+    u.zonales.includes(zonalElegida?.id)
+);
 
   return (
 
@@ -139,6 +155,115 @@ ${nuevoAmbiente}`
             </datalist>
 
           </div>
+{/* UUNN */}
+<div className="flex flex-col gap-2">
+
+  <label className="font-bold text-[#132238] text-sm uppercase">
+    Unidad de Negocio
+  </label>
+
+  {/* SI YA EXISTE UUNN EN LA ZONAL */}
+  {uunnDeLaZonal ? (
+
+    <div className="
+      bg-[#e8f0ff]
+      border
+      border-[#b8d2ff]
+      rounded-2xl
+      px-5
+      py-4
+      flex
+      items-center
+      justify-between
+    ">
+
+      <div>
+
+        <p className="
+          text-xs
+          uppercase
+          text-[#0456b3]
+          font-black
+        ">
+          UUNN ASIGNADA
+        </p>
+
+        <h3 className="
+          font-black
+          text-[#132238]
+          text-lg
+        ">
+          {uunnDeLaZonal.nombre}
+        </h3>
+
+      </div>
+
+      <span className="
+        bg-green-100
+        text-green-600
+        px-4
+        py-2
+        rounded-full
+        text-xs
+        font-black
+      ">
+        ACTIVO
+      </span>
+
+    </div>
+
+  ) : (
+
+    <>
+
+      <input
+        list="lista-uunn"
+        value={formUunn}
+        onChange={(e) =>
+          setFormUunn(
+            e.target.value.toUpperCase()
+          )
+        }
+        disabled={!formZonal}
+        placeholder={
+          formZonal
+            ? "Ej: PRONATEL"
+            : "Primero escriba la Zonal"
+        }
+        className="
+          bg-gray-50
+          px-5
+          py-4
+          rounded-2xl
+          border
+          border-gray-200
+          outline-none
+          font-bold
+          disabled:opacity-50
+          placeholder-gray-400
+          focus:border-[#0456b3]
+          transition-colors
+        "
+      />
+
+      <datalist id="lista-uunn">
+
+        {uunnData.map((uunn) => (
+
+          <option
+            key={uunn.id}
+            value={uunn.nombre}
+          />
+
+        ))}
+
+      </datalist>
+
+    </>
+
+  )}
+
+</div>
 
           {/* SEDE */}
           <div className="flex flex-col gap-2">

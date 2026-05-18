@@ -35,6 +35,7 @@ import ModalPiso from "./components/infraestructura/ModalPiso";
 import ListaAmbientes from "./components/infraestructura/ListaAmbientes";
 import ModalAmbiente from "./components/infraestructura/ModalAmbiente";
 import CrearUbicacion from "./components/infraestructura/CrearUbicacion";
+import GestionUUNN from "./components/uunn/GestionUUNN";
 export default function DashboardAdmin() {
 const navigate = useNavigate();
 const [openModal, setOpenModal] = useState(false);
@@ -335,6 +336,10 @@ const pisosFiltrados = sedes.flatMap((sede) =>
   openModal={openModal}
   setOpenModal={setOpenModal}
 />
+{menuActivo === "uunn" && (
+  <GestionUUNN />
+)}
+
       </main> 
     </div>
 
