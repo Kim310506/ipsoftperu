@@ -66,6 +66,7 @@ const [qr, setQr] = useState(null);
       autorizado: "NO",
 
       visitantes: visitantes || [],
+      email,
     };
 
     const res = await api.post("/visitas", payload);

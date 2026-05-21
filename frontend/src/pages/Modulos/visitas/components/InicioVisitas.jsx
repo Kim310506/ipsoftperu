@@ -1,15 +1,20 @@
 // src/pages/modulos/visitas/components/InicioVisitas.jsx
 
 export default function InicioVisitas({ usuario }) {
+  const user = typeof usuario === "string"
+    ? JSON.parse(usuario)
+    : usuario;
   return (
     <div>
       <h1 className="text-4xl font-black text-[#244db7] mb-3">
         Panel de Control
       </h1>
-
-      <p className="text-gray-500 mb-10">
-        Bienvenido {usuario}
-      </p>
+     <h2 className="text-2xl font-bold text-gray-400 mb-10">
+        Bienvenido{" "}
+        <span className="text-gray-400 font-extrabold text-3xl">
+          {user?.nombre}
+        </span>
+      </h2>
 
       <div className="grid grid-cols-3 gap-6">
         <div className="bg-white rounded-3xl p-8 shadow">

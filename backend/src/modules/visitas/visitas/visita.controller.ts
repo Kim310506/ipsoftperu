@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-
+import { verificarQRService } from "./visita.service";
 import {
   listarVisitasService,
   obtenerVisitaService,
@@ -30,7 +30,36 @@ export const getVisitaById = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Error al obtener visita" });
   }
 };
+export const verificarQRController = async (req: Request, res: Response) => {
+  try {
+    const { qrData } = req.body;
 
+    if (!qrData) {
+      return res.status(400).json({
+        message: "QR vacío",
+      });
+    }
+
+    const visitante = await verificarQRService(qrData);
+
+    if (!visitante) {
+      return res.status(404).json({
+        message: "QR no válido",
+      });
+    }
+
+    return res.json({
+      message: "Acceso autorizado",
+      visitante,
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Error en el servidor",
+    });
+  }
+};
 export const createVisita = async (req: Request, res: Response) => {
   try {
     const visita = await crearVisitaService(req.body);

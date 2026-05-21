@@ -148,13 +148,9 @@ model Visitante {
   apellidoPaterno String
   apellidoMaterno String
   email           String?
-  telefono        String?
   empresa         String?
 
-  /* 🔥 QR RECOMENDADO */
   qrData          String?   // contenido del QR (JSON o string seguro)
-  qrImage         String?   // ruta de la imagen del QR
-
   estadoQr        String
 
   visitaId        Int

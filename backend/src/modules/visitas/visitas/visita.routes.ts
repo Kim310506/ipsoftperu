@@ -5,7 +5,8 @@ import {
   getVisitaById,
   createVisita,
   updateVisita,
-  deleteVisita
+  deleteVisita,
+  verificarQRController
 } from "./visita.controller";
 
 const router = Router();
@@ -16,5 +17,6 @@ router.get("/:id", getVisitaById);
 router.post("/", createVisita);
 router.put("/:id", updateVisita);
 router.delete("/:id", deleteVisita);
+router.post("/verificar-qr", verificarQRController);
 
 export default router;
