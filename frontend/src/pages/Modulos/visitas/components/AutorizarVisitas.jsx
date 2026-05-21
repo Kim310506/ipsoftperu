@@ -1,5 +1,6 @@
 // src/pages/modulos/visitas/components/AutorizarVisitas.jsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import api from "../../../../api/axios";
 import {
   ShieldCheck,
   Search,
@@ -16,7 +17,9 @@ import {
 import { zonales } from "../../../../data/infraestructura";
 
 export default function AutorizarVisitas() {
-
+const [user] = useState(() => {
+  return JSON.parse(localStorage.getItem("visitasUser"));
+});
   /* ========================= */
   /* STATES */
   /* ========================= */
@@ -48,7 +51,7 @@ export default function AutorizarVisitas() {
     return "SIN SEDE";
 
   };
-
+const [visitas, setVisitas] = useState([]);
   /* ========================= */
   /* OBTENER NOMBRE AMBIENTE */
   /* ========================= */
@@ -107,6 +110,7 @@ export default function AutorizarVisitas() {
     });
 
   };
+  console.log("USER LOGUEADO:", user);
 /* ========================= */ /* MODAL VISITANTES */ /* ========================= */ 
 const [openVisitantesModal, setOpenVisitantesModal] = useState(false); 
 const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
@@ -114,58 +118,104 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
   /* FILTRO */
   /* ========================= */
 
-  const visitasFiltradas = useMemo(() => {
+ const visitasFiltradas = useMemo(() => {
 
-    let data = [...visitasData];
+  let data = [...visitas];
 
-    data = data.filter((item) => {
+  data = data.filter((item) => {
 
-      const texto = `
-        ${item.codigo}
-        ${item.tipo}
-        ${item.fecha}
-        ${item.estado}
-        ${item.motivo}
-        ${obtenerNombreSede(item.sedeId)}
-        ${obtenerNombreAmbiente(item.ambienteId)}
-      `
-        .toLowerCase();
+    const texto = `
+      ${item.codigo}
+      ${item.tipo}
+      ${item.fecha}
+      ${item.estado}
+      ${item.motivo}
+      ${item.sede?.nombre || "SIN SEDE"}
+      ${item.ambiente?.nombre || "SIN ÁREA"}
+    `.toLowerCase();
 
-      return texto.includes(
-        busqueda.toLowerCase()
-      );
+    return texto.includes(busqueda.toLowerCase());
+
+  });
+
+  if (sortConfig.key) {
+
+    data.sort((a, b) => {
+
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      if (aValue < bValue) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+
+      if (aValue > bValue) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+
+      return 0;
 
     });
 
-    if (sortConfig.key) {
+  }
 
-      data.sort((a, b) => {
+  return data;
 
-        let aValue = a[sortConfig.key];
-        let bValue = b[sortConfig.key];
+}, [visitas, busqueda, sortConfig]); 
+const toggleAutorizacion = async (id) => {
+  try {
+    console.log("CLICK ID:", id);
 
-        if (aValue < bValue) {
-          return sortConfig.direction === "asc"
-            ? -1
-            : 1;
+    const visita = visitas.find(v => v.id === id);
+    if (!visita) return;
+
+    const nuevoEstado =
+      visita.estado === "AUTORIZADO" ? "PENDIENTE" : "AUTORIZADO";
+
+    const res = await api.put(`/visitas/${id}`, {
+      estado: nuevoEstado,
+      autorizadoPorId: nuevoEstado === "AUTORIZADO" ? user?.id : null,
+    });
+
+    console.log("ACTUALIZADO:", res.data);
+
+    setVisitas(prev =>
+  prev.map(v =>
+    v.id === id
+      ? {
+          ...v,
+          estado: nuevoEstado,
+          autorizadoPor:
+            nuevoEstado === "AUTORIZADO"
+              ? { nombre: user?.nombre } // o el campo que tengas
+              : null
         }
+      : v
+  )
+);
 
-        if (aValue > bValue) {
-          return sortConfig.direction === "asc"
-            ? 1
-            : -1;
-        }
+  } catch (error) {
+    console.log("ERROR:", error.response?.data || error.message);
+  }
+};
+useEffect(() => {
+  const fetchVisitas = async () => {
+    try {
+      const res = await api.get("/visitas");
 
-        return 0;
+      console.log("DATA BACKEND:", res.data); 
 
-      });
-
+      setVisitas(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.log("Error cargando visitas:", error);
     }
+  };
 
-    return data;
-
-  }, [busqueda, sortConfig]);
-
+  fetchVisitas();
+}, []);
+const pendientes = visitas.filter(v => v.estado === "PENDIENTE").length;
+const autorizadas = visitas.filter(v => v.estado === "AUTORIZADO").length;
+const total = visitas.length;
   return (
 
     <main className="p-6 lg:p-8">
@@ -218,7 +268,7 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
               </h3>
 
               <p className="text-4xl font-black text-yellow-600">
-                12
+                {pendientes}
               </p>
 
             </div>
@@ -245,7 +295,7 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
               </h3>
 
               <p className="text-4xl font-black text-green-600">
-                30
+                {autorizadas}
               </p>
 
             </div>
@@ -272,7 +322,7 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
               </h3>
 
               <p className="text-4xl font-black text-blue-600">
-                42
+                {total}
               </p>
 
             </div>
@@ -359,6 +409,9 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
                 <th className="px-6 py-4">
                   ESTADO
                 </th>
+                <th className="px-6 py-4">
+                    AUTORIZADO 
+                  </th>
                   <th className="px-6 py-4 text-center"> VISITANTES </th>
                 <th className="px-6 py-4 text-center">
                   ACCIONES
@@ -392,19 +445,16 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
                   </td>
 
                   <td className="px-6 py-5">
-                    {item.fecha}
+                    {item.fecha ? new Date(item.fecha).toLocaleDateString() : "-"}
                   </td>
 
                   <td className="px-6 py-5">
-                    {obtenerNombreSede(
-                      item.sedeId
-                    )}
+                    {item.sede?.nombre || "SIN SEDE"}
+
                   </td>
 
                   <td className="px-6 py-5">
-                    {obtenerNombreAmbiente(
-                      item.ambienteId
-                    )}
+                    {item.ambiente?.nombre || "SIN ÁREA"}
                   </td>
 
                   <td className="px-6 py-5">
@@ -418,7 +468,7 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
                     {item.motivo}
                   </td>
       
-
+      
                   <td className="px-6 py-5">
 
                     <span
@@ -436,6 +486,9 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
 
                     </span>
 
+                  </td>
+                   <td className="px-6 py-5">
+                    {item.autorizadoPor?.nombre || "-"}
                   </td>
                   <td className="px-6 py-5">
 
@@ -465,23 +518,23 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
 
                       {item.estado === "AUTORIZADO" ? (
 
-                        <button className="bg-red-500 hover:bg-red-600 transition text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm">
-
-                          <X size={17} />
-
-                          Desautorizar
-
-                        </button>
+                        <button
+                            onClick={() => toggleAutorizacion(item.id)}
+                            className="bg-red-500 hover:bg-red-600 transition text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm"
+                          >
+                            <X size={17} />
+                            Desautorizar
+                          </button>
 
                       ) : (
 
-                        <button className="bg-green-500 hover:bg-green-600 transition text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm">
-
-                          <Check size={17} />
-
-                          Autorizar
-
-                        </button>
+                        <button
+                            onClick={() => toggleAutorizacion(item.id)}
+                            className="bg-green-500 hover:bg-green-600 transition text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm"
+                          >
+                            <Check size={17} />
+                            Autorizar
+                          </button>
 
                       )}
 
@@ -560,9 +613,6 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
                 EMAIL
               </th>
 
-              <th className="px-5 py-4">
-                TELEFONO
-              </th>
 
               <th className="px-5 py-4">
                 QR
@@ -604,10 +654,6 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
 
                   <td className="px-5 py-5">
                     {visitante.email}
-                  </td>
-
-                  <td className="px-5 py-5">
-                    {visitante.telefono}
                   </td>
 
                   <td className="px-5 py-5">

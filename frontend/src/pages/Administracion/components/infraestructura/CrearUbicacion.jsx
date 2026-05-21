@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { zonales } from "../../../../data/infraestructura";
-import { uunn as uunnData } from "../../../../data/uunn";
+import { useEffect, useState } from "react";
+import api from "../../../../api/axios";
 
-export default function CrearUbicacion({ setVistaInfra }) {
+export default function CrearUbicacion({
+  setVistaInfra,
+  zonales
+}) {
 
   const [formZonal, setFormZonal] = useState("");
   const [formSede, setFormSede] = useState("");
@@ -10,95 +12,281 @@ export default function CrearUbicacion({ setVistaInfra }) {
   const [formPiso, setFormPiso] = useState("");
   const [nuevoAmbiente, setNuevoAmbiente] = useState("");
 
-  // BUSCAR ZONAL
+  /* ========================= */
+  /* UUNN */
+  /* ========================= */
+
+  const [uunn, setUunn] = useState([]);
+  const [formUunn, setFormUunn] = useState("");
+
+  useEffect(() => {
+
+    obtenerUunn();
+
+  }, []);
+
+  const obtenerUunn = async () => {
+
+    try {
+
+      const response = await api.get("/unidades");
+
+      setUunn(response.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
+  /* ========================= */
+  /* BUSQUEDAS */
+  /* ========================= */
+
   const zonalElegida = zonales.find(
-    (z) => z.nombre.toLowerCase() === formZonal.toLowerCase()
+    (z) =>
+      z.nombre.toLowerCase() ===
+      formZonal.toLowerCase()
   );
 
-  const sedesDisponibles = zonalElegida
-    ? zonalElegida.sedes
-    : [];
+  const sedesDisponibles =
+    zonalElegida?.sedes || [];
 
-  // BUSCAR SEDE
-  const sedeElegida = sedesDisponibles.find(
-    (s) => s.nombre.toLowerCase() === formSede.toLowerCase()
-  );
+  const sedeElegida =
+    sedesDisponibles.find(
+      (s) =>
+        s.nombre.toLowerCase() ===
+        formSede.toLowerCase()
+    );
 
-  const pabellonesDisponibles = sedeElegida
-    ? sedeElegida.pabellones
-    : [];
+  const pabellonesDisponibles =
+    sedeElegida?.pabellones || [];
 
-  // BUSCAR PABELLON
-  const pabellonElegido = pabellonesDisponibles.find(
-    (p) => p.nombre.toLowerCase() === formPabellon.toLowerCase()
-  );
+  const pabellonElegido =
+    pabellonesDisponibles.find(
+      (p) =>
+        p.nombre.toLowerCase() ===
+        formPabellon.toLowerCase()
+    );
 
-  const pisosDisponibles = pabellonElegido
-    ? pabellonElegido.pisos
-    : [];
+  const pisosDisponibles =
+    pabellonElegido?.pisos || [];
 
-  // CAMBIOS
+  const pisoElegido =
+    pisosDisponibles.find(
+      (p) =>
+        p.nombre.toLowerCase() ===
+        formPiso.toLowerCase()
+    );
+/* ========================= */
+/* UUNN DE LA ZONAL */
+/* ========================= */
+
+const unidadAsignada =
+  zonalElegida?.unidades?.[0];
+  /* ========================= */
+  /* CAMBIOS */
+  /* ========================= */
+
   const handleZonalChange = (val) => {
+
     setFormZonal(val.toUpperCase());
     setFormSede("");
     setFormPabellon("");
     setFormPiso("");
+
   };
 
   const handleSedeChange = (val) => {
+
     setFormSede(val.toUpperCase());
     setFormPabellon("");
     setFormPiso("");
+
   };
 
   const handlePabellonChange = (val) => {
+
     setFormPabellon(val.toUpperCase());
     setFormPiso("");
+
   };
 
   const handlePisoChange = (val) => {
+
     setFormPiso(val.toUpperCase());
+
   };
 
-  // GUARDAR
-  const handleSubmit = (e) => {
+  /* ========================= */
+  /* GUARDAR */
+  /* ========================= */
+
+  const handleSubmit = async (e) => {
 
     e.preventDefault();
 
-    alert(
-      `Guardando en BD:
+    try {
 
-Jerarquía:
-${formZonal} > ${formSede} > ${formPabellon} > Piso ${formPiso}
+      /* ========================= */
+      /* CREAR ZONAL */
+      /* ========================= */
 
-Nuevo Ambiente:
-${nuevoAmbiente}`
-    );
+      let zonalId = zonalElegida?.id;
 
-    setVistaInfra("menu");
+      if (!zonalId) {
 
-    setNuevoAmbiente("");
-    setFormZonal("");
-    setFormSede("");
-    setFormPabellon("");
-    setFormPiso("");
+        const responseZonal =
+          await api.post(
+            "/zonales",
+            {
+              nombre: formZonal
+            }
+          );
+
+        zonalId =
+          responseZonal.data.id;
+
+      }
+
+      /* ========================= */
+      /* CREAR UUNN */
+      /* ========================= */
+
+      let unidadId =
+        unidadAsignada?.unidadNegocioId;
+
+      if (
+        !unidadId &&
+        formUunn
+      ) {
+
+        const responseUnidad =
+          await api.post(
+            "/unidades",
+            {
+              nombre: formUunn,
+              estado: "ACTIVO",
+              zonalId: zonalId
+            }
+          );
+
+        unidadId =
+          responseUnidad.data.id;
+
+      }
+
+      /* ========================= */
+      /* CREAR SEDE */
+      /* ========================= */
+
+      let sedeId =
+        sedeElegida?.id;
+
+      if (!sedeId) {
+
+        const responseSede =
+          await api.post(
+            "/sedes",
+            {
+              nombre: formSede,
+              zonalId: zonalId
+            }
+          );
+
+        sedeId =
+          responseSede.data.id;
+
+      }
+
+      /* ========================= */
+      /* CREAR PABELLON */
+      /* ========================= */
+
+      let pabellonId =
+        pabellonElegido?.id;
+
+      if (!pabellonId) {
+
+        const responsePabellon =
+          await api.post(
+            "/pabellones",
+            {
+              nombre: formPabellon,
+              sedeId: sedeId
+            }
+          );
+
+        pabellonId =
+          responsePabellon.data.id;
+
+      }
+
+      /* ========================= */
+      /* CREAR PISO */
+      /* ========================= */
+
+      let pisoId =
+        pisoElegido?.id;
+
+      if (!pisoId) {
+
+        const responsePiso =
+          await api.post(
+            "/pisos",
+            {
+              nombre: formPiso,
+              pabellonId: pabellonId
+            }
+          );
+
+        pisoId =
+          responsePiso.data.id;
+
+      }
+
+      /* ========================= */
+      /* CREAR AMBIENTE */
+      /* ========================= */
+
+      await api.post(
+        "/ambientes",
+        {
+          nombre: nuevoAmbiente,
+          pisoId: pisoId
+        }
+      );
+
+      alert(
+        "Ambiente creado correctamente"
+      );
+
+      /* ========================= */
+      /* LIMPIAR */
+      /* ========================= */
+
+      setFormZonal("");
+      setFormSede("");
+      setFormPabellon("");
+      setFormPiso("");
+      setNuevoAmbiente("");
+      setFormUunn("");
+
+      setVistaInfra("menu");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        "Error al guardar"
+      );
+
+    }
 
   };
-{/* ========================= */}
-{/* UUNN */}
-{/* ========================= */}
-
-const [formUunn, setFormUunn] =
-  useState("");
-
-const [crearNuevaUunn, setCrearNuevaUunn] =
-  useState(false);
-
-// BUSCAR SI LA ZONAL YA TIENE UUNN
-const uunnDeLaZonal = uunnData.find(
-  (u) =>
-    u.zonales.includes(zonalElegida?.id)
-);
 
   return (
 
@@ -139,7 +327,11 @@ const uunnDeLaZonal = uunnData.find(
             <input
               list="lista-zonales"
               value={formZonal}
-              onChange={(e) => handleZonalChange(e.target.value)}
+              onChange={(e) =>
+                handleZonalChange(
+                  e.target.value
+                )
+              }
               placeholder="Ej: LIMA"
               required
               className="bg-gray-50 px-5 py-4 rounded-2xl border border-gray-200 outline-none font-bold placeholder-gray-400 focus:border-[#0456b3] transition-colors"
@@ -155,115 +347,125 @@ const uunnDeLaZonal = uunnData.find(
             </datalist>
 
           </div>
-{/* UUNN */}
-<div className="flex flex-col gap-2">
 
-  <label className="font-bold text-[#132238] text-sm uppercase">
-    Unidad de Negocio
-  </label>
+          {/* UUNN */}
+          {/* UUNN */}
+          <div className="flex flex-col gap-2">
 
-  {/* SI YA EXISTE UUNN EN LA ZONAL */}
-  {uunnDeLaZonal ? (
+            <label className="font-bold text-[#132238] text-sm uppercase">
+              Unidad de Negocio
+            </label>
 
-    <div className="
-      bg-[#e8f0ff]
-      border
-      border-[#b8d2ff]
-      rounded-2xl
-      px-5
-      py-4
-      flex
-      items-center
-      justify-between
-    ">
+            {/* SI YA EXISTE */}
+            {unidadAsignada ? (
 
-      <div>
+              <div
+                className="
+                  bg-[#e8f0ff]
+                  border
+                  border-[#b8d2ff]
+                  rounded-2xl
+                  px-5
+                  py-4
+                  flex
+                  items-center
+                  justify-between
+                "
+              >
 
-        <p className="
-          text-xs
-          uppercase
-          text-[#0456b3]
-          font-black
-        ">
-          UUNN ASIGNADA
-        </p>
+                <div>
 
-        <h3 className="
-          font-black
-          text-[#132238]
-          text-lg
-        ">
-          {uunnDeLaZonal.nombre}
-        </h3>
+                  <p
+                    className="
+                      text-xs
+                      uppercase
+                      text-[#0456b3]
+                      font-black
+                    "
+                  >
+                    UUNN ASIGNADA
+                  </p>
 
-      </div>
+                  <h3
+                    className="
+                      font-black
+                      text-[#132238]
+                      text-lg
+                    "
+                  >
+                    {unidadAsignada.unidadNegocio.nombre}
+                  </h3>
 
-      <span className="
-        bg-green-100
-        text-green-600
-        px-4
-        py-2
-        rounded-full
-        text-xs
-        font-black
-      ">
-        ACTIVO
-      </span>
+                </div>
 
-    </div>
+                <span
+                  className="
+                    bg-green-100
+                    text-green-600
+                    px-4
+                    py-2
+                    rounded-full
+                    text-xs
+                    font-black
+                  "
+                >
+                  ACTIVO
+                </span>
 
-  ) : (
+              </div>
 
-    <>
+            ) : (
 
-      <input
-        list="lista-uunn"
-        value={formUunn}
-        onChange={(e) =>
-          setFormUunn(
-            e.target.value.toUpperCase()
-          )
-        }
-        disabled={!formZonal}
-        placeholder={
-          formZonal
-            ? "Ej: PRONATEL"
-            : "Primero escriba la Zonal"
-        }
-        className="
-          bg-gray-50
-          px-5
-          py-4
-          rounded-2xl
-          border
-          border-gray-200
-          outline-none
-          font-bold
-          disabled:opacity-50
-          placeholder-gray-400
-          focus:border-[#0456b3]
-          transition-colors
-        "
-      />
+              <>
+              
+                <input
+                  list="lista-uunn"
+                  value={formUunn}
+                  onChange={(e) =>
+                    setFormUunn(
+                      e.target.value.toUpperCase()
+                    )
+                  }
+                  disabled={!formZonal}
+                  placeholder={
+                    formZonal
+                      ? "Ej: PRONATEL"
+                      : "Primero escriba la Zonal"
+                  }
+                  className="
+                    bg-gray-50
+                    px-5
+                    py-4
+                    rounded-2xl
+                    border
+                    border-gray-200
+                    outline-none
+                    font-bold
+                    disabled:opacity-50
+                    placeholder-gray-400
+                    focus:border-[#0456b3]
+                    transition-colors
+                  "
+                />
 
-      <datalist id="lista-uunn">
+                <datalist id="lista-uunn">
 
-        {uunnData.map((uunn) => (
+                  {uunn.map((unidad) => (
 
-          <option
-            key={uunn.id}
-            value={uunn.nombre}
-          />
+                    <option
+                      key={unidad.id}
+                      value={unidad.nombre}
+                    />
 
-        ))}
+                  ))}
 
-      </datalist>
+                </datalist>
 
-    </>
+              </>
 
-  )}
+            )}
 
-</div>
+          </div>
 
           {/* SEDE */}
           <div className="flex flex-col gap-2">
@@ -275,7 +477,11 @@ const uunnDeLaZonal = uunnData.find(
             <input
               list="lista-sedes"
               value={formSede}
-              onChange={(e) => handleSedeChange(e.target.value)}
+              onChange={(e) =>
+                handleSedeChange(
+                  e.target.value
+                )
+              }
               disabled={!formZonal}
               placeholder={
                 formZonal
@@ -287,12 +493,14 @@ const uunnDeLaZonal = uunnData.find(
             />
 
             <datalist id="lista-sedes">
+
               {sedesDisponibles.map((s) => (
                 <option
                   key={s.id}
                   value={s.nombre}
                 />
               ))}
+
             </datalist>
 
           </div>
@@ -307,7 +515,11 @@ const uunnDeLaZonal = uunnData.find(
             <input
               list="lista-pabellones"
               value={formPabellon}
-              onChange={(e) => handlePabellonChange(e.target.value)}
+              onChange={(e) =>
+                handlePabellonChange(
+                  e.target.value
+                )
+              }
               disabled={!formSede}
               placeholder={
                 formSede
@@ -319,12 +531,14 @@ const uunnDeLaZonal = uunnData.find(
             />
 
             <datalist id="lista-pabellones">
+
               {pabellonesDisponibles.map((p) => (
                 <option
                   key={p.id}
                   value={p.nombre}
                 />
               ))}
+
             </datalist>
 
           </div>
@@ -339,7 +553,11 @@ const uunnDeLaZonal = uunnData.find(
             <input
               list="lista-pisos"
               value={formPiso}
-              onChange={(e) => handlePisoChange(e.target.value)}
+              onChange={(e) =>
+                handlePisoChange(
+                  e.target.value
+                )
+              }
               disabled={!formPabellon}
               placeholder={
                 formPabellon
@@ -351,12 +569,14 @@ const uunnDeLaZonal = uunnData.find(
             />
 
             <datalist id="lista-pisos">
+
               {pisosDisponibles.map((p) => (
                 <option
                   key={p.id}
                   value={p.nombre}
                 />
               ))}
+
             </datalist>
 
           </div>
@@ -391,7 +611,10 @@ const uunnDeLaZonal = uunnData.find(
         {/* BOTON */}
         <button
           type="submit"
-          disabled={!formPiso || !nuevoAmbiente}
+          disabled={
+            !formPiso ||
+            !nuevoAmbiente
+          }
           className="mt-6 bg-[#87b2e8] hover:bg-[#0456b3] text-white px-8 py-4 rounded-[20px] font-black text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           GUARDAR AMBIENTE
@@ -402,4 +625,5 @@ const uunnDeLaZonal = uunnData.find(
     </div>
 
   );
+
 }

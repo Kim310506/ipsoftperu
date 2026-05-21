@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-
+import React, { useMemo, useState, useEffect } from "react";
+import api from "../../../../api/axios";
 import {
   CircleCheckBig,
   UserRoundPlus,
@@ -8,130 +8,69 @@ import {
   Users,
   Send,
   Trash2,
-  X,
-  PlusCircle,
-  FileText,
 } from "lucide-react";
-
-import {
-  visitasData,
-  estadisticasVisitas,
-} from "../../../../data/visitasData";
-
-import { zonales } from "../../../../data/infraestructura";
 import ModalRegistro from "./ProgramarVisitas/ModalRegistro";
+
 export default function InicioVisitas() {
 
   /* ========================= */
   /* STATES */
   /* ========================= */
 
+  const [visitas, setVisitas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [openModal, setOpenModal] = useState(false);
-const [visitantes, setVisitantes] = useState([]);
-  const [sedeSeleccionada, setSedeSeleccionada] =
-    useState("");
 
-  const [ambienteSeleccionado, setAmbienteSeleccionado] =
-    useState("");
+  const [visitantes, setVisitantes] = useState([]);
+
+  const [zonales, setZonales] = useState([]);
+
+  const [sedeSeleccionada, setSedeSeleccionada] = useState("");
+  const [ambienteSeleccionado, setAmbienteSeleccionado] = useState("");
+
+  const [tipoVisita, setTipoVisita] = useState("INTERNO");
+  const [tipoCarga, setTipoCarga] = useState("INDIVIDUAL");
+
+  const [dni, setDni] = useState("");
+  const [nombres, setNombres] = useState("");
+  const [apellidoPaterno, setApellidoPaterno] = useState("");
+  const [apellidoMaterno, setApellidoMaterno] = useState("");
+  const [email, setEmail] = useState("");
+  const [empresa, setEmpresa] = useState("");
+
+  const [busqueda, setBusqueda] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
 
   /* ========================= */
-  /* OBTENER NOMBRE SEDE */
+  /* CARGAR ZONALES */
   /* ========================= */
 
-  const obtenerNombreSede = (sedeId) => {
-
-    for (const zonal of zonales) {
-
-      const sede = zonal.sedes.find(
-        (s) => s.id === sedeId
-      );
-
-      if (sede) {
-        return sede.nombre;
+  useEffect(() => {
+    const cargarZonales = async () => {
+      try {
+        const res = await api.get("/zonales");
+        setZonales(res.data);
+      } catch (err) {
+        console.log(err);
       }
+    };
 
-    }
-
-    return "SIN SEDE";
-
-  };
-const [tipoVisita, setTipoVisita] = useState("INTERNO");
-const [tipoCarga, setTipoCarga] =
-  useState("INDIVIDUAL");
-/* ========================= */
-/* DATOS VISITANTE */
-/* ========================= */
-
-const [dni, setDni] = useState("");
-
-const [nombres, setNombres] = useState("");
-
-const [apellidoPaterno, setApellidoPaterno] =
-  useState("");
-
-const [apellidoMaterno, setApellidoMaterno] =
-  useState("");
-
-const [email, setEmail] = useState("");
-
-const [empresa, setEmpresa] = useState("");
-const [busqueda, setBusqueda] = useState("");
-
-const [sortConfig, setSortConfig] = useState({
-  key: "",
-  direction: "asc",
-});
-  /* OBTENER NOMBRE AMBIENTE */
-  /* ========================= */
-
-  const obtenerNombreAmbiente = (ambienteId) => {
-
-    for (const zonal of zonales) {
-
-      for (const sede of zonal.sedes) {
-
-        for (const pabellon of sede.pabellones) {
-
-          for (const piso of pabellon.pisos) {
-
-            const ambiente = piso.ambientes.find(
-              (a) => a.id === ambienteId
-            );
-
-            if (ambiente) {
-              return ambiente.nombre;
-            }
-
-          }
-
-        }
-
-      }
-
-    }
-
-    return "SIN AMBIENTE";
-
-  };
-
-  /* ========================= */
-  /* LISTA DE SEDES */
-  /* ========================= */
-
-  const sedes = useMemo(() => {
-
-    return zonales.flatMap((zonal) =>
-      zonal.sedes
-    );
-
+    cargarZonales();
   }, []);
 
   /* ========================= */
-  /* AMBIENTES SEGUN SEDE */
+  /* SEDES */
+  /* ========================= */
+
+  const sedes = useMemo(() => {
+    return zonales.flatMap((zonal) => zonal.sedes || []);
+  }, [zonales]);
+
+  /* ========================= */
+  /* AMBIENTES */
   /* ========================= */
 
   const ambientes = useMemo(() => {
-
     if (!sedeSeleccionada) return [];
 
     const sede = sedes.find(
@@ -140,137 +79,131 @@ const [sortConfig, setSortConfig] = useState({
 
     if (!sede) return [];
 
-    return sede.pabellones.flatMap((pabellon) =>
-      pabellon.pisos.flatMap((piso) =>
-        piso.ambientes
-      )
-    );
-
+    return sede.pabellones?.flatMap((p) =>
+      p.pisos?.flatMap((pi) => pi.ambientes || [])
+    ) || [];
   }, [sedeSeleccionada, sedes]);
-const agregarVisitante = () => {
 
-  if (
-    !dni ||
-    !nombres ||
-    !apellidoPaterno ||
-    !apellidoMaterno
-  ) {
-    return;
-  }
+  /* ========================= */
+  /* HELPERS */
+  /* ========================= */
 
-  const nuevoVisitante = {
-    id: Date.now(),
-    dni,
-    nombres,
-    apellidos: `${apellidoPaterno} ${apellidoMaterno}`,
-    email,
-    empresa,
+  const obtenerNombreSede = (sedeId) => {
+    for (const zonal of zonales) {
+      const sede = zonal.sedes?.find((s) => s.id === sedeId);
+      if (sede) return sede.nombre;
+    }
+    return "SIN SEDE";
   };
 
-  setVisitantes([
-    ...visitantes,
-    nuevoVisitante,
-  ]);
-
-  /* LIMPIAR */
-  setDni("");
-  setNombres("");
-  setApellidoPaterno("");
-  setApellidoMaterno("");
-  setEmail("");
-  setTelefono("");
-  setEmpresa("");
-};
-const handleSort = (key) => {
-
-  let direction = "asc";
-
-  if (
-    sortConfig.key === key &&
-    sortConfig.direction === "asc"
-  ) {
-    direction = "desc";
-  }
-
-  setSortConfig({
-    key,
-    direction,
-  });
-
-};
-const visitasFiltradas = useMemo(() => {
-
-  let data = [...visitasData];
+  const obtenerNombreAmbiente = (ambienteId) => {
+    for (const zonal of zonales) {
+      for (const sede of zonales.sedes || []) {
+        for (const pabellon of sede.pabellones || []) {
+          for (const piso of pabellon.pisos || []) {
+            const amb = piso.ambientes?.find(a => a.id === ambienteId);
+            if (amb) return amb.nombre;
+          }
+        }
+      }
+    }
+    return "SIN AMBIENTE";
+  };
 
   /* ========================= */
-  /* BUSQUEDA */
+  /* AGREGAR VISITANTE */
   /* ========================= */
 
-  data = data.filter((item) => {
+  const agregarVisitante = () => {
+    if (!dni || !nombres || !apellidoPaterno || !apellidoMaterno) return;
 
-    const texto = `
-      ${item.fecha}
-      ${item.codigo}
-      ${item.tipo}
-      ${obtenerNombreSede(item.sedeId)}
-      ${obtenerNombreAmbiente(item.ambienteId)}
-      ${item.motivo}
-      ${item.estado}
-      ${item.autorizado}
-    `
-      .toLowerCase();
+    const nuevo = {
+      id: Date.now(),
+      dni,
+      nombres,
+      apellidoPaterno,
+      apellidoMaterno,
+      email,
+      empresa,
+    };
 
-    return texto.includes(
-      busqueda.toLowerCase()
-    );
+    setVisitantes([...visitantes, nuevo]);
 
-  });
+    setDni("");
+    setNombres("");
+    setApellidoPaterno("");
+    setApellidoMaterno("");
+    setEmail("");
+    setEmpresa("");
+  };
 
   /* ========================= */
-  /* ORDENAMIENTO */
+  /* VISITAS */
   /* ========================= */
 
-  if (sortConfig.key) {
-
-    data.sort((a, b) => {
-
-      let aValue = a[sortConfig.key];
-      let bValue = b[sortConfig.key];
-
-      if (sortConfig.key === "sede") {
-        aValue = obtenerNombreSede(a.sedeId);
-        bValue = obtenerNombreSede(b.sedeId);
+  useEffect(() => {
+    const cargarVisitas = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get("/visitas");
+        setVisitas(res.data);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      if (sortConfig.key === "area") {
-        aValue = obtenerNombreAmbiente(a.ambienteId);
-        bValue = obtenerNombreAmbiente(b.ambienteId);
-      }
+    cargarVisitas();
+  }, []);
 
-      if (aValue < bValue) {
-        return sortConfig.direction === "asc"
-          ? -1
-          : 1;
-      }
+  /* ========================= */
+  /* ESTADISTICAS */
+  /* ========================= */
 
-      if (aValue > bValue) {
-        return sortConfig.direction === "asc"
-          ? 1
-          : -1;
-      }
+  const estadisticas = useMemo(() => ({
+    visitas: visitas.length,
+    pendientes: visitas.filter(v => v.estado === "PENDIENTE").length,
+    aprobados: visitas.filter(v => v.estado === "APROBADO").length,
+  }), [visitas]);
 
-      return 0;
+  /* ========================= */
+  /* SORT */
+  /* ========================= */
 
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  /* ========================= */
+  /* FILTRADO */
+  /* ========================= */
+
+  const visitasFiltradas = useMemo(() => {
+    let data = [...visitas];
+
+    data = data.filter((item) => {
+      const texto = `
+        ${item.fecha}
+        ${item.codigo}
+        ${item.tipo}
+        ${obtenerNombreSede(item.sedeId)}
+        ${obtenerNombreAmbiente(item.ambienteId)}
+        ${item.motivo}
+        ${item.estado}
+        ${item.autorizado}
+      `.toLowerCase();
+
+      return texto.includes(busqueda.toLowerCase());
     });
 
-  }
+    return data;
+  }, [visitas, busqueda]);
 
-  return data;
-
-}, [
-  busqueda,
-  sortConfig,
-]);
   return (
 
     <main className="p-6 lg:p-8">
@@ -323,7 +256,7 @@ const visitasFiltradas = useMemo(() => {
             </h3>
 
             <p className="text-5xl font-black text-blue-500">
-              {estadisticasVisitas.pendientes}
+              {estadisticas.pendientes}
             </p>
 
           </div>
@@ -346,7 +279,7 @@ const visitasFiltradas = useMemo(() => {
             </h3>
 
             <p className="text-5xl font-black text-green-600">
-              {estadisticasVisitas.aprobados}
+              {estadisticas.aprobados}
             </p>
 
           </div>
@@ -369,7 +302,7 @@ const visitasFiltradas = useMemo(() => {
             </h3>
 
             <p className="text-5xl font-black text-purple-600">
-              {estadisticasVisitas.visitas}
+              {estadisticas.visitas}
             </p>
 
           </div>

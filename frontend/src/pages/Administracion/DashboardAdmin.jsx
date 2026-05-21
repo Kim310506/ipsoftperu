@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";import { useNavigate } from "react-router-dom";
 import {
   FaUsers,
   FaBuilding,
@@ -13,9 +13,7 @@ import {
   FaRightFromBracket,
   FaChevronDown
 } from "react-icons/fa6";
-import { users } from "../../data/users";
 import SidebarAdmin from "./components/SidebarAdmin";
-import { zonales } from "../../data/infraestructura";
 import UsuariosAdmin from "./components/usuarios/UsuariosSection";
 import ModalCrearUsuario from "./components/usuarios/ModalCrearUsuario";
 import ModalEliminarUsuario from "./components/usuarios/ModalEliminarUsuario";
@@ -38,6 +36,7 @@ import CrearUbicacion from "./components/infraestructura/CrearUbicacion";
 import GestionUUNN from "./components/uunn/GestionUUNN";
 export default function DashboardAdmin() {
 const navigate = useNavigate();
+const [zonales, setZonales] = useState([]);
 const [openModal, setOpenModal] = useState(false);
 const [menuActivo, setMenuActivo] = useState("usuarios");
 
@@ -63,6 +62,45 @@ const sede = sedes.find((s) => s.id === id);
 
   return sede ? sede.nombre : "SIN SEDE";
 };
+const [users, setUsers] = useState([]);
+useEffect(() => {
+
+  obtenerUsuarios();
+  obtenerInfraestructura();
+
+
+}, []);
+
+const obtenerUsuarios = async () => {
+
+  try {
+
+    const response = await api.get("/users");
+
+    setUsers(response.data);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
+const obtenerInfraestructura = async () => {
+
+  try {
+
+    const response = await api.get("/zonales");
+
+    setZonales(response.data);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
 const cerrarSesion = () => {
 
   localStorage.removeItem("usuario");
@@ -77,12 +115,13 @@ const [ambienteSeleccionado, setAmbienteSeleccionado] = useState(null);
 const usuariosPorPagina = 5;
 const sedesGlobales = zonales.flatMap((zonal) =>
 
-  zonal.sedes.map((sede) => ({
+  (zonal.sedes || []).map((sede) => ({
     ...sede,
     zonalNombre: zonal.nombre
   }))
 
 );
+
 const [buscarSede, setBuscarSede] = useState("");
 const [openSedeModal, setOpenSedeModal] = useState(false);
 const [sedeSeleccionadaGlobal, setSedeSeleccionadaGlobal] = useState(null);
@@ -96,18 +135,17 @@ const sedesFiltradas = sedesGlobales.filter((sede) =>
 
 );
 const pabellonesFiltrados = sedes.flatMap((sede) =>
-  sede.pabellones
+  (sede.pabellones || [])
     .filter((pabellon) => {
 
-      // BUSCADOR
       const coincideBusqueda =
         pabellon.nombre
           .toLowerCase()
           .includes(
             buscarPabellon.toLowerCase()
           );
-// FILTRO SEDE
-const coincideSede =
+
+      const coincideSede =
         filtroSede === "TODAS" ||
         sede.nombre === filtroSede;
 
@@ -119,15 +157,14 @@ const coincideSede =
       ...pabellon,
       sedeNombre: sede.nombre
     }))
-
 );
 const [buscarPiso, setBuscarPiso] = useState("");
 const [openPisoModal, setOpenPisoModal] = useState(false);
 const [pisoSeleccionadoGlobal, setPisoSeleccionadoGlobal] = useState(null);
 const ambientesFiltrados = sedes.flatMap((sede) =>
-  sede.pabellones.flatMap((pabellon) =>
-    pabellon.pisos.flatMap((piso) =>
-      piso.ambientes
+  (sede.pabellones || []).flatMap((pabellon) =>
+    (pabellon.pisos || []).flatMap((piso) =>
+      (piso.ambientes || [])
         .filter((ambiente) =>
           ambiente.nombre
             .toLowerCase()
@@ -145,8 +182,8 @@ const ambientesFiltrados = sedes.flatMap((sede) =>
   )
 );
 const pisosFiltrados = sedes.flatMap((sede) =>
-  sede.pabellones.flatMap((pabellon) =>
-    pabellon.pisos
+  (sede.pabellones || []).flatMap((pabellon) =>
+    (pabellon.pisos || [])
       .filter((piso) =>
         piso.nombre
           .toLowerCase()
@@ -199,12 +236,16 @@ const pisosFiltrados = sedes.flatMap((sede) =>
             openEditModal={openEditModal}
             setOpenEditModal={setOpenEditModal}
             usuarioSeleccionado={usuarioSeleccionado}
+            obtenerUsuarios={obtenerUsuarios}
           />
           <ModalEliminarUsuario
-            openDeleteModal={openDeleteModal}
-            setOpenDeleteModal={setOpenDeleteModal}
-            usuarioSeleccionado={usuarioSeleccionado}
-          />
+          openDeleteModal={openDeleteModal}
+          setOpenDeleteModal={setOpenDeleteModal}
+          usuarioSeleccionado={usuarioSeleccionado}
+          users={users}
+          setUsers={setUsers}
+          obtenerUsuarios={obtenerUsuarios}
+        />
         </>
       )}
     {/* INFRAESTRUCTURA */}
@@ -222,6 +263,7 @@ const pisosFiltrados = sedes.flatMap((sede) =>
 {vistaInfra === "crear" && (
   <CrearUbicacion
     setVistaInfra={setVistaInfra}
+    zonales={zonales}
   />
 )}
     {/* ZONALES */}
@@ -335,6 +377,7 @@ const pisosFiltrados = sedes.flatMap((sede) =>
 <ModalCrearUsuario
   openModal={openModal}
   setOpenModal={setOpenModal}
+  obtenerUsuarios={obtenerUsuarios}
 />
 {menuActivo === "uunn" && (
   <GestionUUNN />

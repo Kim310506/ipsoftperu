@@ -1,3 +1,5 @@
+import api from "../../../../api/axios"; 
+
 import {
   FaXmark,
   FaTrash
@@ -6,8 +8,39 @@ import {
 export default function ModalEliminarUsuario({
   openDeleteModal,
   setOpenDeleteModal,
-  usuarioSeleccionado
+  usuarioSeleccionado,
+  users,
+  setUsers,
+  obtenerUsuarios
 }) {
+
+  const eliminarUsuario = async () => {
+
+    try {
+
+      await api.delete(
+        `/users/${usuarioSeleccionado.id}`
+      );
+      await obtenerUsuarios();
+      setUsers((prev) =>
+        prev.filter(
+          (user) => user.id !== usuarioSeleccionado.id
+        )
+      );
+
+      setOpenDeleteModal(false);
+
+      alert("Usuario eliminado");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Error al eliminar");
+
+    }
+
+  };
 
   if (!openDeleteModal) return null;
 
@@ -62,6 +95,7 @@ export default function ModalEliminarUsuario({
           </button>
 
           <button
+            onClick={eliminarUsuario}
             className="
               bg-red-500
               hover:bg-red-600

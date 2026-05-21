@@ -1,6 +1,5 @@
-// src/pages/modulos/visitas/components/ReportesVisitas.jsx
-import { useMemo, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
+import api from "../../../../api/axios";
 import {
   ClipboardList,
   FileSpreadsheet,
@@ -9,160 +8,80 @@ import {
   Search,
 } from "lucide-react";
 
-import {
-  visitasData,
-} from "../../../../data/visitasData";
-
-import { zonales } from "../../../../data/infraestructura";
-
 export default function ReportesVisitas() {
 
-  /* ========================= */
-  /* STATES */
-  /* ========================= */
+  const [busqueda, setBusqueda] = useState("");
+  const [visitas, setVisitas] = useState([]);
 
-  const [busqueda, setBusqueda] =
-    useState("");
-
-  /* ========================= */
-  /* OBTENER NOMBRE SEDE */
-  /* ========================= */
-
-  const obtenerNombreSede = (
-    sedeId
-  ) => {
-
-    for (const zonal of zonales) {
-
-      const sede = zonal.sedes.find(
-        (s) => s.id === sedeId
-      );
-
-      if (sede) return sede.nombre;
-
-    }
-
-    return "SIN SEDE";
-
-  };
-
-  /* ========================= */
-  /* OBTENER NOMBRE AMBIENTE */
-  /* ========================= */
-
-  const obtenerNombreAmbiente = (
-    ambienteId
-  ) => {
-
-    for (const zonal of zonales) {
-
-      for (const sede of zonal.sedes) {
-
-        for (const pabellon of sede.pabellones) {
-
-          for (const piso of pabellon.pisos) {
-
-            const ambiente =
-              piso.ambientes.find(
-                (a) => a.id === ambienteId
-              );
-
-            if (ambiente) {
-              return ambiente.nombre;
-            }
-
-          }
-
-        }
-
+  useEffect(() => {
+    const fetchVisitas = async () => {
+      try {
+        const res = await api.get("/visitas");
+        setVisitas(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.log("Error cargando visitas:", error);
       }
+    };
 
-    }
-
-    return "SIN ÁREA";
-
-  };
-
+    fetchVisitas();
+  }, []);
+ 
   /* ========================= */
   /* GENERAR FILAS */
   /* ========================= */
 
   const filasReporte = useMemo(() => {
 
-    let filas = [];
+  let filas = [];
 
-    visitasData.forEach((visita) => {
+  visitas.forEach((visita) => {
 
-      visita.visitantes.forEach(
-        (visitante) => {
+    visita.visitantes?.forEach((visitante) => {
 
-          filas.push({
+      filas.push({
 
-            fecha: visita.fecha,
+        fecha: visita.fecha,
+        dni: visitante.dni,
+        nombres: visitante.nombres,
+        apellidoPaterno: visitante.apellidoPaterno,
+        apellidoMaterno: visitante.apellidoMaterno,
+        empresa: visitante.empresa,
 
-            dni: visitante.dni,
+        // 👇 VIENE DEL BACKEND
+        local: visita.sede?.nombre || "SIN SEDE",
+        area: visita.ambiente?.nombre || "SIN ÁREA",
 
-            nombres:
-              visitante.nombres,
+        horario: `${visita.horaEntrada} - ${visita.horaSalida}`,
+        motivo: visita.motivo,
 
-            apellidoPaterno:
-              visitante.apellidoPaterno,
+        entrada: "11:45",
+        salida: "11:45",
 
-            apellidoMaterno:
-              visitante.apellidoMaterno,
-
-            empresa:
-              visitante.empresa,
-
-            local:
-              obtenerNombreSede(
-                visita.sedeId
-              ),
-
-            area:
-              obtenerNombreAmbiente(
-                visita.ambienteId
-              ),
-
-            horario:
-              `${visita.horaEntrada} - ${visita.horaSalida}`,
-
-            motivo:
-              visita.motivo,
-
-            entrada: "11:45",
-
-            salida: "11:45",
-
-          });
-
-        }
-      );
+      });
 
     });
 
-    return filas.filter((item) => {
+  });
 
-      const texto = `
-        ${item.fecha}
-        ${item.dni}
-        ${item.nombres}
-        ${item.apellidoPaterno}
-        ${item.apellidoMaterno}
-        ${item.empresa}
-        ${item.local}
-        ${item.area}
-        ${item.motivo}
-      `
-        .toLowerCase();
+  return filas.filter((item) => {
 
-      return texto.includes(
-        busqueda.toLowerCase()
-      );
+    const texto = `
+      ${item.fecha}
+      ${item.dni}
+      ${item.nombres}
+      ${item.apellidoPaterno}
+      ${item.apellidoMaterno}
+      ${item.empresa}
+      ${item.local}
+      ${item.area}
+      ${item.motivo}
+    `.toLowerCase();
 
-    });
+    return texto.includes(busqueda.toLowerCase());
 
-  }, [busqueda]);
+  });
+
+}, [visitas, busqueda]);
 
   return (
 

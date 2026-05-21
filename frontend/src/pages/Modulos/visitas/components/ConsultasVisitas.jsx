@@ -1,7 +1,6 @@
 // src/pages/modulos/visitas/components/ConsultasVisitas.jsx
-
-import { useMemo, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
+import api from "../../../../api/axios";
 import {
   Search,
   Building2,
@@ -11,80 +10,14 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import {
-  visitasData,
-} from "../../../../data/visitasData";
-
-import { zonales } from "../../../../data/infraestructura";
-
 export default function ConsultasVisitas() {
 
   /* ========================= */
   /* STATES */
   /* ========================= */
-
+const [visitas, setVisitas] = useState([]);
   const [busqueda, setBusqueda] =
     useState("");
-
-  /* ========================= */
-  /* OBTENER NOMBRE SEDE */
-  /* ========================= */
-
-  const obtenerNombreSede = (
-    sedeId
-  ) => {
-
-    for (const zonal of zonales) {
-
-      const sede = zonal.sedes.find(
-        (s) => s.id === sedeId
-      );
-
-      if (sede) return sede.nombre;
-
-    }
-
-    return "SIN SEDE";
-
-  };
-
-  /* ========================= */
-  /* OBTENER NOMBRE AMBIENTE */
-  /* ========================= */
-
-  const obtenerNombreAmbiente = (
-    ambienteId
-  ) => {
-
-    for (const zonal of zonales) {
-
-      for (const sede of zonal.sedes) {
-
-        for (const pabellon of sede.pabellones) {
-
-          for (const piso of pabellon.pisos) {
-
-            const ambiente =
-              piso.ambientes.find(
-                (a) => a.id === ambienteId
-              );
-
-            if (ambiente) {
-              return ambiente.nombre;
-            }
-
-          }
-
-        }
-
-      }
-
-    }
-
-    return "SIN ÁREA";
-
-  };
-
   /* ========================= */
   /* BUSCAR VISITANTE */
   /* ========================= */
@@ -94,7 +27,7 @@ export default function ConsultasVisitas() {
 
       if (!busqueda.trim()) return null;
 
-      for (const visita of visitasData) {
+      for (const visita of visitas) {
 
         for (const visitante of visita.visitantes) {
 
@@ -126,7 +59,31 @@ export default function ConsultasVisitas() {
       return null;
 
     }, [busqueda]);
+useEffect(() => {
+  const fetchVisitas = async () => {
+    try {
+      const res = await api.get("/visitas");
+      setVisitas(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.log("Error cargando visitas:", error);
+    }
+  };
 
+  fetchVisitas();
+}, []);
+console.log("QR:", visitanteEncontrado?.qrImage);
+const qrImage = visitanteEncontrado?.qrImage?.trim();
+{visitanteEncontrado?.qrImage ? (
+  <img
+    src={visitanteEncontrado.qrImage.trim()}
+    alt="QR"
+    className="w-full h-full object-contain"
+  />
+) : (
+  <div className="text-gray-400 text-sm">
+    QR no disponible
+  </div>
+)}
   return (
 
     <main className="p-6 lg:p-8">
@@ -249,17 +206,9 @@ export default function ConsultasVisitas() {
                   Sede/Área:
                 </span>{" "}
 
-                {obtenerNombreSede(
-                  visitanteEncontrado.visita
-                    .sedeId
-                )}{" "}
-
-                /{" "}
-
-                {obtenerNombreAmbiente(
-                  visitanteEncontrado.visita
-                    .ambienteId
-                )}
+                {visitanteEncontrado.visita.sede?.nombre || "SIN SEDE"}
+                /
+                {visitanteEncontrado.visita.ambiente?.nombre || "SIN ÁREA"}
 
               </p>
 
@@ -319,10 +268,14 @@ export default function ConsultasVisitas() {
             {/* QR */}
             <div className="border-t border-gray-100 pt-6 flex flex-col items-center">
 
-              <div className="w-36 h-36 bg-gray-100 rounded-2xl flex items-center justify-center text-sm text-gray-400">
-
-                QR
-
+              <div className="w-36 h-36 bg-white p-2 rounded-2xl shadow flex items-center justify-center">
+                {visitanteEncontrado?.visitante?.qrImage && (
+                <img
+                  src={visitanteEncontrado.visitante.qrImage}
+                  className="w-full h-full object-contain"
+                  alt="QR"
+                />
+              )}
               </div>
 
               <p className="text-gray-400 text-sm mt-4">

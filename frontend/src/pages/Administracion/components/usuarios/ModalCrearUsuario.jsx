@@ -1,9 +1,48 @@
 import { FaXmark, FaUser, FaEnvelope, FaLock, FaChevronDown } from "react-icons/fa6";
-
+import { useState } from "react";
+import api from "../../../../api/axios"; 
+// ajusta la ruta según tu proyecto
 export default function ModalCrearUsuario({
   openModal,
-  setOpenModal
+  setOpenModal,
+  obtenerUsuarios
 }) {
+   const [nombre, setNombre] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [password, setPassword] = useState("");
+  const [rol, setRol] = useState("USUARIO");
+  const [sedeId, setSedeId] = useState(1);
+
+  const crearUsuario = async () => {
+
+    try {
+
+         const response = await api.post("/users", {
+          nombre,
+          correo,
+          password,
+          rol,
+          modulo: "USUARIOS",
+          sedeId
+        }
+      );
+
+      console.log(response.data);
+      await obtenerUsuarios();  
+      alert("Usuario creado");
+
+      setOpenModal(false);
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Error al crear usuario");
+
+    }
+
+  };
+
   if (!openModal) return null;
 
   return (
@@ -45,6 +84,8 @@ export default function ModalCrearUsuario({
               <input
                 type="text"
                 placeholder="Ej. Juan Pérez"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
                 className="w-full bg-transparent p-5 outline-none font-semibold"
               />
             </div>
@@ -62,6 +103,8 @@ export default function ModalCrearUsuario({
               <input
                 type="email"
                 placeholder="usuario@ips.com"
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
                 className="w-full bg-transparent p-5 outline-none font-semibold"
               />
             </div>
@@ -79,6 +122,8 @@ export default function ModalCrearUsuario({
               <input
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-transparent p-5 outline-none font-semibold"
               />
             </div>
@@ -93,11 +138,15 @@ export default function ModalCrearUsuario({
                 Rol
               </label>
 
-              <select className="w-full bg-[#f5f7fb] rounded-[22px] px-6 py-5 pr-14 font-bold text-[#8b97ad] appearance-none">
-                <option>USUARIO</option>
-                <option>ADMIN</option>
-                <option>INVITADO</option>
-              </select>
+              <select
+              value={rol}
+              onChange={(e) => setRol(e.target.value)}
+              className="w-full bg-[#f5f7fb] rounded-[22px] px-6 py-5 pr-14 font-bold text-[#8b97ad] appearance-none"
+            >
+              <option>USUARIO</option>
+              <option>ADMIN</option>
+              <option>INVITADO</option>
+            </select>
 
               <FaChevronDown className="absolute right-5 top-[58px] text-[13px] text-[#8b97ad]" />
             </div>
@@ -149,7 +198,7 @@ export default function ModalCrearUsuario({
           </div>
 
           {/* BOTÓN */}
-          <button className="w-full mt-6 bg-[#345ccf] hover:bg-[#284dbd] text-white rounded-2xl py-5 font-black tracking-[2px]">
+          <button onClick={crearUsuario} className="w-full mt-6 bg-[#345ccf] hover:bg-[#284dbd] text-white rounded-2xl py-5 font-black tracking-[2px]">
             CREAR USUARIO
           </button>
 

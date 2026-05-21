@@ -27,57 +27,93 @@ export default function ListaAmbientes({
   const [filtroPabellon, setFiltroPabellon] = useState("TODOS");
   const [filtroPiso, setFiltroPiso] = useState("TODOS");
 
-  // ======================
-  // RESET PAGINA
-  // ======================
-  useEffect(() => {
-    setPaginaActual(1);
-  }, [
-    buscarAmbiente,
-    filtroZonal,
-    filtroSede,
-    filtroPabellon,
-    filtroPiso
-  ]);
+// ======================
+// RESET PAGINA
+// ======================
+useEffect(() => {
+  setPaginaActual(1);
+}, [
+  buscarAmbiente,
+  filtroZonal,
+  filtroSede,
+  filtroPabellon,
+  filtroPiso
+]);
 
-  // ======================
-  // ZONALES
-  // ======================
-  const zonales = useMemo(() => {
+// ======================
+// TRANSFORMAR DATA DB
+// ======================
+const ambientes = useMemo(() => {
 
-    const set = new Set();
+  return ambientesFiltrados.map((a) => ({
 
-    zonalesData.forEach((z) => {
-      set.add(z.nombre);
-    });
+    id: a.id,
 
-    return ["TODOS", ...Array.from(set)];
+    nombre: a.nombre,
 
-  }, []);
+    pisoNombre:
+      a.piso?.nombre || "",
 
-  // ======================
-  // SEDES
-  // ======================
-  const sedes = useMemo(() => {
+    pabellonNombre:
+      a.piso?.pabellon?.nombre || "",
 
-    if (filtroZonal === "TODOS") {
-      return [
-        "TODAS",
-        ...zonalesData.flatMap((z) =>
-          z.sedes.map((s) => s.nombre)
-        ),
-      ];
-    }
+    sedeNombre:
+      a.piso?.pabellon?.sede?.nombre || "",
 
-    const zona = zonalesData.find(
-      (z) => z.nombre === filtroZonal
+    zonalNombre:
+      a.piso?.pabellon?.sede?.zonal?.nombre || ""
+
+  }));
+
+}, [ambientes]);
+
+ // ======================
+// ZONALES DESDE DB
+// ======================
+const zonales = useMemo(() => {
+
+  const uniques = [
+    ...new Set(
+      ambientesFiltrados.map(
+        (a) => a.zonalNombre
+      )
+    )
+  ];
+
+  return ["TODOS", ...uniques];
+
+}, [ambientes]);
+
+// ======================
+// SEDES DESDE DB
+// ======================
+const sedes = useMemo(() => {
+
+  let data = ambientes;
+
+  if (filtroZonal !== "TODOS") {
+
+    data = data.filter(
+      (a) =>
+        a.zonalNombre === filtroZonal
     );
 
-    return zona
-      ? ["TODAS", ...zona.sedes.map((s) => s.nombre)]
-      : ["TODAS"];
+  }
 
-  }, [filtroZonal]);
+  const uniques = [
+    ...new Set(
+      data.map(
+        (a) => a.sedeNombre
+      )
+    )
+  ];
+
+  return ["TODAS", ...uniques];
+
+}, [
+  ambientesFiltrados,
+  filtroZonal
+]);
 
   // ======================
   // PABELLONES
@@ -97,7 +133,7 @@ export default function ListaAmbientes({
 
     return ["TODOS", ...set];
 
-  }, [ambientesFiltrados, filtroSede]);
+  }, [ambientes, filtroSede]);
 
   // ======================
   // PISOS
@@ -122,21 +158,15 @@ export default function ListaAmbientes({
   // ======================
   // FILTRO FINAL
   // ======================
-  const dataFiltrada = ambientesFiltrados.filter((a) => {
+  const dataFiltrada = ambientes.filter((a) => {
 
     const okBusqueda = a.nombre
       .toLowerCase()
       .includes(buscarAmbiente.toLowerCase());
 
-    const okZonal =
-      filtroZonal === "TODOS" ||
-      zonalesData.some(
-        (z) =>
-          z.nombre === filtroZonal &&
-          z.sedes.some(
-            (s) => s.nombre === a.sedeNombre
-          )
-      );
+   const okZonal =
+    filtroZonal === "TODOS" ||
+    a.zonalNombre === filtroZonal;
 
     const okSede =
       filtroSede === "TODAS" ||

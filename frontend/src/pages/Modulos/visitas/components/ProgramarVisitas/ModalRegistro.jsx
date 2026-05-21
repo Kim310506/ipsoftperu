@@ -1,11 +1,6 @@
-import React from "react";
-
-import {
-  X,
-  Trash2,
-  PlusCircle,
-  FileText,
-} from "lucide-react";
+import React, { useState } from "react";
+import api from "../../../../../api/axios";
+import { X, Trash2, PlusCircle, FileText } from "lucide-react";
 
 export default function ModalRegistro({
   openModal,
@@ -23,8 +18,8 @@ export default function ModalRegistro({
   ambienteSeleccionado,
   setAmbienteSeleccionado,
 
-  sedes,
-  ambientes,
+  sedes = [],
+  ambientes = [],
 
   dni,
   setDni,
@@ -48,10 +43,54 @@ export default function ModalRegistro({
   setVisitantes,
 
   agregarVisitante,
-
 }) {
   if (!openModal) return null;
+const [qr, setQr] = useState(null);
+  /* ========================= */
+  /* SUBMIT */
+  /* ========================= */
+  const handleSubmit = async () => {
+  try {
+    const payload = {
+      tipo: tipoVisita,
+      sedeId: sedeSeleccionada ? Number(sedeSeleccionada) : null,
+      ambienteId: ambienteSeleccionado ? Number(ambienteSeleccionado) : null,
 
+      motivo: "REUNION",
+      fecha: new Date().toISOString(),
+
+      horaEntrada: "08:00",
+      horaSalida: "10:00",
+
+      estado: "PENDIENTE",
+      autorizado: "NO",
+
+      visitantes: visitantes || [],
+    };
+
+    const res = await api.post("/visitas", payload);
+
+    // 👇 AQUÍ está el QR que viene del backend
+    const qrGenerado = res.data?.qr || res.data?.qrUrl || res.data?.codigoQR;
+
+    console.log("QR:", qrGenerado);
+
+    // reset
+    setVisitantes([]);
+    setSedeSeleccionada("");
+    setAmbienteSeleccionado("");
+    setTipoVisita("INTERNO");
+    setTipoCarga("INDIVIDUAL");
+
+    setOpenModal(false);
+
+    alert("Visita registrada correctamente");
+
+  } catch (error) {
+    console.log(error);
+    alert("Error al registrar visita");
+  }
+};
   return (
 
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
@@ -149,88 +188,51 @@ export default function ModalRegistro({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
 
           {/* SEDE */}
-          <div>
+         <div>
+              <label className="block text-sm font-bold text-[#1E55C0] mb-2">
+                Sede
+              </label>
 
-            <label className="block text-sm font-bold text-[#1E55C0] mb-2">
+              <select
+                value={sedeSeleccionada}
+                onChange={(e) => {
+                  setSedeSeleccionada(e.target.value);
+                  setAmbienteSeleccionado("");
+                }}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3"
+              >
+                <option value="">-- SELECCIONE SEDE --</option>
 
-              Sede
-
-            </label>
-
-            <select
-              value={sedeSeleccionada}
-              onChange={(e) => {
-
-                setSedeSeleccionada(
-                  e.target.value
-                );
-
-                setAmbienteSeleccionado("");
-
-              }}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
-            >
-
-              <option value="">
-                -- SELECCIONE SEDE --
-              </option>
-
-              {sedes.map((sede) => (
-
-                <option
-                  key={sede.id}
-                  value={sede.id}
-                >
-
-                  {sede.nombre}
-
-                </option>
-
-              ))}
-
-            </select>
-
-          </div>
+                {sedes.length > 0 &&
+                  sedes.map((sede) => (
+                    <option key={sede.id} value={sede.id}>
+                      {sede.nombre}
+                    </option>
+                  ))}
+              </select>
+            </div>
 
           {/* AREA */}
           <div>
+              <label className="block text-sm font-bold text-[#1E55C0] mb-2">
+                Área
+              </label>
 
-            <label className="block text-sm font-bold text-[#1E55C0] mb-2">
+              <select
+                value={ambienteSeleccionado}
+                onChange={(e) => setAmbienteSeleccionado(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3"
+              >
+                <option value="">-- SELECCIONE ÁREA --</option>
 
-              Área
-
-            </label>
-
-            <select
-              value={ambienteSeleccionado}
-              onChange={(e) =>
-                setAmbienteSeleccionado(
-                  e.target.value
-                )
-              }
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
-            >
-
-              <option value="">
-                -- SELECCIONE ÁREA --
-              </option>
-
-              {ambientes.map((ambiente) => (
-
-                <option
-                  key={ambiente.id}
-                  value={ambiente.id}
-                >
-
-                  {ambiente.nombre}
-
-                </option>
-
-              ))}
-
-            </select>
-
-          </div>
+                {ambientes.length > 0 &&
+                  ambientes.map((ambiente) => (
+                    <option key={ambiente.id} value={ambiente.id}>
+                      {ambiente.nombre}
+                    </option>
+                  ))}
+              </select>
+            </div>
 
         </div>
 
@@ -806,21 +808,21 @@ tipoCarga === "MASIVO" && (
 
 )}
                {/* BOTONES */}
-        <div className="flex justify-end gap-4 mt-6 ">
+        <div className="flex justify-end gap-4 mt-6">
+            <button
+              onClick={() => setOpenModal(false)}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-bold"
+            >
+              Cancelar
+            </button>
 
-          <button
-            onClick={() => setOpenModal(false)}
-            className="bg-gray-500 hover:bg-gray-600 transition text-white px-6 py-3 rounded-xl font-bold"
-          >
-            Cancelar
-          </button>
-
-          <button className="bg-[#1E55C0] hover:bg-[#1947a3] transition text-white px-6 py-3 rounded-xl font-bold">
-            Registrar
-          </button>
-
-        </div>
-
+            <button
+              onClick={handleSubmit}
+              className="bg-[#1E55C0] hover:bg-[#1947a3] text-white px-6 py-3 rounded-xl font-bold"
+            >
+              Registrar
+            </button>
+          </div>
       </div>
 
       </div>

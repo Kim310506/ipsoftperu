@@ -1,5 +1,7 @@
 import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
+
 import {
   FaUser,
   FaLock,
@@ -7,40 +9,92 @@ import {
   FaShieldHalved
 } from "react-icons/fa6";
 
-import { users } from "../../data/users";
-
 export default function LoginAdmin() {
 
   const navigate = useNavigate();
 
   const [correo, setCorreo] = useState("");
+
   const [password, setPassword] = useState("");
+
   const [error, setError] = useState("");
 
-  const iniciarSesion = (e) => {
+  const [loading, setLoading] = useState(false);
+
+  /* ========================= */
+  /* LOGIN */
+  /* ========================= */
+
+  const iniciarSesion = async (e) => {
 
     e.preventDefault();
 
     setError("");
 
-    const usuarioValido = users.find(
-      (user) =>
-        user.correo === correo &&
-        user.password === password
-    );
+    setLoading(true);
 
-    if (usuarioValido) {
+    try {
+
+      const response = await fetch(
+
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+
+        {
+
+          method: "POST",
+
+          headers: {
+
+            "Content-Type": "application/json"
+
+          },
+
+          body: JSON.stringify({
+
+            correo,
+
+            password
+
+          })
+
+        }
+
+      );
+
+      const data = await response.json();
+
+      /* ERROR */
+
+      if (!response.ok) {
+
+        setError(data.message);
+
+        setLoading(false);
+
+        return;
+
+      }
+
+      /* GUARDAR SESION */
 
       localStorage.setItem(
         "usuario",
-        JSON.stringify(usuarioValido)
+        JSON.stringify(data)
       );
+
+      /* REDIRECCION */
 
       navigate("/dashboard");
 
-    } else {
+    } catch (error) {
 
-      setError("Credenciales incorrectas");
+      console.log(error);
+
+      setError("Error del servidor");
+
+    } finally {
+
+      setLoading(false);
 
     }
 
@@ -65,41 +119,58 @@ export default function LoginAdmin() {
             text-xl
           "
         >
+
           <FaArrowLeft />
+
         </button>
 
         {/* HEADER */}
         <div className="flex flex-col items-center mb-8">
 
           <div className="bg-[#6b7280] p-5 rounded-full mb-5 shadow-lg">
+
             <FaShieldHalved className="text-white text-4xl" />
+
           </div>
 
           <h1 className="text-3xl font-black text-[#6b7280] text-center">
+
             ADMINISTRACIÓN
+
           </h1>
 
           <p className="text-gray-500 text-sm mt-2 text-center">
+
             Ingresa tus credenciales
+
           </p>
 
         </div>
 
         {/* FORMULARIO */}
-        <form onSubmit={iniciarSesion} className="space-y-5">
+        <form
+          onSubmit={iniciarSesion}
+          className="space-y-5"
+        >
 
           {/* ERROR */}
           {error && (
+
             <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-2xl text-sm font-semibold">
+
               {error}
+
             </div>
+
           )}
 
           {/* CORREO */}
           <div>
 
             <label className="block text-sm font-bold text-gray-700 mb-2">
+
               Correo Electrónico
+
             </label>
 
             <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-2 focus-within:border-[#6b7280] transition-all">
@@ -108,10 +179,12 @@ export default function LoginAdmin() {
 
               <input
                 type="email"
-                placeholder="admin@usil.edu.pe"
+                placeholder="admin@ips.com"
                 className="w-full pl-3 py-2 outline-none bg-transparent"
                 value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
+                onChange={(e) =>
+                  setCorreo(e.target.value)
+                }
                 required
               />
 
@@ -123,7 +196,9 @@ export default function LoginAdmin() {
           <div>
 
             <label className="block text-sm font-bold text-gray-700 mb-2">
+
               Contraseña
+
             </label>
 
             <div className="flex items-center border-2 border-gray-300 rounded-2xl px-4 py-2 focus-within:border-[#6b7280] transition-all">
@@ -135,7 +210,9 @@ export default function LoginAdmin() {
                 placeholder="••••••••"
                 className="w-full pl-3 py-2 outline-none bg-transparent"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) =>
+                  setPassword(e.target.value)
+                }
                 required
               />
 
@@ -146,6 +223,7 @@ export default function LoginAdmin() {
           {/* BOTÓN */}
           <button
             type="submit"
+            disabled={loading}
             className="
               w-full
               bg-[#6b7280]
@@ -158,9 +236,14 @@ export default function LoginAdmin() {
               hover:scale-[1.02]
               shadow-lg
               mt-4
+              disabled:opacity-60
             "
           >
-            INGRESAR
+
+            {loading
+              ? "INGRESANDO..."
+              : "INGRESAR"}
+
           </button>
 
         </form>
@@ -170,4 +253,5 @@ export default function LoginAdmin() {
     </div>
 
   );
+
 }

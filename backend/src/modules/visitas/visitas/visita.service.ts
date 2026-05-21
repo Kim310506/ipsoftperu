@@ -1,0 +1,136 @@
+import QRCode from "qrcode";
+import { randomUUID } from "crypto";
+import { prisma } from "../../../config/prisma";
+// LISTAR
+export const listarVisitasService = async () => {
+  return await prisma.visita.findMany({
+    include: {
+      sede: {
+        include: {
+          zonal: true
+        }
+      },
+      ambiente: {
+        include: {
+          piso: {
+            include: {
+              pabellon: true
+            }
+          }
+        }
+      },
+      visitantes: true,
+      autorizadoPor: true
+    }
+  });
+};
+
+// OBTENER POR ID
+export const obtenerVisitaService = async (id: number) => {
+  return await prisma.visita.findUnique({
+    where: { id },
+    include: {
+      sede: true,
+      ambiente: true,
+      visitantes: true
+    }
+  });
+};
+
+// CREAR
+export const crearVisitaService = async (data: any) => {
+  return await prisma.$transaction(async (tx) => {
+
+    // ✅ GENERAR CODIGO AUTOMATICO
+    const codigo = `VIS-${Date.now()}`;
+
+    // 1. Crear visita
+    const visita = await tx.visita.create({
+        data: {
+            codigo,
+            tipo: data.tipo,
+            motivo: data.motivo,
+            estado: "PENDIENTE", // 👈 SIEMPRE INICIA ASÍ
+            fecha: data.fecha,
+            horaEntrada: data.horaEntrada,
+            horaSalida: data.horaSalida,
+
+            autorizadoPorId: null, // 👈 NADIE LO HA AUTORIZADO
+
+            sedeId: data.sedeId,
+            ambienteId: data.ambienteId
+        }
+        });
+
+    // 2. Visitantes con QR
+    if (data.visitantes?.length) {
+      await Promise.all(
+        data.visitantes.map(async (v: any) => {
+
+          const qrData = `VISITA-${visita.id}|DNI-${v.dni}|UUID-${randomUUID()}`;
+
+          const qrImage = await QRCode.toDataURL(qrData);
+
+          return tx.visitante.create({
+            data: {
+              dni: v.dni,
+              nombres: v.nombres,
+              apellidoPaterno: v.apellidoPaterno,
+              apellidoMaterno: v.apellidoMaterno,
+              email: v.email,
+              empresa: v.empresa,
+              visitaId: visita.id,
+              qrData,
+              qrImage,
+              estadoQr: "ACTIVO"
+            }
+          });
+        })
+      );
+    }
+
+    return visita;
+  });
+};
+// ACTUALIZAR
+export const actualizarVisitaService = async (id: number, data: any) => {
+  return await prisma.visita.update({
+    where: { id },
+    data: {
+      codigo: data.codigo,
+      tipo: data.tipo,
+      motivo: data.motivo,
+      fecha: data.fecha,
+      horaEntrada: data.horaEntrada,
+      horaSalida: data.horaSalida,
+      sedeId: data.sedeId,
+      ambienteId: data.ambienteId,
+      estado: data.estado,
+      autorizadoPorId: data.autorizadoPorId
+    }
+  });
+};
+export const autorizarVisitaService = async (id: number, userId: number) => {
+  return await prisma.visita.update({
+    where: { id },
+    data: {
+      estado: "AUTORIZADO",
+      autorizadoPorId: userId
+    }
+  });
+};
+export const desautorizarVisitaService = async (id: number) => {
+  return await prisma.visita.update({
+    where: { id },
+    data: {
+      estado: "PENDIENTE",
+      autorizadoPorId: null
+    }
+  });
+};
+// ELIMINAR
+export const eliminarVisitaService = async (id: number) => {
+  return await prisma.visita.delete({
+    where: { id }
+  });
+};

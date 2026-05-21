@@ -1,15 +1,14 @@
-import { useState } from "react";
-
-import { zonales } from "../../../../data/infraestructura";
-import { uunn as uunnData } from "../../../../data/uunn";
+import { useEffect, useState } from "react";
+import api from "../../../../api/axios";
 
 export default function GestionUUNN() {
 
   // =========================
   // STATES
   // =========================
-  const [uunns, setUunns] = useState(uunnData);
+const [uunns, setUunns] = useState([]);
 
+const [zonales, setZonales] = useState([]);
   const [uunnSeleccionada, setUunnSeleccionada] =
     useState("");
 
@@ -24,11 +23,52 @@ export default function GestionUUNN() {
       u.nombre.toLowerCase() ===
       uunnSeleccionada.toLowerCase()
   );
+useEffect(() => {
 
-  // =========================
-  // GUARDAR / ASIGNAR
-  // =========================
-  const handleAsignar = () => {
+  obtenerUunn();
+
+  obtenerZonales();
+
+}, []);
+const obtenerUunn = async () => {
+
+  try {
+
+    const response =
+      await api.get("/unidades");
+
+    setUunns(response.data);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
+const obtenerZonales = async () => {
+
+  try {
+
+    const response =
+      await api.get("/zonales");
+
+    setZonales(response.data);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
+// =========================
+// GUARDAR / ASIGNAR
+// =========================
+
+const handleAsignar = async () => {
+
+  try {
 
     if (
       !uunnSeleccionada ||
@@ -36,100 +76,148 @@ export default function GestionUUNN() {
     ) {
 
       alert("Complete los campos");
+
       return;
 
     }
 
-    const nombreFormateado =
-      uunnSeleccionada.toUpperCase();
+    /* ========================= */
+    /* BUSCAR UUNN */
+    /* ========================= */
 
-    const idZonal =
-      Number(zonalSeleccionada);
+    const uunnExistente =
+      uunns.find(
+        (u) =>
+          u.nombre.toLowerCase() ===
+          uunnSeleccionada.toLowerCase()
+      );
 
-    // =========================
-    // SI YA EXISTE
-    // =========================
-    if (uunnElegida) {
+    /* ===================================================== */
+    /* SI NO EXISTE -> CREAR CON ZONAL DIRECTAMENTE */
+    /* ===================================================== */
 
-      // VALIDAR SI YA TIENE ESA ZONAL
-      const yaExiste =
-        uunnElegida.zonales.includes(
-          idZonal
+    if (!uunnExistente) {
+
+      await api.post(
+        "/unidades",
+        {
+          nombre:
+            uunnSeleccionada.toUpperCase(),
+
+          estado: "ACTIVO",
+
+          zonalId:
+            Number(zonalSeleccionada)
+        }
+      );
+
+      alert(
+        "Unidad creada y zonal asignada"
+      );
+
+      await obtenerUunn();
+
+      setUunnSeleccionada("");
+
+      setZonalSeleccionada("");
+
+      return;
+
+    }
+
+    /* ========================= */
+    /* VALIDAR SI YA TIENE */
+    /* ========================= */
+
+    const yaExiste =
+      uunnExistente.zonales?.some(
+        (z) =>
+          z.zonalId ===
+          Number(zonalSeleccionada)
+      );
+
+    if (yaExiste) {
+
+      alert(
+        "La UUNN ya tiene esa zonal"
+      );
+
+      return;
+
+    }
+
+    /* ========================= */
+    /* BUSCAR ZONAL EN OTRA UUNN */
+    /* ========================= */
+
+    const uunnConZonal =
+      uunns.find((u) =>
+        u.zonales?.some(
+          (z) =>
+            z.zonalId ===
+            Number(zonalSeleccionada)
+        )
+      );
+
+    /* ========================= */
+    /* ELIMINAR RELACION ANTERIOR */
+    /* ========================= */
+
+    if (uunnConZonal) {
+
+      const relacion =
+        uunnConZonal.zonales.find(
+          (z) =>
+            z.zonalId ===
+            Number(zonalSeleccionada)
         );
 
-      if (yaExiste) {
+      if (relacion) {
 
-        alert(
-          "La UUNN ya tiene esa zonal"
+        await api.delete(
+          `/unidad-zonal/${relacion.id}`
         );
-
-        return;
 
       }
 
-      // ACTUALIZAR
-      const nuevasUunns = uunns.map((u) => {
-
-        if (u.id === uunnElegida.id) {
-
-          return {
-
-            ...u,
-
-            zonales: [
-              ...u.zonales,
-              idZonal
-            ]
-
-          };
-
-        }
-
-        return u;
-
-      });
-
-      setUunns(nuevasUunns);
-
-      alert(
-        "Zonal asignada correctamente"
-      );
-
     }
 
-    // =========================
-    // SI NO EXISTE
-    // =========================
-    else {
+    /* ========================= */
+    /* ASIGNAR NUEVA RELACION */
+    /* ========================= */
 
-      const nuevaUunn = {
+    await api.post(
+      "/unidad-zonal",
+      {
+        unidadNegocioId:
+          uunnExistente.id,
 
-        id: Date.now(),
+        zonalId:
+          Number(zonalSeleccionada)
+      }
+    );
 
-        nombre: nombreFormateado,
+    alert(
+      "Zonal reasignada correctamente"
+    );
 
-        zonales: [idZonal],
+    await obtenerUunn();
 
-        estado: "ACTIVO"
-
-      };
-
-      setUunns([
-        ...uunns,
-        nuevaUunn
-      ]);
-
-      alert(
-        "Nueva UUNN creada"
-      );
-
-    }
-
-    // LIMPIAR
     setUunnSeleccionada("");
+
     setZonalSeleccionada("");
 
-  };
+  } catch (error) {
+
+    console.log(error);
+
+    alert(
+      "Error al asignar"
+    );
+
+  }
+
+};
 const [uunnDetalle, setUunnDetalle] =
   useState(null);
   return (
@@ -296,23 +384,15 @@ const [uunnDetalle, setUunnDetalle] =
 
           {uunns.map((uunn) => {
 
-            const nombresZonales =
-
-              uunn.zonales.length > 0
+           const nombresZonales =
+                 uunn.zonales?.length > 0
 
                 ? uunn.zonales
-                    .map((idZonal) => {
-
-                      const zonal =
-                        zonales.find(
-                          (z) =>
-                            z.id === idZonal
-                        );
-
-                      return zonal?.nombre;
-
-                    })
-                    .join(", ")
+                  .map(
+                    (z) =>
+                      z.zonal?.nombre
+                  )
+                  .join(", ")
 
                 : "NO TIENE";
 
@@ -480,11 +560,10 @@ const [uunnDetalle, setUunnDetalle] =
 
         {uunnDetalle.zonales.length > 0 ? (
 
-          uunnDetalle.zonales.map((idZonal) => {
+          uunnDetalle.zonales.map((item) => {
 
-            const zonal = zonales.find(
-              (z) => z.id === idZonal
-            );
+            const zonal =
+              item.zonal;
 
             if (!zonal) return null;
 
@@ -543,7 +622,7 @@ const [uunnDetalle, setUunnDetalle] =
                     font-black
                     w-fit
                   ">
-                    {zonal.sedes.length} SEDES
+                    {zonal.sedes?.length || 0} SEDES
                   </div>
 
                 </div>
@@ -568,7 +647,7 @@ const [uunnDetalle, setUunnDetalle] =
                     gap-4
                   ">
 
-                    {zonal.sedes.map((sede) => (
+                    {zonal.sedes?.map((sede) => (
 
                       <div
                         key={sede.id}

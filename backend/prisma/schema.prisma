@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+
+  id        Int      @id @default(autoincrement())
+
+  nombre    String
+  correo    String   @unique
+  password  String
+
+  rol       String
+  modulo    String
+
+  sedeId    Int
+  sede      Sede     @relation(fields: [sedeId], references: [id])
+
+  createdAt DateTime @default(now())
+  visitasAutorizadas Visita[]
+
+}
+
+model UnidadNegocio {
+
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  estado    String
+
+  zonales   UnidadNegocioZonal[]
+
+}
+
+model UnidadNegocioZonal {
+
+  id                 Int              @id @default(autoincrement())
+
+  unidadNegocioId    Int
+  zonalId            Int
+
+  unidadNegocio      UnidadNegocio    @relation(fields: [unidadNegocioId], references: [id])
+
+  zonal              Zonal            @relation(fields: [zonalId], references: [id])
+
+}
+
+model Zonal {
+
+  id        Int      @id @default(autoincrement())
+  nombre    String
+
+  sedes     Sede[]
+
+  unidades  UnidadNegocioZonal[]
+
+}
+
+model Sede {
+
+  id          Int         @id @default(autoincrement())
+  nombre      String
+
+  zonalId     Int
+  zonal       Zonal       @relation(fields: [zonalId], references: [id])
+
+  usuarios    User[]
+
+  pabellones  Pabellon[]
+  visitas     Visita[]
+
+
+}
+
+model Pabellon {
+
+  id        Int         @id @default(autoincrement())
+  nombre    String
+
+  sedeId    Int
+  sede      Sede        @relation(fields: [sedeId], references: [id])
+
+  pisos     Piso[]
+
+}
+
+model Piso {
+
+  id           Int         @id @default(autoincrement())
+  nombre       String
+
+  pabellonId   Int
+  pabellon     Pabellon    @relation(fields: [pabellonId], references: [id])
+
+  ambientes    Ambiente[]
+
+}
+
+model Ambiente {
+
+  id        Int      @id @default(autoincrement())
+  nombre    String
+
+  pisoId    Int
+  piso      Piso     @relation(fields: [pisoId], references: [id])
+  visitas     Visita[]
+
+
+}
+
+model Visita {
+
+  id          Int      @id @default(autoincrement())
+
+  codigo      String   @unique
+
+  tipo        String
+  motivo      String
+  estado      String
+
+  fecha       DateTime
+  horaEntrada String
+  horaSalida  String
+
+  autorizadoPorId Int?
+  autorizadoPor   User? @relation(fields: [autorizadoPorId], references: [id])
+
+  sedeId      Int
+  sede        Sede     @relation(fields: [sedeId], references: [id])
+
+  ambienteId  Int
+  ambiente    Ambiente @relation(fields: [ambienteId], references: [id])
+
+  visitantes  Visitante[]
+
+  createdAt   DateTime @default(now())
+}
+model Visitante {
+
+  id              Int      @id @default(autoincrement())
+
+  dni             String
+  nombres         String
+  apellidoPaterno String
+  apellidoMaterno String
+  email           String?
+  telefono        String?
+  empresa         String?
+
+  /* 🔥 QR RECOMENDADO */
+  qrData          String?   // contenido del QR (JSON o string seguro)
+  qrImage         String?   // ruta de la imagen del QR
+
+  estadoQr        String
+
+  visitaId        Int
+  visita          Visita   @relation(fields: [visitaId], references: [id])
+}
