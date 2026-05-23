@@ -132,19 +132,34 @@ export default function UsuariosSection(props) {
                 <option value="TODOS">
                 TODOS LOS MÓDULOS
                 </option>
-
-                <option value="CONFIGURACION">
-                CONFIGURACION
+                <option value="ADMIN">
+                ADMIN
+                </option>
+                <option value="VISITAS">
+                VISITAS
                 </option>
 
+                <option value="PROVEEDORES">
+                PROVEEDORES
+                </option>
+                <option value="INCIDENTES">
+                INCIDENTES
+                </option>
+                 <option value="INVENTARIOS">
+                INVENTARIOS
+                </option> 
                 <option value="EXTINTORES">
                 EXTINTORES
                 </option>
-
-                <option value="INVENTARIO, EXTINTORES">
-                INVENTARIO, EXTINTORES
+                <option value="MANTENIMIENTO">
+                MANTENIMIENTO
                 </option>
-
+                <option value="RIESGO">
+                RIESGO
+                </option>
+                <option value="SISMO">
+                SISMO
+                </option>
             </select>
 
             </div>
@@ -188,7 +203,7 @@ export default function UsuariosSection(props) {
         const filtroModulo =
           moduloFiltro === "TODOS"
             ? true
-            : user.modulo === moduloFiltro;
+            : user.modulo?.split(",").includes(moduloFiltro);
 
         return filtroSede && filtroModulo;
 

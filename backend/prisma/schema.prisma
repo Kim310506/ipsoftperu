@@ -122,9 +122,12 @@ model Visita {
   motivo      String
   estado      String
 
-  fecha       DateTime
-  horaEntrada String
-  horaSalida  String
+  fechaInicio DateTime @db.Date
+  fechaFin    DateTime @db.Date
+
+  // HORARIO GENERAL DE LA VISITA
+  horaEntrada String?
+  horaSalida  String?
 
   autorizadoPorId Int?
   autorizadoPor   User? @relation(fields: [autorizadoPorId], references: [id])
@@ -137,8 +140,9 @@ model Visita {
 
   visitantes  Visitante[]
 
-  createdAt   DateTime @default(now())
+  createdAt String
 }
+
 model Visitante {
 
   id              Int      @id @default(autoincrement())
@@ -147,11 +151,17 @@ model Visitante {
   nombres         String
   apellidoPaterno String
   apellidoMaterno String
+
   email           String?
   empresa         String?
 
-  qrData          String?   // contenido del QR (JSON o string seguro)
+  qrData          String?
   estadoQr        String
+
+  // DATOS INDIVIDUALES
+  cargo           String?
+  horaIngreso String?
+horaSalida  String?
 
   visitaId        Int
   visita          Visita   @relation(fields: [visitaId], references: [id])

@@ -1,5 +1,5 @@
 import { FaXmark, FaUser, FaEnvelope, FaLock, FaChevronDown } from "react-icons/fa6";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../../../../api/axios"; 
 // ajusta la ruta según tu proyecto
 export default function ModalCrearUsuario({
@@ -11,8 +11,48 @@ export default function ModalCrearUsuario({
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState("USUARIO");
-  const [sedeId, setSedeId] = useState(1);
+  const [sedeId, setSedeId] = useState("");
+const [sedes, setSedes] = useState([]);
+const [modulos, setModulos] = useState([]);
+useEffect(() => {
 
+  const cargarSedes = async () => {
+
+    try {
+
+      const res = await api.get("/sedes");
+
+      setSedes(res.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
+  cargarSedes();
+
+}, []);
+const manejarModulo = (modulo) => {
+
+  if (modulos.includes(modulo)) {
+
+    setModulos(
+      modulos.filter((m) => m !== modulo)
+    );
+
+  } else {
+
+    setModulos([
+      ...modulos,
+      modulo
+    ]);
+
+  }
+
+};
   const crearUsuario = async () => {
 
     try {
@@ -22,7 +62,7 @@ export default function ModalCrearUsuario({
           correo,
           password,
           rol,
-          modulo: "USUARIOS",
+          modulo: modulos.join(","),
           sedeId
         }
       );
@@ -30,7 +70,12 @@ export default function ModalCrearUsuario({
       console.log(response.data);
       await obtenerUsuarios();  
       alert("Usuario creado");
-
+        setNombre("");
+        setCorreo("");
+        setPassword("");
+        setRol("");
+        setSedeId("");
+        setModulos([]);
       setOpenModal(false);
 
     } catch (error) {
@@ -143,9 +188,17 @@ export default function ModalCrearUsuario({
               onChange={(e) => setRol(e.target.value)}
               className="w-full bg-[#f5f7fb] rounded-[22px] px-6 py-5 pr-14 font-bold text-[#8b97ad] appearance-none"
             >
-              <option>USUARIO</option>
               <option>ADMIN</option>
-              <option>INVITADO</option>
+              <option>SOLICITANTE DE ACCESO (SA)</option>
+              <option>RESPONSABLE DE AREA (RA)</option>
+              <option>RECEPCION DE SEGURIDAD (REC)</option>
+              <option>SOLICITANTE DE ACCESO (SA)</option>
+              <option>RESPONSABLE SAFETY (RSA)</option>
+              <option >OPERADOR DE SEGURIDAD (OS)</option>
+              <option>MEDICO OCUPACIONAL (MO)</option>
+              <option>PREVENCIONISTA SST (PR)</option>
+              <option>RESPONSABLE DE AREA (RA)</option>
+              <option>RECEPCION DE SEGURIDAD (REC)</option>
             </select>
 
               <FaChevronDown className="absolute right-5 top-[58px] text-[13px] text-[#8b97ad]" />
@@ -166,15 +219,138 @@ export default function ModalCrearUsuario({
                 <div className="absolute mt-3 w-full bg-white rounded-[24px] shadow-lg border p-5 flex flex-col gap-4 z-50">
 
                   <label className="flex items-center gap-3">
-                    <input type="checkbox" className="w-5 h-5 accent-[#0456b3]" />
-                    <span className="font-bold text-sm">USUARIOS</span>
-                  </label>
+                  <input
+                    type="checkbox"
+                    checked={modulos.includes("ADMIN")}
+                    onChange={() =>
+                      manejarModulo("ADMIN")
+                    }
+                    className="w-5 h-5 accent-[#0456b3]"
+                  />
 
+                  <span className="font-bold text-sm">
+                    ADMIN
+                  </span>
+
+                </label>
                   <label className="flex items-center gap-3">
-                    <input type="checkbox" className="w-5 h-5 accent-[#0456b3]" />
-                    <span className="font-bold text-sm">UBICACIONES</span>
-                  </label>
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("VISITAS")}
+                      onChange={() =>
+                        manejarModulo("VISITAS")
+                      }
+                      className="w-5 h-5 accent-[#0456b3]"
+                    />
 
+                    <span className="font-bold text-sm">
+                      VISITAS
+                    </span>
+
+                  </label>
+                  <label className="flex items-center gap-3">
+
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("PROVEEDORES")}
+                      onChange={() =>
+                        manejarModulo("PROVEEDORES")
+                      }
+                      className="w-5 h-5 accent-[#0456b3]"
+                    />
+
+                    <span className="font-bold text-sm">
+                      PROVEDORES
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3">
+
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("INCIDENTES")}
+                      onChange={() =>
+                        manejarModulo("INCIDENTES")
+                      }
+                      className="w-5 h-5 accent-[#0456b3]"
+                    />
+
+                    <span className="font-bold text-sm">
+                      INCIDENTES
+                    </span>
+
+                  </label>
+                  <label className="flex items-center gap-3">
+
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("INVENTARIOS")}
+                      onChange={() =>
+                        manejarModulo("INVENTARIOS")
+                      }
+                      className="w-5 h-5 accent-[#0456b3]"
+                    />
+
+                    <span className="font-bold text-sm">
+                      INVENTARIOS
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3">
+
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("EXTINTORES")}
+                      onChange={() =>
+                        manejarModulo("EXTINTORES")
+                      }
+                      className="w-5 h-5 accent-[#0456b3]"
+                    />
+
+                    <span className="font-bold text-sm">
+                      EXTINTORES
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("MANTENIMIENTO")}
+                      onChange={() =>
+                        manejarModulo("MANTENIMIENTO")
+                      }
+                      className="w-5 h-5 accent-[#0456b3]"
+                    />
+                    <span className="font-bold text-sm">
+                      MANTENIMIENTO
+                    </span>
+                  </label>    
+                  <label className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("RIESGO")}
+                      onChange={() =>
+                        manejarModulo("RIESGO")
+                      }
+                      className="w-5 h-5 accent-[#0456b3]"
+                    />
+                    <span className="font-bold text-sm">
+                      RIESGO
+                    </span>
+                  </label>      
+                  <label className="flex items-center gap-3">
+
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("SISMO")}
+                      onChange={() =>
+                        manejarModulo("SISMO")
+                      }
+                      className="w-5 h-5 accent-[#0456b3]"
+                    />
+
+                    <span className="font-bold text-sm">
+                      SISMO
+                    </span>
+
+                  </label>
                 </div>
               </details>
             </div>
@@ -185,11 +361,29 @@ export default function ModalCrearUsuario({
                 Sede
               </label>
 
-              <select className="w-full bg-[#f5f7fb] rounded-[22px] px-6 py-5 pr-14 font-bold text-[#8b97ad] appearance-none">
-                <option>LIMA</option>
-                <option>AREQUIPA</option>
-                <option>TRUJILLO</option>
-                <option>CUSCO</option>
+              <select
+                value={sedeId}
+                onChange={(e) =>
+                  setSedeId(Number(e.target.value))
+                }
+                className="w-full bg-[#f5f7fb] rounded-[22px] px-6 py-5 pr-14 font-bold text-[#8b97ad] appearance-none"
+              >
+
+                <option value="">
+                  Seleccionar sede
+                </option>
+
+                {sedes.map((sede) => (
+
+                  <option
+                    key={sede.id}
+                    value={sede.id}
+                  >
+                    {sede.nombre}
+                  </option>
+
+                ))}
+
               </select>
 
               <FaChevronDown className="absolute right-5 top-[58px] text-[13px] text-[#8b97ad]" />

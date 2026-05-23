@@ -46,50 +46,69 @@ export default function ModalRegistro({
 }) {
   if (!openModal) return null;
 const [qr, setQr] = useState(null);
+const [motivo, setMotivo] = useState("");
+const [fechaInicio, setFechaInicio] = useState("");
+const [fechaFin, setFechaFin] = useState("");
+
+const [horaEntrada, setHoraEntrada] = useState("");
+const [horaSalida, setHoraSalida] = useState("");
   /* ========================= */
   /* SUBMIT */
   /* ========================= */
   const handleSubmit = async () => {
   try {
+
     const payload = {
       tipo: tipoVisita,
-      sedeId: sedeSeleccionada ? Number(sedeSeleccionada) : null,
-      ambienteId: ambienteSeleccionado ? Number(ambienteSeleccionado) : null,
 
-      motivo: "REUNION",
-      fecha: new Date().toISOString(),
+      sedeId: sedeSeleccionada
+        ? Number(sedeSeleccionada)
+        : null,
 
-      horaEntrada: "08:00",
-      horaSalida: "10:00",
+      ambienteId: ambienteSeleccionado
+        ? Number(ambienteSeleccionado)
+        : null,
+
+      motivo,
+
+      fechaInicio,
+      fechaFin,
+
+      horaEntrada,
+      horaSalida,
 
       estado: "PENDIENTE",
-      autorizado: "NO",
 
-      visitantes: visitantes || [],
-      email,
+      encargado: {
+        dni,
+        nombres,
+        apellidoPaterno,
+        apellidoMaterno,
+        email,
+        empresa,
+      },
+
+      visitantes:
+        tipoVisita === "INTERNO"
+          ? visitantes
+          : [],
     };
 
-    const res = await api.post("/visitas", payload);
+    const res = await api.post(
+      "/visitas",
+      payload
+    );
 
-    // 👇 AQUÍ está el QR que viene del backend
-    const qrGenerado = res.data?.qr || res.data?.qrUrl || res.data?.codigoQR;
-
-    console.log("QR:", qrGenerado);
-
-    // reset
-    setVisitantes([]);
-    setSedeSeleccionada("");
-    setAmbienteSeleccionado("");
-    setTipoVisita("INTERNO");
-    setTipoCarga("INDIVIDUAL");
+    alert("Visita registrada");
 
     setOpenModal(false);
 
-    alert("Visita registrada correctamente");
-
   } catch (error) {
+
     console.log(error);
-    alert("Error al registrar visita");
+
+    alert("Error");
+
   }
 };
   return (
@@ -251,7 +270,11 @@ const [qr, setQr] = useState(null);
 
             </label>
 
-            <select className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]">
+           <select
+  value={motivo}
+  onChange={(e) => setMotivo(e.target.value)}
+  className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
+>
 
               <option>
                 -- SELECCIONE MOTIVO --
@@ -274,9 +297,13 @@ const [qr, setQr] = useState(null);
             </label>
 
             <input
-              type="date"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
-            />
+  type="date"
+  value={fechaInicio}
+  onChange={(e) =>
+    setFechaInicio(e.target.value)
+  }
+  className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
+/>
 
           </div>
 
@@ -289,9 +316,13 @@ const [qr, setQr] = useState(null);
             </label>
 
             <input
-              type="date"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
-            />
+  type="date"
+  value={fechaFin}
+  onChange={(e) =>
+    setFechaFin(e.target.value)
+  }
+  className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
+/>
 
           </div>
 
@@ -313,6 +344,10 @@ const [qr, setQr] = useState(null);
 
             <input
               type="time"
+              value={horaEntrada}
+              onChange={(e) =>
+                setHoraEntrada(e.target.value)
+              }
               className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
             />
 
@@ -328,6 +363,10 @@ const [qr, setQr] = useState(null);
 
             <input
               type="time"
+              value={horaSalida}
+              onChange={(e) =>
+                setHoraSalida(e.target.value)
+              }
               className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0]"
             />
 

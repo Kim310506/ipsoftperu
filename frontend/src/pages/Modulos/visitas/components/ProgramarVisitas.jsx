@@ -40,7 +40,9 @@ export default function InicioVisitas() {
 
   const [busqueda, setBusqueda] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
+const [paginaActual, setPaginaActual] = useState(1);
 
+const registrosPorPagina = 10;
   /* ========================= */
   /* CARGAR ZONALES */
   /* ========================= */
@@ -96,19 +98,34 @@ export default function InicioVisitas() {
     return "SIN SEDE";
   };
 
-  const obtenerNombreAmbiente = (ambienteId) => {
-    for (const zonal of zonales) {
-      for (const sede of zonales.sedes || []) {
-        for (const pabellon of sede.pabellones || []) {
-          for (const piso of pabellon.pisos || []) {
-            const amb = piso.ambientes?.find(a => a.id === ambienteId);
-            if (amb) return amb.nombre;
+ const obtenerNombreAmbiente = (ambienteId) => {
+
+  for (const zonal of zonales) {
+
+    for (const sede of zonal.sedes || []) {
+
+      for (const pabellon of sede.pabellones || []) {
+
+        for (const piso of pabellon.pisos || []) {
+
+          const amb = piso.ambientes?.find(
+            (a) => a.id === ambienteId
+          );
+
+          if (amb) {
+            return amb.nombre;
           }
+
         }
+
       }
+
     }
-    return "SIN AMBIENTE";
-  };
+
+  }
+
+  return "SIN AMBIENTE";
+};
 
   /* ========================= */
   /* AGREGAR VISITANTE */
@@ -164,7 +181,7 @@ export default function InicioVisitas() {
   const estadisticas = useMemo(() => ({
     visitas: visitas.length,
     pendientes: visitas.filter(v => v.estado === "PENDIENTE").length,
-    aprobados: visitas.filter(v => v.estado === "APROBADO").length,
+    aprobados: visitas.filter(v => v.estado === "AUTORIZADO").length,
   }), [visitas]);
 
   /* ========================= */
@@ -188,7 +205,7 @@ export default function InicioVisitas() {
 
     data = data.filter((item) => {
       const texto = `
-        ${item.fecha}
+        ${item.fechaInicio}
         ${item.codigo}
         ${item.tipo}
         ${obtenerNombreSede(item.sedeId)}
@@ -203,12 +220,28 @@ export default function InicioVisitas() {
 
     return data;
   }, [visitas, busqueda]);
+/* ========================= */
+/* PAGINACION */
+/* ========================= */
 
+const totalPaginas = Math.ceil(
+  visitasFiltradas.length / registrosPorPagina
+);
+
+const indiceInicial =
+  (paginaActual - 1) * registrosPorPagina;
+
+const indiceFinal =
+  indiceInicial + registrosPorPagina;
+
+const visitasPaginadas =
+  visitasFiltradas.slice(
+    indiceInicial,
+    indiceFinal
+  );
   return (
 
-    <main className="p-6 lg:p-8">
-
-      {/* HEADER */}
+<main className="w-full max-w-full p-3 sm:p-5 lg:p-8 overflow-hidden">        {/* HEADER */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-8">
 
         <div className="flex items-center gap-3">
@@ -218,7 +251,7 @@ export default function InicioVisitas() {
             className="text-[#1E55C0]"
           />
 
-          <h1 className="text-3xl lg:text-4xl font-black text-[#1E55C0]">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#1E55C0] break-words">
             Panel de Control
           </h1>
 
@@ -238,12 +271,9 @@ export default function InicioVisitas() {
       </div>
 
       {/* CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
-
-        {/* PENDIENTES */}
-        <div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all p-7 flex items-center gap-5">
-
-          <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white">
+<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 mb-8">          
+  {/* PENDIENTES */}
+<div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all p-4 sm:p-6 flex items-center gap-4 min-w-0">  <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white">
 
             <Clock3 size={30} />
 
@@ -255,7 +285,7 @@ export default function InicioVisitas() {
               Pendientes
             </h3>
 
-            <p className="text-5xl font-black text-blue-500">
+            <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-blue-500 break-words">
               {estadisticas.pendientes}
             </p>
 
@@ -264,9 +294,7 @@ export default function InicioVisitas() {
         </div>
 
         {/* APROBADOS */}
-        <div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all p-7 flex items-center gap-5">
-
-          <div className="w-16 h-16 rounded-full bg-green-600 flex items-center justify-center text-white">
+<div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all p-4 sm:p-6 flex items-center gap-4 min-w-0">  <div className="w-16 h-16 rounded-full bg-green-600 flex items-center justify-center text-white">
 
             <Check size={30} />
 
@@ -287,9 +315,7 @@ export default function InicioVisitas() {
         </div>
 
         {/* VISITAS */}
-        <div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all p-7 flex items-center gap-5">
-
-          <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-white">
+<div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-all p-4 sm:p-6 flex items-center gap-4 min-w-0">   <div className="w-16 h-16 rounded-full bg-purple-600 flex items-center justify-center text-white">
 
             <Users size={30} />
 
@@ -312,12 +338,8 @@ export default function InicioVisitas() {
       </div>
 
       {/* TABLA */}
-      <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
-
-        {/* HEADER */}
-        <div className=" px-6 py-5 flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-
-          <h2 className="text-2xl font-black text-[#1E55C0]">
+<div className="bg-white rounded-3xl shadow-sm w-full overflow-hidden">              {/* HEADER */}
+<div className="px-4 sm:px-6 py-5 flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">          <h2 className="text-2xl font-black text-[#1E55C0]">
             Programación de visitas
           </h2>
 
@@ -328,17 +350,17 @@ export default function InicioVisitas() {
             onChange={(e) =>
                 setBusqueda(e.target.value)
             }
-            className="border border-gray-300 rounded-xl px-4 py-2 outline-none focus:border-[#1E55C0] w-full lg:w-[260px]"
-            />
+className="border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#1E55C0] w-full lg:w-[300px] min-w-0"           />
 
         </div>
 
         {/* TABLA */}
-        <div className="overflow-x-auto">
+<div className="w-full min-w-0">
 
-          <table className="w-full min-w-[1200px] border-separate border-spacing-0">
+  <div className="w-full overflow-x-auto overflow-y-hidden">
 
-              <thead className="bg-[#f8fafc] border-b border-gray-200">
+    <table className="w-full min-w-[1100px] border-separate border-spacing-0">
+                <thead className="bg-[#f8fafc] border-b border-gray-200">
 
   <tr className="text-left text-gray-500 uppercase text-xs">
 
@@ -402,7 +424,7 @@ export default function InicioVisitas() {
       </div>
     </th>
 
-    <th className="px-6 py-4 font-black">
+    <th className="px-4 lg:px-6 py-4 text-xs font-black">
       HORARIO
     </th>
 
@@ -442,7 +464,7 @@ export default function InicioVisitas() {
       </div>
     </th>
 
-    <th className="px-6 py-4 text-center font-black">
+    <th className="px-4 lg:px-6 py-4 text-xs text-center font-black">
       ACCIONES
     </th>
 
@@ -452,22 +474,22 @@ export default function InicioVisitas() {
 
             <tbody>
 
-              {visitasFiltradas.map((item) => (
+              {visitasPaginadas.map((item) => (
 
                 <tr
                   key={item.id}
                   className="border-b border-gray-100 hover:bg-[#f8fafc] transition"
                 >
 
-                  <td className="px-6 py-5">
-                    {item.fecha}
+          <td className="px-4 lg:px-6 py-4 text-sm">                    
+            {item.fechaInicio}
                   </td>
 
-                  <td className="px-6 py-5">
+                  <td className="px-4 lg:px-6 py-4 text-sm">
                     {item.codigo}
                   </td>
 
-                  <td className="px-6 py-5">
+                  <td className="px-4 lg:px-6 py-4 text-sm">
 
                     <span className="bg-yellow-500 text-yellow-100 px-4 py-1 rounded-xl text-sm font-bold">
 
@@ -477,13 +499,13 @@ export default function InicioVisitas() {
 
                   </td>
 
-                  <td className="px-6 py-5">
+                  <td className="px-4 lg:px-6 py-4 text-sm">
 
                     {obtenerNombreSede(item.sedeId)}
 
                   </td>
 
-                  <td className="px-6 py-5">
+                  <td className="px-4 lg:px-6 py-4 text-sm">
 
                     {obtenerNombreAmbiente(item.ambienteId)}
 
@@ -493,25 +515,28 @@ export default function InicioVisitas() {
                     {item.horaEntrada} - {item.horaSalida}
 
                     </td>
-                  <td className="px-6 py-5">
+                  <td className="px-4 lg:px-6 py-4 text-sm">
                     {item.motivo}
                   </td>
+                    <td className="px-4 lg:px-6 py-4 text-sm">
+  <span
+    className={`px-4 py-1 rounded-full text-xs font-bold ${
+      item.estado === "PENDIENTE"
+        ? "bg-yellow-100 text-yellow-700"
+        : item.estado === "AUTORIZADO"
+        ? "bg-green-100 text-green-700"
+        : "bg-gray-100 text-gray-700"
+    }`}
+  >
+    {item.estado}
+  </span>
+</td>
 
-                  <td className="px-6 py-5">
-
-                    <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-xs font-bold">
-
-                      {item.estado}
-
-                    </span>
-
+                  <td className="px-4 lg:px-6 py-4 text-sm">
+                    {item.autorizadoPor?.nombre || "—"}
                   </td>
 
-                  <td className="px-6 py-5">
-                    {item.autorizado}
-                  </td>
-
-                  <td className="px-6 py-5">
+                  <td className="px-4 lg:px-6 py-4 text-sm">
 
                     <div className="flex items-center justify-center gap-4">
 
@@ -538,7 +563,86 @@ export default function InicioVisitas() {
             </tbody>
 
           </table>
+          </div>
+{/* PAGINACION */}
+<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 px-4 sm:px-6 py-5 border-t border-gray-100">  <p className="text-sm text-gray-500">
 
+    Mostrando
+
+    <span className="font-bold text-[#1E55C0] mx-1">
+      {indiceInicial + 1}
+    </span>
+
+    -
+
+    <span className="font-bold text-[#1E55C0] mx-1">
+      {
+        Math.min(
+          indiceFinal,
+          visitasFiltradas.length
+        )
+      }
+    </span>
+
+    de
+
+    <span className="font-bold text-[#1E55C0] mx-1">
+      {visitasFiltradas.length}
+    </span>
+
+    registros
+
+  </p>
+
+<div className="flex items-center gap-2 flex-wrap justify-center lg:justify-end w-full lg:w-auto">
+      <button
+      onClick={() =>
+        setPaginaActual((prev) =>
+          Math.max(prev - 1, 1)
+        )
+      }
+      disabled={paginaActual === 1}
+      className="px-4 py-2 rounded-xl border disabled:opacity-40"
+    >
+      Anterior
+    </button>
+
+    {Array.from(
+      { length: totalPaginas },
+      (_, i) => i + 1
+    ).map((pagina) => (
+
+      <button
+        key={pagina}
+        onClick={() =>
+          setPaginaActual(pagina)
+        }
+        className={`px-4 py-2 rounded-xl font-bold transition ${
+          paginaActual === pagina
+            ? "bg-[#1E55C0] text-white"
+            : "border hover:bg-gray-100"
+        }`}
+      >
+        {pagina}
+      </button>
+
+    ))}
+
+    <button
+      onClick={() =>
+        setPaginaActual((prev) =>
+          Math.min(prev + 1, totalPaginas)
+        )
+      }
+      disabled={paginaActual === totalPaginas}
+      className="px-4 py-2 rounded-xl border disabled:opacity-40"
+    >
+      Siguiente
+    </button>
+
+  </div>
+
+</div>
         </div>
 
       </div>

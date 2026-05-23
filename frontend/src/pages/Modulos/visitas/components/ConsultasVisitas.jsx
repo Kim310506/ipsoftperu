@@ -87,7 +87,23 @@ const visitanteEncontrado =
 
     fetchVisitas();
   }, []);
+const registrarIngreso = async (id) => {
+  try {
+    const res = await api.put(`/visitas/visitantes/ingreso/${id}`);
+    setVisitanteEscaneado(res.data);
+  } catch (err) {
+    console.log(err);
+  }
+};
 
+const registrarSalida = async (id) => {
+  try {
+    const res = await api.put(`/visitas/visitantes/salida/${id}`);
+    setVisitanteEscaneado(res.data);
+  } catch (err) {
+    console.log(err);
+  }
+};
   return (
     <>
       <main className="p-6 lg:p-8">
@@ -213,14 +229,40 @@ const visitanteEncontrado =
 
             <div className="bg-[#f8fafc] px-6 py-4 flex items-center justify-between text-sm">
 
-              <div className="flex items-center gap-2 text-green-600 font-bold">
-                <CheckCircle2 size={16} />
-                Ingreso: 11:45
+              {/* INGRESO */}
+              <div className="flex flex-col items-start gap-2">
+
+                <button
+                  onClick={() => registrarIngreso(visitanteEncontrado.id)}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold"
+                  disabled={visitanteEncontrado?.horaIngreso}
+                >
+                  Registrar Ingreso
+                </button>
+
+                <div className="flex items-center gap-2 text-green-600 font-bold">
+                  <CheckCircle2 size={16} />
+                  {visitanteEncontrado?.horaIngreso || "Sin ingreso"}
+                </div>
+
               </div>
 
-              <div className="flex items-center gap-2 text-red-500 font-bold">
-                <Clock3 size={16} />
-                Salida: 11:45
+              {/* SALIDA */}
+              <div className="flex flex-col items-end gap-2">
+
+                <button
+                  onClick={() => registrarSalida(visitanteEncontrado.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
+                  disabled={!visitanteEncontrado?.horaIngreso || visitanteEncontrado?.horaSalida}
+                >
+                  Registrar Salida
+                </button>
+
+                <div className="flex items-center gap-2 text-red-500 font-bold">
+                  <Clock3 size={16} />
+                  {visitanteEncontrado?.horaSalida || "Sin salida"}
+                </div>
+
               </div>
 
             </div>

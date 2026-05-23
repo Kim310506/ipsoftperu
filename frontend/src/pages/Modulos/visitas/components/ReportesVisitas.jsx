@@ -7,7 +7,10 @@ import {
   Printer,
   Search,
 } from "lucide-react";
-
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 export default function ReportesVisitas() {
 
   const [busqueda, setBusqueda] = useState("");
@@ -40,7 +43,7 @@ export default function ReportesVisitas() {
 
       filas.push({
 
-        fecha: visita.fecha,
+        fecha: visita.fechaInicio,
         dni: visitante.dni,
         nombres: visitante.nombres,
         apellidoPaterno: visitante.apellidoPaterno,
@@ -66,7 +69,7 @@ export default function ReportesVisitas() {
   return filas.filter((item) => {
 
     const texto = `
-      ${item.fecha}
+      ${item.fechaInicio}
       ${item.dni}
       ${item.nombres}
       ${item.apellidoPaterno}
@@ -82,26 +85,218 @@ export default function ReportesVisitas() {
   });
 
 }, [visitas, busqueda]);
+  /* ========================= */
+  /* EXPORTAR EXCEL */
+  /* ========================= */
 
+  const exportarExcel = () => {
+
+    const data = filasReporte.map((item) => ({
+
+      Fecha: item.fecha,
+      DNI: item.dni,
+      Nombres: item.nombres,
+      "Apellido Paterno": item.apellidoPaterno,
+      "Apellido Materno": item.apellidoMaterno,
+      Empresa: item.empresa,
+      Local: item.local,
+      Área: item.area,
+      Horario: item.horario,
+      Motivo: item.motivo,
+      Entrada: item.entrada,
+      Salida: item.salida,
+
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Reporte Visitas"
+    );
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const fileData = new Blob(
+      [excelBuffer],
+      {
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+      }
+    );
+
+    saveAs(
+      fileData,
+      "reporte_visitas.xlsx"
+    );
+
+  };
+
+  /* ========================= */
+  /* EXPORTAR PDF */
+  /* ========================= */
+
+  const exportarPDF = () => {
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+
+    doc.text(
+      "Reporte de Visitas",
+      14,
+      20
+    );
+
+    autoTable(doc, {
+
+      startY: 30,
+
+      head: [[
+        "Fecha",
+        "DNI",
+        "Nombres",
+        "Ap. Paterno",
+        "Ap. Materno",
+        "Empresa",
+        "Local",
+        "Área",
+        "Horario",
+        "Motivo",
+        "Entrada",
+        "Salida",
+      ]],
+
+      body: filasReporte.map((item) => ([
+
+        item.fecha,
+        item.dni,
+        item.nombres,
+        item.apellidoPaterno,
+        item.apellidoMaterno,
+        item.empresa,
+        item.local,
+        item.area,
+        item.horario,
+        item.motivo,
+        item.entrada,
+        item.salida,
+
+      ])),
+
+      styles: {
+        fontSize: 7,
+      },
+
+      headStyles: {
+        fillColor: [30, 85, 192],
+      },
+
+    });
+
+    doc.save("reporte_visitas.pdf");
+
+  };
+
+  /* ========================= */
+  /* IMPRIMIR */
+  /* ========================= */
+
+  const imprimirReporte = () => {
+
+  const contenido = document.getElementById(
+    "tabla-reporte"
+  ).outerHTML;
+
+  const ventana = window.open(
+    "",
+    "",
+    "width=1200,height=800"
+  );
+
+  ventana.document.write(`
+    <html>
+      <head>
+        <title>Reporte de Visitas</title>
+
+        <style>
+
+          body{
+            font-family: Arial;
+            padding: 20px;
+          }
+
+          h1{
+            text-align: center;
+            margin-bottom: 20px;
+          }
+
+          table{
+            width: 100%;
+            border-collapse: collapse;
+          }
+
+          th{
+            background: #1E55C0;
+            color: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+          }
+
+          td{
+            padding: 10px;
+            border: 1px solid #ccc;
+            font-size: 11px;
+          }
+
+        </style>
+
+      </head>
+
+      <body>
+
+        <h1>
+          Reporte de Visitas
+        </h1>
+
+        ${contenido}
+
+      </body>
+    </html>
+  `);
+
+  ventana.document.close();
+
+  ventana.focus();
+
+  ventana.print();
+
+  ventana.close();
+
+};
   return (
 
-    <main className="p-6 lg:p-8">
-
+<main className="w-full max-w-full p-3 sm:p-5 lg:p-8 overflow-hidden">
       {/* HEADER */}
-      <div className="bg-gradient-to-r from-[#1E55C0] to-[#3f83f8] rounded-3xl p-8 mb-8 shadow-lg">
+<div className="bg-gradient-to-r from-[#1E55C0] to-[#3f83f8] rounded-3xl p-5 sm:p-6 lg:p-8 mb-8 shadow-lg overflow-hidden">
 
-        <div className="flex items-center gap-4">
-
-          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-white">
-
+<div className="flex flex-col sm:flex-row sm:items-center gap-4">
+<div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 flex items-center justify-center text-white shrink-0">
             <ClipboardList size={34} />
 
           </div>
 
           <div>
 
-            <h1 className="text-4xl font-black text-white">
-              Reporte de Visitas
+<h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white break-words">
+                Reporte de Visitas
             </h1>
 
             <p className="text-blue-100 mt-1">
@@ -115,37 +310,41 @@ export default function ReportesVisitas() {
       </div>
 
       {/* CONTENEDOR */}
-      <div className="bg-white rounded-3xl shadow-sm overflow-hidden">
-
+<div className="bg-white rounded-3xl shadow-sm w-full overflow-hidden">
         {/* TOP */}
-        <div className="p-6 flex flex-col xl:flex-row gap-5 xl:items-center xl:justify-between">
-
+<div className="p-4 sm:p-6 flex flex-col xl:flex-row gap-5 xl:items-center xl:justify-between">
           {/* BOTONES */}
-          <div className="flex flex-wrap items-center gap-4">
+<div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 w-full xl:w-auto">
+            <button
+  onClick={exportarExcel}
+  className="bg-green-500 hover:bg-green-600 transition text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-sm"
+>
 
-            <button className="bg-green-500 hover:bg-green-600 transition text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-sm">
+  <FileSpreadsheet size={20} />
+  Excel
+</button>
 
-              <FileSpreadsheet size={20} />
+<button
+  onClick={exportarPDF}
+  className="bg-red-500 hover:bg-red-600 transition text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-sm"
+>
 
-              Excel
+  <FileText size={20} />
 
-            </button>
+  PDF
 
-            <button className="bg-red-500 hover:bg-red-600 transition text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-sm">
+</button>
 
-              <FileText size={20} />
+<button
+  onClick={imprimirReporte}
+  className="bg-gray-700 hover:bg-gray-800 transition text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-sm"
+>
 
-              PDF
+  <Printer size={20} />
 
-            </button>
+  Imprimir
 
-            <button className="bg-gray-700 hover:bg-gray-800 transition text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-3 shadow-sm">
-
-              <Printer size={20} />
-
-              Imprimir
-
-            </button>
+</button>
 
           </div>
 
@@ -176,7 +375,7 @@ export default function ReportesVisitas() {
         {/* TABLA */}
         <div className="overflow-x-auto">
 
-          <table className="w-full min-w-[1600px]">
+          <table   id="tabla-reporte" className="w-full min-w-[1600px]">
 
             <thead className="bg-[#3f83f8] text-white">
 
