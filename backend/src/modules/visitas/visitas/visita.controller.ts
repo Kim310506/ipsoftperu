@@ -9,7 +9,8 @@ import { prisma } from "../../../config/prisma";import {
   actualizarVisitaService,
   eliminarVisitaService,
    registrarIngresoVisitanteService,
-  registrarSalidaVisitanteService
+  registrarSalidaVisitanteService,
+  registrarVisitantesExternosService
 } from "./visita.service";
 export const getVisitas = async (req: Request, res: Response) => {
   try {
@@ -67,50 +68,25 @@ export const createVisita = async (
   req: Request,
   res: Response
 ) => {
+
   try {
 
-    const visita = await crearVisitaService(req.body);
+    const visita =
+      await crearVisitaService(req.body);
 
-    /* ========================= */
-    /* ENVIAR QR A VISITANTES */
-    /* ========================= */
-
-    if (visita?.visitantes?.length > 0) {
-
-      for (const visitante of visita.visitantes) {
-
-        if (visitante?.email && visitante?.qrData) {
-
-          // generar mismo QR visual del frontend
-          const qrImage = await QRCode.toDataURL(
-            visitante.qrData
-          );
-
-          await enviarCorreoQR(
-            visitante.email,
-            visitante.nombres,
-            qrImage
-          );
-
-        }
-
-      }
-
-    }
-
-    res.json(visita);
+    return res.json(visita);
 
   } catch (error) {
 
     console.log(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error al crear visita"
     });
 
   }
-};
 
+};
 export const updateVisita = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -126,7 +102,37 @@ export const updateVisita = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Error al actualizar visita" });
   }
 };
+export const registrarVisitantesExternos = async (
+  req: Request,
+  res: Response
+) => {
 
+  try {
+
+    const { codigo } = req.params;
+
+    const visitantes =
+      await registrarVisitantesExternosService(
+        String(codigo),
+        req.body.visitantes
+      );
+
+    return res.json({
+      message: "Visitantes registrados",
+      visitantes,
+    });
+
+  } catch (error: any) {
+
+    console.log(error);
+
+    return res.status(500).json({
+      message: error.message,
+    });
+
+  }
+
+};
 export const deleteVisita = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

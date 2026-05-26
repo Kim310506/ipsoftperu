@@ -15,25 +15,44 @@ export const login = async (
 
     const {
       correo,
-      password
+      password,
+      modulo
     } = req.body;
+console.log("BODY:", req.body);
 
     const user = await prisma.user.findFirst({
 
       where: {
-
         correo,
         password
-
       }
 
     });
 
+    /* USUARIO NO EXISTE */
     if (!user) {
 
       return res.status(401).json({
 
         message: "Credenciales incorrectas"
+
+      });
+
+    }
+
+    /* VALIDAR MODULOS */
+    console.log(user.modulo);
+    const modulosUsuario =
+      user.modulo?.split(",") || [];
+
+    if (
+      !modulosUsuario.includes(modulo)
+    ) {
+
+      return res.status(403).json({
+
+        message:
+          "No tienes acceso a este módulo"
 
       });
 

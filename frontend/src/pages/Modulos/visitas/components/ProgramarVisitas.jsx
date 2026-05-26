@@ -200,26 +200,84 @@ const registrosPorPagina = 10;
   /* FILTRADO */
   /* ========================= */
 
-  const visitasFiltradas = useMemo(() => {
-    let data = [...visitas];
+ const visitasFiltradas = useMemo(() => {
+  let data = [...visitas];
 
-    data = data.filter((item) => {
-      const texto = `
-        ${item.fechaInicio}
-        ${item.codigo}
-        ${item.tipo}
-        ${obtenerNombreSede(item.sedeId)}
-        ${obtenerNombreAmbiente(item.ambienteId)}
-        ${item.motivo}
-        ${item.estado}
-        ${item.autorizado}
-      `.toLowerCase();
+  // FILTRO
+  data = data.filter((item) => {
+    const texto = `
+      ${item.fechaInicio}
+      ${item.codigo}
+      ${item.tipo}
+      ${obtenerNombreSede(item.sedeId)}
+      ${obtenerNombreAmbiente(item.ambienteId)}
+      ${item.motivo}
+      ${item.estado}
+      ${item.autorizado}
+    `.toLowerCase();
 
-      return texto.includes(busqueda.toLowerCase());
+    return texto.includes(busqueda.toLowerCase());
+  });
+
+  // SORT (AQUÍ ES DONDE FALTABA)
+  if (sortConfig.key) {
+    data.sort((a, b) => {
+      let valA;
+      let valB;
+
+      switch (sortConfig.key) {
+        case "fecha":
+          valA = new Date(a.fechaInicio);
+          valB = new Date(b.fechaInicio);
+          break;
+
+        case "codigo":
+          valA = a.codigo;
+          valB = b.codigo;
+          break;
+
+        case "tipo":
+          valA = a.tipo;
+          valB = b.tipo;
+          break;
+
+        case "sede":
+          valA = obtenerNombreSede(a.sedeId);
+          valB = obtenerNombreSede(b.sedeId);
+          break;
+
+        case "area":
+          valA = obtenerNombreAmbiente(a.ambienteId);
+          valB = obtenerNombreAmbiente(b.ambienteId);
+          break;
+
+        case "motivo":
+          valA = a.motivo;
+          valB = b.motivo;
+          break;
+
+        case "estado":
+          valA = a.estado;
+          valB = b.estado;
+          break;
+
+        case "autorizado":
+          valA = a.autorizadoPor?.nombre || "";
+          valB = b.autorizadoPor?.nombre || "";
+          break;
+
+        default:
+          return 0;
+      }
+
+      if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
     });
+  }
 
-    return data;
-  }, [visitas, busqueda]);
+  return data;
+}, [visitas, busqueda, sortConfig]);
 /* ========================= */
 /* PAGINACION */
 /* ========================= */

@@ -53,7 +53,9 @@ export default function LoginAdmin() {
 
             correo,
 
-            password
+            password,
+              modulo: "ADMIN"
+
 
           })
 

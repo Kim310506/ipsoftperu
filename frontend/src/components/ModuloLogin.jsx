@@ -47,7 +47,19 @@ export default function ModuloLogin({
         setError(data.message || "Error en credenciales");
         return;
       }
+      const rawModulos = data.modulo || data.modulos || "";
 
+      // convertir a array seguro
+      const modulos = (data.modulo || "")
+        .split(",")
+        .map(m => m.trim().toUpperCase());
+
+      const moduloActual = moduloKey.toUpperCase();
+
+      if (!modulos.includes(moduloActual)) {
+        setError("No tienes acceso a este módulo");
+        return;
+      }
       /* GUARDAR SESION */
       localStorage.setItem(
         `${moduloKey}User`,

@@ -1,6 +1,9 @@
 import { randomUUID } from "crypto";
 import { prisma } from "../../../config/prisma";
-import { enviarCorreoQR } from "../../../utils/mailer";
+import {
+  enviarCorreoQR,
+  enviarCorreoRegistroExterno
+} from "../../../utils/mailer";
 import QRCode from "qrcode";
 const ahoraPeruString = () => {
   return new Date().toLocaleString("sv-SE", {
@@ -59,67 +62,117 @@ export const obtenerVisitaService = async (id: number) => {
 // CREAR
 export const crearVisitaService = async (data: any) => {
   return await prisma.$transaction(async (tx) => {
-
     const codigo = `VIS-${Date.now()}`;
-const tokenExterno = randomUUID();
     const visita = await tx.visita.create({
-  data: {
-    codigo,
-    tipo: data.tipo,
-    motivo: data.motivo,
-    estado: "PENDIENTE",
+      data: {
+        codigo,
+        tipo: data.tipo,
+        motivo: data.motivo,
+        estado: "PENDIENTE",
+        fechaInicio: new Date(data.fechaInicio),
+        fechaFin: new Date(data.fechaFin),
+        horaEntrada: data.horaEntrada,
+        horaSalida: data.horaSalida,
+        autorizadoPorId: null,
+        sedeId: data.sedeId,
+        ambienteId: data.ambienteId,
+        createdAt: ahoraPeruString()
+      }
+    });
 
-    fechaInicio: new Date(data.fechaInicio),
-    fechaFin: new Date(data.fechaFin),
+    // =====================================
+    // EXTERNO
+    // =====================================
 
-    horaEntrada: data.horaEntrada,
-    horaSalida: data.horaSalida,
+    if (data.tipo === "EXTERNO") {
 
-    autorizadoPorId: null,
-    sedeId: data.sedeId,
-    ambienteId: data.ambienteId,
-    createdAt: ahoraPeruString()
-  }
-});
+      await tx.contactoExterno.create({
+        data: {
+          nombre: data.encargado.nombres,
+          email: data.encargado.email,
+          empresa: data.encargado.empresa,
+          visitaId: visita.id,
+        }
+      });
+
+      // LINK
+const link =
+  `${process.env.FRONT_URL}/registro-externo/${visita.codigo}`;
+
+// ENVÍO CORREO
+if (data.encargado?.email) {
+
+  enviarCorreoRegistroExterno(
+    data.encargado.email,
+    data.encargado.nombres,
+    link
+  ).catch(err =>
+    console.log(err.message)
+  );
+
+}
+      return {
+        visita,
+        visitantes: []
+      };
+    }
+
+    // =====================================
+    // INTERNO
+    // =====================================
 
     let visitantesCreados: any[] = [];
 
-    if (data.visitantes?.length) {
+    if (
+      data.tipo === "INTERNO" &&
+      data.visitantes?.length
+    ) {
+
       visitantesCreados = await Promise.all(
+
         data.visitantes.map(async (v: any, index: number) => {
 
-          // 🔥 SOLO TEXTO (ESTO ES LO IMPORTANTE)
-          const qrData = `VISITA-${visita.id}|DNI-${v.dni}|UUID-${randomUUID()}`;
-let cargo = "VISITANTE";
+          const qrData =
+            `VISITA-${visita.id}|DNI-${v.dni}|UUID-${randomUUID()}`;
 
-if (
-  data.tipo === "INTERNO" &&
-  data.tipoCarga === "INDIVIDUAL" &&
-  index === 0
-) {
-  cargo = "ENCARGADO";
-}
-          const visitante = await tx.visitante.create({
-            data: {
-              dni: v.dni,
-              nombres: v.nombres,
-              apellidoPaterno: v.apellidoPaterno,
-              apellidoMaterno: v.apellidoMaterno,
-              email: v.email,
-              empresa: v.empresa,
-              visitaId: visita.id,
-              qrData, // 👈 SOLO ESTO
-              estadoQr: "ACTIVO",
-              cargo,
-            }
-          });
+          const visitante =
+            await tx.visitante.create({
+              data: {
 
-          // 🔥 GENERAR QR SOLO PARA ENVÍO (NO BD)
-          const qrImage = await QRCode.toDataURL(qrData);
+                dni: v.dni,
+
+                nombres: v.nombres,
+
+                apellidoPaterno:
+                  v.apellidoPaterno,
+
+                apellidoMaterno:
+                  v.apellidoMaterno,
+
+                email: v.email,
+
+                empresa: v.empresa,
+
+                visitaId: visita.id,
+
+                qrData,
+
+                estadoQr: "ACTIVO",
+              }
+            });
+
+          const qrImage =
+            await QRCode.toDataURL(qrData);
 
           if (v.email) {
-            enviarCorreoQR(v.email, v.nombres, qrImage)
-              .catch(err => console.log("Error correo:", err.message));
+
+            enviarCorreoQR(
+              v.email,
+              v.nombres,
+              qrImage
+            ).catch(err =>
+              console.log(err.message)
+            );
           }
 
           return visitante;
@@ -132,6 +185,76 @@ if (
       visitantes: visitantesCreados
     };
   });
+};
+export const registrarVisitantesExternosService = async (
+  codigo: string,
+  visitantes: any[]
+) => {
+
+  const visita = await prisma.visita.findUnique({
+    where: {
+      codigo,
+    },
+  });
+
+  if (!visita) {
+    throw new Error("Visita no encontrada");
+  }
+
+  const visitantesCreados = await Promise.all(
+
+    visitantes.map(async (v: any) => {
+
+      const qrData =
+        `VISITA-${visita.id}|DNI-${v.dni}|UUID-${randomUUID()}`;
+
+      const visitante =
+        await prisma.visitante.create({
+          data: {
+
+            dni: v.dni,
+
+            nombres: v.nombres,
+
+            apellidoPaterno:
+              v.apellidoPaterno,
+
+            apellidoMaterno:
+              v.apellidoMaterno,
+
+            email: v.email,
+
+            empresa: v.empresa,
+
+            visitaId: visita.id,
+
+            qrData,
+
+            estadoQr: "ACTIVO",
+          }
+        });
+
+      // QR VISUAL
+      const qrImage =
+        await QRCode.toDataURL(qrData);
+
+      // ENVIAR CORREO
+      if (v.email) {
+
+        enviarCorreoQR(
+          v.email,
+          v.nombres,
+          qrImage
+        ).catch(err =>
+          console.log(err.message)
+        );
+      }
+
+      return visitante;
+    })
+  );
+
+  return visitantesCreados;
 };
 // ACTUALIZAR
 export const actualizarVisitaService = async (id: number, data: any) => {

@@ -125,3 +125,93 @@ export const enviarCorreoQR = async (
 
   }
 };
+
+export const enviarCorreoRegistroExterno = async (
+emailDestino: string,
+nombre: string,
+link: string
+) => {
+try {
+const transporter = nodemailer.createTransport({
+
+  host: process.env.SMTP_HOST,
+
+  port: Number(process.env.SMTP_PORT),
+
+  secure: Number(process.env.SMTP_PORT) === 465,
+
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+
+  tls: {
+    rejectUnauthorized: false,
+  },
+
+});
+
+await transporter.sendMail({
+
+  from: `"Sistema Visitas" <${process.env.SMTP_USER}>`,
+
+  to: emailDestino,
+
+  subject: "Registro de visitantes",
+
+  html: `
+  
+    <div style="font-family: Arial; padding:20px;">
+
+      <h2 style="color:#1E55C0;">
+        Registro de Visita Externa
+      </h2>
+
+      <p>
+        Hola <b>${nombre}</b>,
+      </p>
+
+      <p>
+        Se ha generado una visita externa.
+      </p>
+
+      <p>
+        Debe registrar los visitantes desde el siguiente enlace:
+      </p>
+
+      <br />
+
+      <a 
+        href="${link}"
+        style="
+          background:#1E55C0;
+          color:white;
+          padding:14px 22px;
+          border-radius:10px;
+          text-decoration:none;
+          font-weight:bold;
+          display:inline-block;
+        "
+      >
+        REGISTRAR VISITANTES
+      </a>
+
+      <br /><br />
+
+      <p style="font-size:13px;color:gray;">
+        Sistema de Visitas
+      </p>
+
+    </div>
+
+  `,
+});
+console.log("📩 Correo de registro enviado");
+} catch (error: any) {
+
+console.log(
+  "❌ Error correo externo:",
+  error.message
+);
+}
+};

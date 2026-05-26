@@ -89,8 +89,16 @@ const visitanteEncontrado =
   }, []);
 const registrarIngreso = async (id) => {
   try {
-    const res = await api.put(`/visitas/visitantes/ingreso/${id}`);
-    setVisitanteEscaneado(res.data);
+
+    const res = await api.put(
+      `/visitas/visitantes/ingreso/${id}`
+    );
+
+    setVisitanteEscaneado((prev) => ({
+      ...(prev || visitanteEncontrado),
+      horaIngreso: res.data.horaIngreso
+    }));
+
   } catch (err) {
     console.log(err);
   }
@@ -98,8 +106,16 @@ const registrarIngreso = async (id) => {
 
 const registrarSalida = async (id) => {
   try {
-    const res = await api.put(`/visitas/visitantes/salida/${id}`);
-    setVisitanteEscaneado(res.data);
+
+    const res = await api.put(
+      `/visitas/visitantes/salida/${id}`
+    );
+
+    setVisitanteEscaneado((prev) => ({
+      ...(prev || visitanteEncontrado),
+      horaSalida: res.data.horaSalida
+    }));
+
   } catch (err) {
     console.log(err);
   }
@@ -122,7 +138,15 @@ const registrarSalida = async (id) => {
                 type="text"
                 placeholder="Buscar por DNI, nombre o apellido..."
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={(e) => {
+
+                  setBusqueda(e.target.value);
+
+                  if (!e.target.value.trim()) {
+                    setVisitanteEscaneado(null);
+                  }
+
+                }}
                 className="w-full border border-gray-300 rounded-2xl pl-11 pr-4 py-4 outline-none focus:border-[#1E55C0]"
               />
             </div>
@@ -232,36 +256,47 @@ const registrarSalida = async (id) => {
               {/* INGRESO */}
               <div className="flex flex-col items-start gap-2">
 
-                <button
-                  onClick={() => registrarIngreso(visitanteEncontrado.id)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold"
-                  disabled={visitanteEncontrado?.horaIngreso}
-                >
-                  Registrar Ingreso
-                </button>
+                {!visitanteEncontrado?.horaIngreso ? (
 
-                <div className="flex items-center gap-2 text-green-600 font-bold">
-                  <CheckCircle2 size={16} />
-                  {visitanteEncontrado?.horaIngreso || "Sin ingreso"}
-                </div>
+                  <button
+                    onClick={() => registrarIngreso(visitanteEncontrado.id)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold"
+                  >
+                    Registrar Ingreso
+                  </button>
+
+                ) : (
+
+                  <div className="flex items-center gap-2 text-green-600 font-bold bg-green-100 px-4 py-2 rounded-xl">
+                    <CheckCircle2 size={16} />
+                    {visitanteEncontrado.horaIngreso}
+                  </div>
+
+                )}
 
               </div>
 
               {/* SALIDA */}
               <div className="flex flex-col items-end gap-2">
 
-                <button
-                  onClick={() => registrarSalida(visitanteEncontrado.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
-                  disabled={!visitanteEncontrado?.horaIngreso || visitanteEncontrado?.horaSalida}
-                >
-                  Registrar Salida
-                </button>
+                {!visitanteEncontrado?.horaSalida ? (
 
-                <div className="flex items-center gap-2 text-red-500 font-bold">
-                  <Clock3 size={16} />
-                  {visitanteEncontrado?.horaSalida || "Sin salida"}
-                </div>
+                  <button
+                    onClick={() => registrarSalida(visitanteEncontrado.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
+                    disabled={!visitanteEncontrado?.horaIngreso}
+                  >
+                    Registrar Salida
+                  </button>
+
+                ) : (
+
+                  <div className="flex items-center gap-2 text-red-500 font-bold bg-red-100 px-4 py-2 rounded-xl">
+                    <Clock3 size={16} />
+                    {visitanteEncontrado.horaSalida}
+                  </div>
+
+                )}
 
               </div>
 

@@ -1,5 +1,6 @@
 // src/pages/modulos/visitas/components/AutorizarVisitas.jsx
 import { useEffect, useMemo, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 import api from "../../../../api/axios";
 import {
   ShieldCheck,
@@ -35,7 +36,8 @@ const [user] = useState(() => {
   /* ========================= */
   /* OBTENER NOMBRE SEDE */
   /* ========================= */
-
+const [paginaActual, setPaginaActual] = useState(1);
+const registrosPorPagina = 8;
   const obtenerNombreSede = (sedeId) => {
 
     for (const zonal of zonales) {
@@ -111,6 +113,8 @@ const [visitas, setVisitas] = useState([]);
 
   };
   console.log("USER LOGUEADO:", user);
+  const [openQRModal, setOpenQRModal] = useState(false);
+const [qrSeleccionado, setQrSeleccionado] = useState("");
 /* ========================= */ /* MODAL VISITANTES */ /* ========================= */ 
 const [openVisitantesModal, setOpenVisitantesModal] = useState(false); 
 const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
@@ -119,15 +123,14 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
   /* ========================= */
 
  const visitasFiltradas = useMemo(() => {
-
   let data = [...visitas];
 
+  // FILTRO
   data = data.filter((item) => {
-
     const texto = `
       ${item.codigo}
       ${item.tipo}
-      ${item.fecha}
+      ${item.fechaInicio}
       ${item.estado}
       ${item.motivo}
       ${item.sede?.nombre || "SIN SEDE"}
@@ -135,33 +138,76 @@ const [visitaSeleccionada, setVisitaSeleccionada] = useState(null);
     `.toLowerCase();
 
     return texto.includes(busqueda.toLowerCase());
-
   });
 
+  // SORT
   if (sortConfig.key) {
-
     data.sort((a, b) => {
+      let aValue;
+      let bValue;
 
-      let aValue = a[sortConfig.key];
-      let bValue = b[sortConfig.key];
+      switch (sortConfig.key) {
+        case "codigo":
+          aValue = a.codigo;
+          bValue = b.codigo;
+          break;
 
-      if (aValue < bValue) {
-        return sortConfig.direction === "asc" ? -1 : 1;
+        case "tipo":
+          aValue = a.tipo;
+          bValue = b.tipo;
+          break;
+
+        case "fecha":
+          aValue = new Date(a.fechaInicio || 0);
+          bValue = new Date(b.fechaInicio || 0);
+          break;
+
+        case "sede":
+          aValue = a.sede?.nombre || "";
+          bValue = b.sede?.nombre || "";
+          break;
+
+        case "area":
+          aValue = a.ambiente?.nombre || "";
+          bValue = b.ambiente?.nombre || "";
+          break;
+
+        case "estado":
+          aValue = a.estado;
+          bValue = b.estado;
+          break;
+
+        case "autorizado":
+          aValue = a.autorizadoPor?.nombre || "";
+          bValue = b.autorizadoPor?.nombre || "";
+          break;
+
+        default:
+          return 0;
       }
 
-      if (aValue > bValue) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
       return 0;
-
     });
-
   }
 
   return data;
+}, [visitas, busqueda, sortConfig]);
+const totalPaginas = Math.ceil(
+  visitasFiltradas.length / registrosPorPagina
+);
 
-}, [visitas, busqueda, sortConfig]); 
+const indiceInicial =
+  (paginaActual - 1) * registrosPorPagina;
+
+const indiceFinal =
+  indiceInicial + registrosPorPagina;
+
+const visitasPaginadas = visitasFiltradas.slice(
+  indiceInicial,
+  indiceFinal
+);
 const toggleAutorizacion = async (id) => {
   try {
     console.log("CLICK ID:", id);
@@ -216,6 +262,9 @@ useEffect(() => {
 const pendientes = visitas.filter(v => v.estado === "PENDIENTE").length;
 const autorizadas = visitas.filter(v => v.estado === "AUTORIZADO").length;
 const total = visitas.length;
+useEffect(() => {
+  setPaginaActual(1);
+}, [busqueda]);
   return (
 
     <main className="p-6 lg:p-8">
@@ -386,9 +435,12 @@ const total = visitas.length;
                   TIPO
                 </th>
 
-                <th className="px-6 py-4">
-                  FECHA
-                </th>
+                <th
+                onClick={() => handleSort("fecha")}
+                className="px-6 py-4 cursor-pointer"
+              >
+                FECHA
+              </th>
 
                 <th className="px-6 py-4">
                   LOCAL
@@ -423,7 +475,7 @@ const total = visitas.length;
 
             <tbody>
 
-              {visitasFiltradas.map((item) => (
+              {visitasPaginadas.map((item) => (
 
                 <tr
                   key={item.id}
@@ -445,7 +497,7 @@ const total = visitas.length;
                   </td>
 
                   <td className="px-6 py-5">
-                    {item.fecha ? new Date(item.fecha).toLocaleDateString() : "-"}
+                    {item.fechaInicio ? new Date(item.fechaInicio).toLocaleDateString() : "-"}
                   </td>
 
                   <td className="px-6 py-5">
@@ -548,7 +600,63 @@ const total = visitas.length;
             </tbody>
 
           </table>
+<div className="flex flex-col lg:flex-row items-center justify-between gap-4 px-6 py-5">
 
+  <p className="text-sm text-gray-500">
+    Mostrando{" "}
+    <span className="font-bold text-[#1E55C0]">
+      {indiceInicial + 1}
+    </span>{" "}
+    -{" "}
+    <span className="font-bold text-[#1E55C0]">
+      {Math.min(indiceFinal, visitasFiltradas.length)}
+    </span>{" "}
+    de{" "}
+    <span className="font-bold text-[#1E55C0]">
+      {visitasFiltradas.length}
+    </span>
+  </p>
+
+  <div className="flex gap-2 flex-wrap justify-center">
+
+    <button
+      onClick={() =>
+        setPaginaActual((p) => Math.max(p - 1, 1))
+      }
+      disabled={paginaActual === 1}
+      className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-40"
+    >
+      Anterior
+    </button>
+
+    {Array.from({ length: totalPaginas }, (_, i) => (
+      <button
+        key={i + 1}
+        onClick={() => setPaginaActual(i + 1)}
+        className={`px-4 py-2 rounded-xl font-bold ${
+          paginaActual === i + 1
+            ? "bg-[#1E55C0] text-white"
+            : "border border-gray-200"
+        }`}
+      >
+        {i + 1}
+      </button>
+    ))}
+
+    <button
+      onClick={() =>
+        setPaginaActual((p) =>
+          Math.min(p + 1, totalPaginas)
+        )
+      }
+      disabled={paginaActual === totalPaginas}
+      className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-40"
+    >
+      Siguiente
+    </button>
+
+  </div>
+</div>
         </div>
 {/* ========================= */}
 {/* MODAL VISITANTES */}
@@ -658,10 +766,14 @@ const total = visitas.length;
 
                   <td className="px-5 py-5">
 
-                    <button className="bg-[#1E55C0] hover:bg-[#1947a3] transition text-white px-4 py-2 rounded-xl font-bold text-sm">
-
+                    <button
+                      onClick={() => {
+                        setQrSeleccionado(visitante.qrData);
+                        setOpenQRModal(true);
+                      }}
+                      className="bg-[#1E55C0] hover:bg-[#1947a3] transition text-white px-4 py-2 rounded-xl font-bold text-sm"
+                    >
                       Ver QR
-
                     </button>
 
                   </td>
@@ -705,7 +817,37 @@ const total = visitas.length;
 
 
       </div>
+{openQRModal && (
 
+  <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+
+    <div className="bg-white rounded-3xl p-8 shadow-2xl w-full max-w-md relative">
+
+      <button
+        onClick={() => setOpenQRModal(false)}
+        className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+      >
+        <X size={20} />
+      </button>
+
+      <h2 className="text-2xl font-black text-[#1E55C0] mb-6 text-center">
+        Código QR
+      </h2>
+
+      <div className="flex justify-center">
+
+        <QRCodeCanvas
+          value={qrSeleccionado}
+          size={260}
+        />
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
     </main>
 
   );

@@ -125,7 +125,6 @@ model Visita {
   fechaInicio DateTime @db.Date
   fechaFin    DateTime @db.Date
 
-  // HORARIO GENERAL DE LA VISITA
   horaEntrada String?
   horaSalida  String?
 
@@ -139,6 +138,8 @@ model Visita {
   ambiente    Ambiente @relation(fields: [ambienteId], references: [id])
 
   visitantes  Visitante[]
+
+  contactoExterno ContactoExterno[]
 
   createdAt String
 }
@@ -159,10 +160,24 @@ model Visitante {
   estadoQr        String
 
   // DATOS INDIVIDUALES
-  cargo           String?
   horaIngreso String?
 horaSalida  String?
 
   visitaId        Int
   visita          Visita   @relation(fields: [visitaId], references: [id])
+}
+model ContactoExterno {
+
+id        Int    @id @default(autoincrement())
+
+nombre    String
+email     String
+empresa   String?
+
+visitaId  Int
+
+visita    Visita @relation(fields: [visitaId], references: [id])
+
+@@index([visitaId])
+
 }

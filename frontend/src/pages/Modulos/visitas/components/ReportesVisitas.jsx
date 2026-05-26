@@ -28,7 +28,13 @@ export default function ReportesVisitas() {
 
     fetchVisitas();
   }, []);
- 
+ const [sortConfig, setSortConfig] = useState({
+  key: "",
+  direction: "asc",
+});
+
+const [paginaActual, setPaginaActual] = useState(1);
+const registrosPorPagina = 8;
   /* ========================= */
   /* GENERAR FILAS */
   /* ========================= */
@@ -57,8 +63,13 @@ export default function ReportesVisitas() {
         horario: `${visita.horaEntrada} - ${visita.horaSalida}`,
         motivo: visita.motivo,
 
-        entrada: "11:45",
-        salida: "11:45",
+        entrada: visitante.horaIngreso
+  ? visitante.horaIngreso.split(" ")[1]?.slice(0, 5)
+  : "SIN REGISTRO",
+
+salida: visitante.horaSalida
+  ? visitante.horaSalida.split(" ")[1]?.slice(0, 5)
+  : "SIN REGISTRO",
 
       });
 
@@ -85,6 +96,15 @@ export default function ReportesVisitas() {
   });
 
 }, [visitas, busqueda]);
+const handleSort = (key) => {
+  let direction = "asc";
+
+  if (sortConfig.key === key && sortConfig.direction === "asc") {
+    direction = "desc";
+  }
+
+  setSortConfig({ key, direction });
+};
   /* ========================= */
   /* EXPORTAR EXCEL */
   /* ========================= */
@@ -281,6 +301,55 @@ export default function ReportesVisitas() {
   ventana.close();
 
 };
+const filasFiltradas = useMemo(() => {
+  let data = [...filasReporte];
+
+  // FILTRO
+  data = data.filter((item) => {
+    const texto = `
+      ${item.fecha}
+      ${item.dni}
+      ${item.nombres}
+      ${item.apellidoPaterno}
+      ${item.apellidoMaterno}
+      ${item.empresa}
+      ${item.local}
+      ${item.area}
+      ${item.motivo}
+    `.toLowerCase();
+
+    return texto.includes(busqueda.toLowerCase());
+  });
+
+  // SORT
+  if (sortConfig.key) {
+    data.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      // fechas bien manejadas
+      if (sortConfig.key === "fecha") {
+        aValue = new Date(aValue || 0);
+        bValue = new Date(bValue || 0);
+      }
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
+  return data;
+}, [filasReporte, busqueda, sortConfig]);
+const totalPaginas = Math.ceil(filasFiltradas.length / registrosPorPagina);
+
+const indiceInicial = (paginaActual - 1) * registrosPorPagina;
+const indiceFinal = indiceInicial + registrosPorPagina;
+
+const filasPaginadas = filasFiltradas.slice(indiceInicial, indiceFinal);
+useEffect(() => {
+  setPaginaActual(1);
+}, [busqueda]);
   return (
 
 <main className="w-full max-w-full p-3 sm:p-5 lg:p-8 overflow-hidden">
@@ -381,15 +450,15 @@ export default function ReportesVisitas() {
 
               <tr className="text-left text-xs uppercase">
 
-                <th className="px-6 py-4">
+                <th onClick={() => handleSort("fecha")} className="cursor-pointer">
                   Fecha
                 </th>
 
-                <th className="px-6 py-4">
+                <th onClick={() => handleSort("dni")} className="cursor-pointer">
                   DNI
                 </th>
 
-                <th className="px-6 py-4">
+                <th onClick={() => handleSort("nombres")} className="cursor-pointer">
                   Nombres
                 </th>
 
@@ -401,7 +470,7 @@ export default function ReportesVisitas() {
                   Ap. Materno
                 </th>
 
-                <th className="px-6 py-4">
+                <th onClick={() => handleSort("empresa")} className="cursor-pointer">
                   Empresa
                 </th>
 
@@ -435,9 +504,7 @@ export default function ReportesVisitas() {
 
             <tbody>
 
-              {filasReporte.map(
-                (item, index) => (
-
+              {filasPaginadas.map((item, index) => (
                   <tr
                     key={index}
                     className="border-b border-gray-100 hover:bg-[#f8fafc]"
@@ -503,7 +570,39 @@ export default function ReportesVisitas() {
         </div>
 
       </div>
+<div className="flex gap-2 justify-center mt-4">
 
+  <button
+    onClick={() => setPaginaActual((p) => Math.max(p - 1, 1))}
+    disabled={paginaActual === 1}
+    className="px-4 py-2 border border-gray-200 rounded-xl"
+  >
+    Anterior
+  </button>
+
+  {Array.from({ length: totalPaginas }, (_, i) => (
+    <button
+      key={i + 1}
+      onClick={() => setPaginaActual(i + 1)}
+      className={`px-4 py-2 rounded-xl border border-gray-200 ${
+        paginaActual === i + 1 ? "bg-[#1E55C0] text-white" : ""
+      }`}
+    >
+      {i + 1}
+    </button>
+  ))}
+
+  <button
+    onClick={() =>
+      setPaginaActual((p) => Math.min(p + 1, totalPaginas))
+    }
+    disabled={paginaActual === totalPaginas}
+    className="px-4 py-2 border border-gray-200 rounded-xl"
+  >
+    Siguiente
+  </button>
+
+</div>
     </main>
 
   );

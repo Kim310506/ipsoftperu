@@ -55,10 +55,12 @@ const [horaSalida, setHoraSalida] = useState("");
   /* ========================= */
   /* SUBMIT */
   /* ========================= */
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
+
   try {
 
     const payload = {
+
       tipo: tipoVisita,
 
       sedeId: sedeSeleccionada
@@ -79,19 +81,20 @@ const [horaSalida, setHoraSalida] = useState("");
 
       estado: "PENDIENTE",
 
-      encargado: {
-        dni,
-        nombres,
-        apellidoPaterno,
-        apellidoMaterno,
-        email,
-        empresa,
-      },
+      encargado:
+        tipoVisita === "EXTERNO"
+          ? {
+              nombres,
+              email,
+              empresa,
+            }
+          : null,
 
       visitantes:
         tipoVisita === "INTERNO"
           ? visitantes
           : [],
+
     };
 
     const res = await api.post(
@@ -99,7 +102,19 @@ const [horaSalida, setHoraSalida] = useState("");
       payload
     );
 
-    alert("Visita registrada");
+    if (tipoVisita === "EXTERNO") {
+
+      alert(
+        "Visita externa registrada correctamente. Se envió el enlace al contacto."
+      );
+
+    } else {
+
+      alert(
+        "Visita registrada correctamente."
+      );
+
+    }
 
     setOpenModal(false);
 
@@ -110,6 +125,7 @@ const [horaSalida, setHoraSalida] = useState("");
     alert("Error");
 
   }
+
 };
   return (
 

@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 
 import LoginAdmin from "./pages/Administracion/LoginAdmin";
 import DashboardAdmin from "./pages/Administracion/DashboardAdmin";
-
+import RegistroExterno from "./pages/Modulos/visitas/components/ProgramarVisitas/RegistroExterno";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 /* VISITAS */
@@ -74,7 +74,10 @@ export default function App() {
       <Route path="/proveedores/dashboard" element={<ProveedoresDashboard />} />
 
       {/* EXTINTORES */}
-
+      <Route
+        path="/registro-externo/:codigo"
+        element={<RegistroExterno />}
+      />
   
 
     </Routes>

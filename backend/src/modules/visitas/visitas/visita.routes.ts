@@ -9,7 +9,9 @@ import {
   verificarQRController,
   dashboardVisitas,
   registrarIngresoVisitante,
-  registrarSalidaVisitante
+  registrarSalidaVisitante,
+    registrarVisitantesExternos
+
 } from "./visita.controller";
 
 const router = Router();
@@ -25,4 +27,7 @@ router.post("/verificar-qr", verificarQRController);
 router.put("/visitantes/ingreso/:id", registrarIngresoVisitante);
 
 router.put("/visitantes/salida/:id", registrarSalidaVisitante);
-export default router;
+router.post(
+  "/registro-externo/:codigo",
+  registrarVisitantesExternos
+);export default router;
