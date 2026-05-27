@@ -24,7 +24,16 @@ const [user] = useState(() => {
   /* ========================= */
   /* STATES */
   /* ========================= */
+const rol = user?.rol;
 
+const [openMotivoModal, setOpenMotivoModal] = useState(false);
+
+const [accionActual, setAccionActual] = useState("");
+
+const [motivo, setMotivo] = useState("");
+
+const [visitaSeleccionadaAccion, setVisitaSeleccionadaAccion] =
+  useState(null);
   const [busqueda, setBusqueda] = useState("");
 
   const [sortConfig, setSortConfig] =
@@ -208,41 +217,99 @@ const visitasPaginadas = visitasFiltradas.slice(
   indiceInicial,
   indiceFinal
 );
-const toggleAutorizacion = async (id) => {
+const actualizarEstadoVisita = async (
+  visita,
+  estado,
+  motivoTexto = ""
+) => {
+
   try {
-    console.log("CLICK ID:", id);
 
-    const visita = visitas.find(v => v.id === id);
-    if (!visita) return;
+    let res;
 
-    const nuevoEstado =
-      visita.estado === "AUTORIZADO" ? "PENDIENTE" : "AUTORIZADO";
+    // =========================
+    // AUTORIZAR
+    // =========================
 
-    const res = await api.put(`/visitas/${id}`, {
-      estado: nuevoEstado,
-      autorizadoPorId: nuevoEstado === "AUTORIZADO" ? user?.id : null,
-    });
+    if (estado === "AUTORIZADO") {
 
-    console.log("ACTUALIZADO:", res.data);
-
-    setVisitas(prev =>
-  prev.map(v =>
-    v.id === id
-      ? {
-          ...v,
-          estado: nuevoEstado,
-          autorizadoPor:
-            nuevoEstado === "AUTORIZADO"
-              ? { nombre: user?.nombre } // o el campo que tengas
-              : null
+      res = await api.put(
+        `/visitas/${visita.id}/autorizar`,
+        {
+          accionPorId: user?.id,
         }
-      : v
-  )
-);
+      );
+
+    }
+
+    // =========================
+    // DESAUTORIZAR
+    // =========================
+
+    if (estado === "DESAUTORIZADO") {
+
+      res = await api.put(
+        `/visitas/${visita.id}/desautorizar`,
+        {
+          accionPorId: user?.id,
+          motivoAccion:
+            motivoTexto,
+        }
+      );
+
+    }
+
+    // =========================
+    // CANCELAR
+    // =========================
+
+    if (estado === "CANCELADO") {
+
+      res = await api.put(
+        `/visitas/${visita.id}/cancelar`,
+        {
+          accionPorId: user?.id,
+          motivoAccion:
+            motivoTexto,
+        }
+      );
+
+    }
+
+    setVisitas((prev) =>
+      prev.map((v) =>
+        v.id === visita.id
+          ? res.data
+          : v
+      )
+    );
+
+    setOpenMotivoModal(false);
+
+    setMotivo("");
+
+    setVisitaSeleccionadaAccion(null);
 
   } catch (error) {
-    console.log("ERROR:", error.response?.data || error.message);
+
+    console.log(error);
+
   }
+
+};
+const abrirModalAccion = (
+  visita,
+  accion
+) => {
+
+  setVisitaSeleccionadaAccion(visita);
+
+  setAccionActual(accion);
+
+  setMotivo("");
+
+  setOpenMotivoModal(true);
+
 };
 useEffect(() => {
   const fetchVisitas = async () => {
@@ -529,18 +596,20 @@ useEffect(() => {
                         ${
                           item.estado === "AUTORIZADO"
                             ? "bg-green-100 text-green-700"
+                            : item.estado === "DESAUTORIZADO"
+                            ? "bg-red-100 text-red-700"
+                            : item.estado === "CANCELADO"
+                            ? "bg-gray-200 text-gray-700"
                             : "bg-yellow-100 text-yellow-700"
                         }
                       `}
                     >
-
                       {item.estado}
-
                     </span>
 
                   </td>
                    <td className="px-6 py-5">
-                    {item.autorizadoPor?.nombre || "-"}
+                    {item.accionPor?.nombre || "-"}
                   </td>
                   <td className="px-6 py-5">
 
@@ -565,34 +634,109 @@ useEffect(() => {
 
                   </td>      
                   <td className="px-6 py-5">
+                  <div className="flex justify-center gap-2 flex-wrap">
+                    {/* ========================= */}
+                    {/* ROL RA */}
+                    {/* ========================= */}
+                    {rol === "RESPONSABLE DE AREA (RA)" && (
+  <>
+    {/* SOLO PENDIENTE */}
+    {item.estado === "PENDIENTE" && (
+      <button
+        onClick={() =>
+          actualizarEstadoVisita(
+            item,
+            "AUTORIZADO"
+          )
+        }
+        className="
+          bg-green-500
+          hover:bg-green-600
+          transition
+          text-white
+          px-5
+          py-2
+          rounded-xl
+          font-bold
+          flex
+          items-center
+          gap-2
+        "
+      >
+        <Check size={17} />
+        Autorizar
+      </button>
+    )}
 
-                    <div className="flex justify-center">
+    {/* SOLO AUTORIZADO */}
+    {item.estado === "AUTORIZADO" && (
+      <button
+        onClick={() =>
+          abrirModalAccion(
+            item,
+            "DESAUTORIZADO"
+          )
+        }
+        className="
+          bg-red-500
+          hover:bg-red-600
+          transition
+          text-white
+          px-5
+          py-2
+          rounded-xl
+          font-bold
+          flex
+          items-center
+          gap-2
+        "
+      >
+        <X size={17} />
+        Desautorizar
+      </button>
+    )}
+  </>
+)}
+                    {/* ========================= */}
+                    {/* ROL SA */}
+                    {/* ========================= */}
 
-                      {item.estado === "AUTORIZADO" ? (
+                    {rol === "SOLICITANTE DE ACCESO (SA)" &&
+ item.estado === "PENDIENTE" && (
 
-                        <button
-                            onClick={() => toggleAutorizacion(item.id)}
-                            className="bg-red-500 hover:bg-red-600 transition text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm"
-                          >
-                            <X size={17} />
-                            Desautorizar
-                          </button>
+                      <button
+                        onClick={() =>
+                          abrirModalAccion(
+                            item,
+                            "CANCELADO"
+                          )
+                        }
+                        className="
+                          bg-red-500
+                          hover:bg-red-600
+                          transition
+                          text-white
+                          px-5
+                          py-2
+                          rounded-xl
+                          font-bold
+                          flex
+                          items-center
+                          gap-2
+                        "
+                      >
 
-                      ) : (
+                        <X size={17} />
 
-                        <button
-                            onClick={() => toggleAutorizacion(item.id)}
-                            className="bg-green-500 hover:bg-green-600 transition text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm"
-                          >
-                            <Check size={17} />
-                            Autorizar
-                          </button>
+                        Cancelar
 
-                      )}
+                      </button>
 
-                    </div>
+                    )}
 
-                  </td>
+                  </div>
+
+                </td>
                 </tr>
 
               ))}
@@ -840,6 +984,162 @@ useEffect(() => {
           value={qrSeleccionado}
           size={260}
         />
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
+{/* ========================= */}
+{/* MODAL MOTIVO */}
+{/* ========================= */}
+
+{openMotivoModal && (
+
+  <div className="
+    fixed
+    inset-0
+    z-[80]
+    bg-black/40
+    backdrop-blur-sm
+    flex
+    items-center
+    justify-center
+    p-4
+  ">
+
+    <div className="
+      bg-white
+      w-full
+      max-w-lg
+      rounded-3xl
+      shadow-2xl
+      overflow-hidden
+    ">
+
+      {/* HEADER */}
+      <div className="
+        bg-gradient-to-r
+        from-[#1E55C0]
+        to-[#3f83f8]
+        px-6
+        py-5
+        flex
+        items-center
+        justify-between
+      ">
+
+        <div>
+
+          <h2 className="text-2xl font-black text-white">
+
+            {accionActual === "CANCELADO"
+              ? "Cancelar visita"
+              : "Desautorizar visita"}
+
+          </h2>
+
+          <p className="text-blue-100 text-sm mt-1">
+
+            Escribe el motivo
+
+          </p>
+
+        </div>
+
+        <button
+          onClick={() =>
+            setOpenMotivoModal(false)
+          }
+          className="
+            w-10
+            h-10
+            rounded-xl
+            bg-white/20
+            hover:bg-white/30
+            text-white
+            flex
+            items-center
+            justify-center
+          "
+        >
+
+          <X size={20} />
+
+        </button>
+
+      </div>
+
+      {/* BODY */}
+      <div className="p-6">
+
+        <textarea
+          value={motivo}
+          onChange={(e) =>
+            setMotivo(e.target.value)
+          }
+          placeholder="Escribe el motivo..."
+          rows={5}
+          className="
+            w-full
+            border
+            border-gray-300
+            rounded-2xl
+            p-4
+            outline-none
+            focus:border-[#1E55C0]
+            resize-none
+          "
+        />
+
+        <div className="
+          flex
+          justify-end
+          gap-3
+          mt-6
+        ">
+
+          <button
+            onClick={() =>
+              setOpenMotivoModal(false)
+            }
+            className="
+              px-5
+              py-3
+              rounded-xl
+              border
+              font-bold
+            "
+          >
+            Cancelar
+          </button>
+
+          <button
+            onClick={() =>
+              actualizarEstadoVisita(
+                visitaSeleccionadaAccion,
+                accionActual,
+                motivo
+              )
+            }
+            className="
+              bg-red-500
+              hover:bg-red-600
+              text-white
+              px-5
+              py-3
+              rounded-xl
+              font-bold
+            "
+          >
+
+            Guardar
+
+          </button>
+
+        </div>
 
       </div>
 

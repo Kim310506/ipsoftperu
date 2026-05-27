@@ -17,7 +17,22 @@ export default function SidebarVisitas({
   setMenuActivo,
   cerrarSesion,
 }) {
+
   const [openSidebar, setOpenSidebar] = useState(false);
+
+  // OBTENER USUARIO
+  const usuarioStorage = localStorage.getItem("visitasUser");
+
+  const usuario = usuarioStorage
+    ? JSON.parse(usuarioStorage)
+    : null;
+
+  console.log("USUARIO:", usuario);
+
+  // OBTENER ROL
+  const rol = usuario?.user?.rol || usuario?.rol;
+
+  console.log("ROL:", rol);
 
   return (
     <>
@@ -99,81 +114,204 @@ export default function SidebarVisitas({
         {/* MENU */}
         <div className="flex flex-col gap-4 p-5">
 
-          <button
-            onClick={() => {
-              setMenuActivo("inicio");
-              setOpenSidebar(false);
-            }}
-            className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
-              ${menuActivo === "inicio"
-                ? "bg-white text-[#244db7] shadow-lg"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <Home size={20} />
-            INICIO
-          </button>
+          {/* ========================= */}
+{/* MENÚ SEGÚN ROL */}
+{/* ========================= */}
 
-          <button
-            onClick={() => {
-              setMenuActivo("consultas");
-              setOpenSidebar(false);
-            }}
-            className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
-              ${menuActivo === "consultas"
-                ? "bg-white text-[#244db7] shadow-lg"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <Search size={20} />
-            CONSULTAS
-          </button>
+{/* SA */}
+{rol === "SOLICITANTE DE ACCESO (SA)" && (
+  <>
+    <button
+      onClick={() => {
+        setMenuActivo("programar");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "programar"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <Calendar size={20} />
+      PROGRAMAR
+    </button>
 
-          <button
-            onClick={() => {
-              setMenuActivo("programar");
-              setOpenSidebar(false);
-            }}
-            className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
-              ${menuActivo === "programar"
-                ? "bg-white text-[#244db7] shadow-lg"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <Calendar size={20} />
-            PROGRAMAR
-          </button>
+    <button
+      onClick={() => {
+        setMenuActivo("autorizar");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "autorizar"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <Check size={20} />
+      AUTORIZAR
+    </button>
+  </>
+)}
 
-          <button
-            onClick={() => {
-              setMenuActivo("autorizar");
-              setOpenSidebar(false);
-            }}
-            className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
-              ${menuActivo === "autorizar"
-                ? "bg-white text-[#244db7] shadow-lg"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <Check size={20} />
-            AUTORIZAR
-          </button>
+{/* RA */}
+{rol === "RESPONSABLE DE AREA (RA)" && (
+  <>
+    <button
+      onClick={() => {
+        setMenuActivo("autorizar");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "autorizar"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <Check size={20} />
+      AUTORIZAR
+    </button>
 
-          <button
-            onClick={() => {
-              setMenuActivo("reportes");
-              setOpenSidebar(false);
-            }}
-            className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
-              ${menuActivo === "reportes"
-                ? "bg-white text-[#244db7] shadow-lg"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <FileText size={20} />
-            REPORTES
-          </button>
+    <button
+      onClick={() => {
+        setMenuActivo("reportes");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "reportes"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <FileText size={20} />
+      REPORTES
+    </button>
+  </>
+)}
 
+{/* REC */}
+{rol === "RECEPCION DE SEGURIDAD (REC)" && (
+  <>
+    <button
+      onClick={() => {
+        setMenuActivo("consultas");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "consultas"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <Search size={20} />
+      CONSULTAS
+    </button>
+
+    <button
+      onClick={() => {
+        setMenuActivo("reportes");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "reportes"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <FileText size={20} />
+      REPORTES
+    </button>
+  </>
+)}
+{/* ADMIN */}
+{rol === "ADMIN" && (
+  <>
+    <button
+      onClick={() => {
+        setMenuActivo("inicio");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "inicio"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <Home size={20} />
+      INICIO
+    </button>
+
+    <button
+      onClick={() => {
+        setMenuActivo("consultas");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "consultas"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <Search size={20} />
+      CONSULTAS
+    </button>
+
+    <button
+      onClick={() => {
+        setMenuActivo("programar");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "programar"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <Calendar size={20} />
+      PROGRAMAR
+    </button>
+
+    <button
+      onClick={() => {
+        setMenuActivo("autorizar");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "autorizar"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <Check size={20} />
+      AUTORIZAR
+    </button>
+
+    <button
+      onClick={() => {
+        setMenuActivo("reportes");
+        setOpenSidebar(false);
+      }}
+      className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+        ${
+          menuActivo === "reportes"
+            ? "bg-white text-[#244db7] shadow-lg"
+            : "text-white/80 hover:bg-white/10"
+        }`}
+    >
+      <FileText size={20} />
+      REPORTES
+    </button>
+  </>
+)}
         </div>
 
         {/* LOGOUT */}

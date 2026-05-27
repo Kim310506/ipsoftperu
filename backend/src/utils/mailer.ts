@@ -215,3 +215,148 @@ console.log(
 );
 }
 };
+export const enviarCorreoCancelacion = async (
+  to: string,
+  nombre: string,
+  motivo: string
+) => {
+
+  try {
+
+    const transporter = nodemailer.createTransport({
+
+      host: process.env.SMTP_HOST,
+
+      port: Number(process.env.SMTP_PORT),
+
+      secure: Number(process.env.SMTP_PORT) === 465,
+
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+
+      tls: {
+        rejectUnauthorized: false,
+      },
+
+    });
+
+    await transporter.sendMail({
+
+      from: `"Sistema Visitas" <${process.env.SMTP_USER}>`,
+
+      to,
+
+      subject: "Visita cancelada",
+
+      html: `
+        <div style="font-family: Arial; padding:20px;">
+
+          <h2 style="color:#dc2626;">
+            Visita cancelada
+          </h2>
+
+          <p>
+            Hola <b>${nombre}</b>,
+          </p>
+
+          <p>
+            La visita fue cancelada.
+          </p>
+
+          <p>
+            <b>Motivo:</b>
+            ${motivo}
+          </p>
+
+        </div>
+      `,
+    });
+
+    console.log("📩 Correo cancelación enviado:", to);
+
+  } catch (error: any) {
+
+    console.log(
+      "❌ Error correo cancelación:",
+      error.message
+    );
+
+  }
+
+};
+export const enviarCorreoDesautorizacion = async (
+  to: string,
+  nombre: string,
+  motivo: string
+) => {
+
+  try {
+
+    const transporter = nodemailer.createTransport({
+
+      host: process.env.SMTP_HOST,
+
+      port: Number(process.env.SMTP_PORT),
+
+      secure: Number(process.env.SMTP_PORT) === 465,
+
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+
+      tls: {
+        rejectUnauthorized: false,
+      },
+
+    });
+
+    await transporter.sendMail({
+
+      from: `"Sistema Visitas" <${process.env.SMTP_USER}>`,
+
+      to,
+
+      subject: "Visita desautorizada",
+
+      html: `
+        <div style="font-family: Arial; padding:20px;">
+
+          <h2 style="color:#dc2626;">
+            Visita desautorizada
+          </h2>
+
+          <p>
+            Hola <b>${nombre}</b>,
+          </p>
+
+          <p>
+            La visita fue desautorizada.
+          </p>
+
+          <p>
+            <b>Motivo:</b>
+            ${motivo}
+          </p>
+
+        </div>
+      `,
+    });
+
+    console.log(
+      "📩 Correo desautorización enviado:",
+      to
+    );
+
+  } catch (error: any) {
+
+    console.log(
+      "❌ Error correo desautorización:",
+      error.message
+    );
+
+  }
+
+};

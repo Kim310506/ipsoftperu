@@ -10,24 +10,84 @@ import {
   dashboardVisitas,
   registrarIngresoVisitante,
   registrarSalidaVisitante,
-    registrarVisitantesExternos
+  registrarVisitantesExternos,
+listarNotificaciones,
+  autorizarVisita,
+  desautorizarVisita,
+  cancelarVisita
 
 } from "./visita.controller";
 
 const router = Router();
 
-// 🔹 CRUD Visitas
-router.get("/", getVisitas);
-router.get("/dashboard", dashboardVisitas);
-router.get("/:id", getVisitaById);
-router.post("/", createVisita);
-router.put("/:id", updateVisita);
-router.delete("/:id", deleteVisita);
-router.post("/verificar-qr", verificarQRController);
-router.put("/visitantes/ingreso/:id", registrarIngresoVisitante);
+/* ========================= */
+/* CRUD */
+/* ========================= */
 
-router.put("/visitantes/salida/:id", registrarSalidaVisitante);
+router.get("/", getVisitas);
+
+router.get("/dashboard", dashboardVisitas);
+
+router.get("/:id", getVisitaById);
+
+router.post("/", createVisita);
+
+router.put("/:id", updateVisita);
+
+router.delete("/:id", deleteVisita);
+
+/* ========================= */
+/* AUTORIZACION */
+/* ========================= */
+
+router.put(
+  "/:id/autorizar",
+  autorizarVisita
+);
+
+router.put(
+  "/:id/desautorizar",
+  desautorizarVisita
+);
+
+router.put(
+  "/:id/cancelar",
+  cancelarVisita
+);
+
+/* ========================= */
+/* QR */
+/* ========================= */
+
+router.post(
+  "/verificar-qr",
+  verificarQRController
+);
+
+/* ========================= */
+/* INGRESOS */
+/* ========================= */
+
+router.put(
+  "/visitantes/ingreso/:id",
+  registrarIngresoVisitante
+);
+
+router.put(
+  "/visitantes/salida/:id",
+  registrarSalidaVisitante
+);
+
+/* ========================= */
+/* REGISTRO EXTERNO */
+/* ========================= */
+
 router.post(
   "/registro-externo/:codigo",
   registrarVisitantesExternos
-);export default router;
+);
+router.get(
+  "/notificaciones",
+  listarNotificaciones
+);
+export default router;

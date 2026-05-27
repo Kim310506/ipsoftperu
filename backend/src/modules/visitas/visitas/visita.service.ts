@@ -2,7 +2,9 @@ import { randomUUID } from "crypto";
 import { prisma } from "../../../config/prisma";
 import {
   enviarCorreoQR,
-  enviarCorreoRegistroExterno
+  enviarCorreoRegistroExterno,
+  enviarCorreoDesautorizacion,
+  enviarCorreoCancelacion
 } from "../../../utils/mailer";
 import QRCode from "qrcode";
 const ahoraPeruString = () => {
@@ -17,7 +19,7 @@ export const listarVisitasService = async () => {
       sede: { include: { zonal: true } },
       ambiente: { include: { piso: { include: { pabellon: true } } } },
       visitantes: true,
-      autorizadoPor: true
+      accionPor: true
     }
   });
 
@@ -73,7 +75,7 @@ export const crearVisitaService = async (data: any) => {
         fechaFin: new Date(data.fechaFin),
         horaEntrada: data.horaEntrada,
         horaSalida: data.horaSalida,
-        autorizadoPorId: null,
+        accionPorId: null,
         sedeId: data.sedeId,
         ambienteId: data.ambienteId,
         createdAt: ahoraPeruString()
@@ -268,7 +270,7 @@ export const actualizarVisitaService = async (id: number, data: any) => {
     sedeId: data.sedeId,
     ambienteId: data.ambienteId,
     estado: data.estado,
-    autorizadoPorId: data.autorizadoPorId,
+    accionPorId: data.accionPorId,
   };
 
   if (data.fechaInicio) {
@@ -284,23 +286,240 @@ export const actualizarVisitaService = async (id: number, data: any) => {
     data: updateData
   });
 };
-export const autorizarVisitaService = async (id: number, userId: number) => {
-  return await prisma.visita.update({
+/* ========================= */
+/* AUTORIZAR */
+/* ========================= */
+
+export const autorizarVisitaService = async (
+  id: number,
+  accionPorId: number
+) => {
+
+  const visita = await prisma.visita.findUnique({
     where: { id },
+  });
+
+  if (!visita) {
+    throw new Error("Visita no encontrada");
+  }
+
+  // BLOQUEAR
+  if (
+    visita.estado === "DESAUTORIZADO" ||
+    visita.estado === "CANCELADO"
+  ) {
+    throw new Error(
+      "La visita ya no puede modificarse"
+    );
+  }
+
+  return await prisma.visita.update({
+    where: {
+      id,
+    },
+
     data: {
       estado: "AUTORIZADO",
-      autorizadoPorId: userId
-    }
+      accionPorId,
+      fechaAccion: new Date(),
+      motivoAccion: null,
+    },
+
+    include: {
+      accionPor: true,
+    },
   });
 };
-export const desautorizarVisitaService = async (id: number) => {
-  return await prisma.visita.update({
+
+/* ========================= */
+/* DESAUTORIZAR */
+/* ========================= */
+export const desautorizarVisitaService = async (
+  id: number,
+  accionPorId: number,
+  motivoAccion: string
+) => {
+
+  const visita = await prisma.visita.findUnique({
     where: { id },
-    data: {
-      estado: "PENDIENTE",
-      autorizadoPorId: null
+
+    include: {
+      visitantes: true,
+          contactoExterno: true,
     }
   });
+
+  if (!visita) {
+    throw new Error("Visita no encontrada");
+  }
+
+  if (
+    visita.estado === "DESAUTORIZADO" ||
+    visita.estado === "CANCELADO"
+  ) {
+    throw new Error(
+      "La visita ya no puede modificarse"
+    );
+  }
+
+  const visitaActualizada =
+    await prisma.visita.update({
+
+      where: { id },
+
+      data: {
+
+        estado: "DESAUTORIZADO",
+
+        accionPorId,
+
+        motivoAccion,
+
+        fechaAccion: new Date(),
+
+      },
+
+      include: {
+        accionPor: true,
+      },
+
+    });
+
+  // =========================
+  // CORREO A VISITANTES
+  // =========================
+
+  for (const visitante of visita.visitantes) {
+
+  if (visitante.email) {
+
+    enviarCorreoDesautorizacion(
+      visitante.email,
+      visitante.nombres,
+      motivoAccion
+    ).catch(console.log);
+
+  }
+
+}
+
+// =========================
+// CORREO A CONTACTO EXTERNO
+// =========================
+
+if (visita.tipo === "EXTERNO") {
+
+  for (const contacto of visita.contactoExterno) {
+
+    if (contacto.email) {
+
+      enviarCorreoDesautorizacion(
+        contacto.email,
+        contacto.nombre,
+        motivoAccion
+      ).catch(console.log);
+
+    }
+
+  }
+
+}
+
+  return visitaActualizada;
+};
+/* ========================= */
+/* CANCELAR */
+/* ========================= */
+export const cancelarVisitaService = async (
+  id: number,
+  accionPorId: number,
+  motivoAccion: string
+) => {
+
+  const visita = await prisma.visita.findUnique({
+    where: { id },
+
+    include: {
+      visitantes: true,
+      contactoExterno: true,
+    }
+  });
+
+  if (!visita) {
+    throw new Error("Visita no encontrada");
+  }
+
+  if (
+    visita.estado === "DESAUTORIZADO" ||
+    visita.estado === "CANCELADO"
+  ) {
+    throw new Error(
+      "La visita ya no puede modificarse"
+    );
+  }
+
+  const visitaActualizada =
+    await prisma.visita.update({
+
+      where: { id },
+
+      data: {
+
+        estado: "CANCELADO",
+
+        accionPorId,
+
+        motivoAccion,
+
+        fechaAccion: new Date(),
+
+      },
+
+      include: {
+        accionPor: true,
+      },
+
+    });
+
+  // =========================
+  // ENVIAR CORREOS
+  // =========================
+console.log(visita.visitantes);
+  for (const visitante of visita.visitantes) {
+
+    if (visitante.email) {
+
+      enviarCorreoCancelacion(
+        visitante.email,
+        visitante.nombres,
+        motivoAccion
+      ).catch(console.log);
+
+    }
+
+  }
+// =========================
+// CORREO A CONTACTO EXTERNO
+// =========================
+
+if (visita.tipo === "EXTERNO") {
+
+  for (const contacto of visita.contactoExterno) {
+
+    if (contacto.email) {
+
+      enviarCorreoCancelacion(
+        contacto.email,
+        contacto.nombre,
+        motivoAccion
+      ).catch(console.log);
+
+    }
+
+  }
+
+}
+  return visitaActualizada;
 };
 // ELIMINAR
 export const eliminarVisitaService = async (id: number) => {
@@ -328,4 +547,33 @@ export const registrarSalidaVisitanteService = async (id: number) => {
 }),
     },
   });
+};
+export const listarNotificacionesService = async () => {
+
+  return await prisma.visita.findMany({
+
+    where: {
+
+      OR: [
+        { estado: "DESAUTORIZADO" },
+      ],
+
+      fechaAccion: {
+        not: null,
+      }
+
+    },
+
+    include: {
+      accionPor: true,
+      visitantes: true,
+      contactoExterno: true,
+    },
+
+    orderBy: {
+      fechaAccion: "desc",
+    }
+
+  });
+
 };

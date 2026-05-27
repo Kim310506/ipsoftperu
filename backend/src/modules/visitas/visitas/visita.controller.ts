@@ -10,7 +10,11 @@ import { prisma } from "../../../config/prisma";import {
   eliminarVisitaService,
    registrarIngresoVisitanteService,
   registrarSalidaVisitanteService,
-  registrarVisitantesExternosService
+  registrarVisitantesExternosService,
+  autorizarVisitaService,
+  desautorizarVisitaService,
+  cancelarVisitaService,
+  listarNotificacionesService
 } from "./visita.service";
 export const getVisitas = async (req: Request, res: Response) => {
   try {
@@ -101,6 +105,106 @@ export const updateVisita = async (req: Request, res: Response) => {
     console.log(error);
     res.status(500).json({ message: "Error al actualizar visita" });
   }
+};
+export const autorizarVisita = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const {
+  accionPorId
+} = req.body;
+
+const visita =
+  await autorizarVisitaService(
+    Number(id),
+    accionPorId
+  );
+
+    return res.json(visita);
+
+  } catch (error) {
+
+    console.log(error);
+
+    return res.status(500).json({
+      message: "Error al autorizar",
+    });
+
+  }
+
+};
+export const desautorizarVisita = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const {
+  accionPorId,
+  motivoAccion
+} = req.body;
+
+const visita =
+  await desautorizarVisitaService(
+    Number(id),
+    accionPorId,
+    motivoAccion
+  );
+
+    return res.json(visita);
+
+  } catch (error) {
+
+    console.log(error);
+
+    return res.status(500).json({
+      message: "Error al desautorizar",
+    });
+
+  }
+
+};
+export const cancelarVisita = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const {
+  accionPorId,
+  motivoAccion
+} = req.body;
+
+const visita =
+  await cancelarVisitaService(
+    Number(id),
+    accionPorId,
+    motivoAccion
+  );
+
+    return res.json(visita);
+
+  } catch (error) {
+
+    console.log(error);
+
+    return res.status(500).json({
+      message: "Error al cancelar",
+    });
+
+  }
+
 };
 export const registrarVisitantesExternos = async (
   req: Request,
@@ -291,4 +395,25 @@ export const registrarSalidaVisitante = async (req: Request, res: Response) => {
     console.log(error);
     return res.status(500).json({ message: "Error al registrar salida" });
   }
+};
+export const listarNotificaciones = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const data =
+      await listarNotificacionesService();
+
+    res.json(data);
+
+  } catch (error: any) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
 };

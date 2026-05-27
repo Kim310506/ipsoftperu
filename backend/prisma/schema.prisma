@@ -8,136 +8,143 @@ datasource db {
 }
 
 model User {
+  id Int @id @default(autoincrement())
 
-  id        Int      @id @default(autoincrement())
+  nombre   String
+  correo   String @unique
+  password String
 
-  nombre    String
-  correo    String   @unique
-  password  String
+  rol    String
+  modulo String
 
-  rol       String
-  modulo    String
-
-  sedeId    Int
-  sede      Sede     @relation(fields: [sedeId], references: [id])
+  sedeId Int
+  sede   Sede @relation(fields: [sedeId], references: [id])
 
   createdAt DateTime @default(now())
-  visitasAutorizadas Visita[]
 
+  // RELACIONES
+  visitasAccionadas Visita[] @relation("AccionPor")
 }
 
 model UnidadNegocio {
+  id     Int    @id @default(autoincrement())
+  nombre String
+  estado String
 
-  id        Int      @id @default(autoincrement())
-  nombre    String
-  estado    String
-
-  zonales   UnidadNegocioZonal[]
-
+  zonales UnidadNegocioZonal[]
 }
 
 model UnidadNegocioZonal {
+  id Int @id @default(autoincrement())
 
-  id                 Int              @id @default(autoincrement())
+  unidadNegocioId Int
+  zonalId         Int
 
-  unidadNegocioId    Int
-  zonalId            Int
+  unidadNegocio UnidadNegocio @relation(fields: [unidadNegocioId], references: [id])
 
-  unidadNegocio      UnidadNegocio    @relation(fields: [unidadNegocioId], references: [id])
-
-  zonal              Zonal            @relation(fields: [zonalId], references: [id])
-
+  zonal Zonal @relation(fields: [zonalId], references: [id])
 }
 
 model Zonal {
+  id     Int    @id @default(autoincrement())
+  nombre String
 
-  id        Int      @id @default(autoincrement())
-  nombre    String
+  sedes Sede[]
 
-  sedes     Sede[]
-
-  unidades  UnidadNegocioZonal[]
-
+  unidades UnidadNegocioZonal[]
 }
 
 model Sede {
+  id     Int    @id @default(autoincrement())
+  nombre String
 
-  id          Int         @id @default(autoincrement())
-  nombre      String
+  zonalId Int
+  zonal   Zonal @relation(fields: [zonalId], references: [id])
 
-  zonalId     Int
-  zonal       Zonal       @relation(fields: [zonalId], references: [id])
+  usuarios User[]
 
-  usuarios    User[]
-
-  pabellones  Pabellon[]
-  visitas     Visita[]
-
-
+  pabellones Pabellon[]
+  visitas    Visita[]
 }
 
 model Pabellon {
+  id     Int    @id @default(autoincrement())
+  nombre String
 
-  id        Int         @id @default(autoincrement())
-  nombre    String
+  sedeId Int
+  sede   Sede @relation(fields: [sedeId], references: [id])
 
-  sedeId    Int
-  sede      Sede        @relation(fields: [sedeId], references: [id])
-
-  pisos     Piso[]
-
+  pisos Piso[]
 }
 
 model Piso {
+  id     Int    @id @default(autoincrement())
+  nombre String
 
-  id           Int         @id @default(autoincrement())
-  nombre       String
+  pabellonId Int
+  pabellon   Pabellon @relation(fields: [pabellonId], references: [id])
 
-  pabellonId   Int
-  pabellon     Pabellon    @relation(fields: [pabellonId], references: [id])
-
-  ambientes    Ambiente[]
-
+  ambientes Ambiente[]
 }
 
 model Ambiente {
+  id     Int    @id @default(autoincrement())
+  nombre String
 
-  id        Int      @id @default(autoincrement())
-  nombre    String
-
-  pisoId    Int
-  piso      Piso     @relation(fields: [pisoId], references: [id])
-  visitas     Visita[]
-
-
+  pisoId  Int
+  piso    Piso     @relation(fields: [pisoId], references: [id])
+  visitas Visita[]
 }
 
 model Visita {
+  id Int @id @default(autoincrement())
 
-  id          Int      @id @default(autoincrement())
+  codigo String @unique
 
-  codigo      String   @unique
+  tipo   String
+  motivo String
 
-  tipo        String
-  motivo      String
-  estado      String
+  // PENDIENTE | AUTORIZADO | DESAUTORIZADO | CANCELADO
+  estado String
 
   fechaInicio DateTime @db.Date
   fechaFin    DateTime @db.Date
 
   horaEntrada String?
   horaSalida  String?
+   * /* ACCION
+   */
+  /**
+   * /* =========================
+   */
 
-  autorizadoPorId Int?
-  autorizadoPor   User? @relation(fields: [autorizadoPorId], references: [id])
+  accionPorId Int?
 
-  sedeId      Int
-  sede        Sede     @relation(fields: [sedeId], references: [id])
+  accionPor User? @relation("AccionPor", fields: [accionPorId], references: [id])
 
-  ambienteId  Int
-  ambiente    Ambiente @relation(fields: [ambienteId], references: [id])
+  motivoAccion String?
 
-  visitantes  Visitante[]
+  fechaAccion DateTime?
+
+  /**
+   * =========================
+   */
+  /**
+   * /* RELACIONES
+   */
+  /**
+   * /* =========================
+   */
+
+  sedeId Int
+
+  sede Sede @relation(fields: [sedeId], references: [id])
+
+  ambienteId Int
+
+  ambiente Ambiente @relation(fields: [ambienteId], references: [id])
+
+  visitantes Visitante[]
 
   contactoExterno ContactoExterno[]
 
@@ -145,39 +152,37 @@ model Visita {
 }
 
 model Visitante {
-
-  id              Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   dni             String
   nombres         String
   apellidoPaterno String
   apellidoMaterno String
 
-  email           String?
-  empresa         String?
+  email   String?
+  empresa String?
 
-  qrData          String?
-  estadoQr        String
+  qrData   String?
+  estadoQr String
 
   // DATOS INDIVIDUALES
   horaIngreso String?
-horaSalida  String?
+  horaSalida  String?
 
-  visitaId        Int
-  visita          Visita   @relation(fields: [visitaId], references: [id])
+  visitaId Int
+  visita   Visita @relation(fields: [visitaId], references: [id])
 }
+
 model ContactoExterno {
+  id Int @id @default(autoincrement())
 
-id        Int    @id @default(autoincrement())
+  nombre  String
+  email   String
+  empresa String?
 
-nombre    String
-email     String
-empresa   String?
+  visitaId Int
 
-visitaId  Int
+  visita Visita @relation(fields: [visitaId], references: [id])
 
-visita    Visita @relation(fields: [visitaId], references: [id])
-
-@@index([visitaId])
-
+  @@index([visitaId])
 }
