@@ -34,6 +34,8 @@ const [motivo, setMotivo] = useState("");
 
 const [visitaSeleccionadaAccion, setVisitaSeleccionadaAccion] =
   useState(null);
+const [openVerMotivoModal, setOpenVerMotivoModal] = useState(false);
+const [motivoSeleccionado, setMotivoSeleccionado] = useState("");
   const [busqueda, setBusqueda] = useState("");
 
   const [sortConfig, setSortConfig] =
@@ -735,7 +737,163 @@ useEffect(() => {
                     )}
 
                   </div>
+{/* VER MOTIVO */}
+{(item.estado === "CANCELADO" ||
+  item.estado === "DESAUTORIZADO") && (
 
+  <button
+    onClick={() => {
+
+      setMotivoSeleccionado(
+        item.motivoAccion || "Sin motivo registrado"
+      );
+
+      setOpenVerMotivoModal(true);
+
+    }}
+    className="
+      bg-gray-700
+      hover:bg-gray-800
+      transition
+      text-white
+      px-5
+      py-2
+      rounded-xl
+      font-bold
+      flex
+      items-center
+      gap-2
+    "
+  >
+
+    👁 Motivo
+
+  </button>
+
+)}
+{/* ========================= */}
+{/* MODAL VER MOTIVO */}
+{/* ========================= */}
+
+{openVerMotivoModal && (
+
+  <div
+  className="
+    fixed
+    inset-0
+    z-[999]
+    flex
+    items-center
+    justify-center
+    bg-black/10
+    backdrop-blur-[2px]
+    p-4
+  "
+>
+
+    <div className="
+      bg-white
+      w-full
+      max-w-md
+      rounded-3xl
+      shadow-2xl
+      overflow-hidden
+    ">
+
+      {/* HEADER */}
+      <div className="
+        bg-gradient-to-r
+        from-red-500
+        to-red-600
+        px-6
+        py-5
+        flex
+        items-center
+        justify-between
+      ">
+
+        <div>
+
+          <h2 className="text-2xl font-black text-white">
+            Motivo registrado
+          </h2>
+
+          <p className="text-red-100 text-sm mt-1">
+            Información de la acción
+          </p>
+
+        </div>
+
+        <button
+          onClick={() =>
+            setOpenVerMotivoModal(false)
+          }
+          className="
+            w-10
+            h-10
+            rounded-xl
+            bg-white/20
+            hover:bg-white/30
+            text-white
+            flex
+            items-center
+            justify-center
+          "
+        >
+
+          <X size={20} />
+
+        </button>
+
+      </div>
+
+      {/* BODY */}
+      <div className="p-6">
+
+        <div className="
+          bg-gray-50
+          border
+          border-gray-200
+          rounded-2xl
+          p-5
+          text-gray-700
+          leading-relaxed
+        ">
+
+          {motivoSeleccionado}
+
+        </div>
+
+        <div className="flex justify-end mt-6">
+
+          <button
+            onClick={() =>
+              setOpenVerMotivoModal(false)
+            }
+            className="
+              bg-[#1E55C0]
+              hover:bg-[#1947a3]
+              text-white
+              px-5
+              py-3
+              rounded-xl
+              font-bold
+            "
+          >
+
+            Cerrar
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
                 </td>
                 </tr>
 

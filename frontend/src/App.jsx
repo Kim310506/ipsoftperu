@@ -68,6 +68,7 @@ export default function App() {
       {/* VISITAS */}
       <Route path="/visitas/login" element={<VisitasLogin />} />
       <Route path="/visitas/dashboard" element={<VisitasDashboard />} />
+      
 
       {/* PROVEEDORES */}
       <Route path="/proveedores/login" element={<ProveedoresLogin />} />

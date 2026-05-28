@@ -67,7 +67,12 @@ export default function ModuloLogin({
       );
 
       /* REDIRECCION */
-      navigate(redirectPath);
+      const finalRedirect =
+  typeof redirectPath === "function"
+    ? redirectPath(data)
+    : redirectPath;
+
+navigate(finalRedirect);
 
     } catch (error) {
 
