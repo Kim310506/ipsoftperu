@@ -5,7 +5,8 @@ import {
   getAmbienteById,
   createAmbiente,
   updateAmbiente,
-  deleteAmbiente
+  deleteAmbiente,
+  listarAmbientesPorSedeController
 } from "./ambiente.controller";
 
 const router = Router();
@@ -19,5 +20,9 @@ router.post("/", createAmbiente);
 router.put("/:id", updateAmbiente);
 
 router.delete("/:id", deleteAmbiente);
+router.get(
+  "/sede/:sedeId",
+  listarAmbientesPorSedeController
+);
 
 export default router;

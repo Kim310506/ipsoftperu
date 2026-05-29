@@ -10,7 +10,8 @@ import {
 
   actualizarAmbienteService,
 
-  eliminarAmbienteService
+  eliminarAmbienteService,
+    listarAmbientesPorSedeService
 
 } from "./ambiente.service";
 
@@ -165,6 +166,39 @@ export const deleteAmbiente = async (
 
     res.status(500).json({
       message: "Error al eliminar ambiente"
+    });
+
+  }
+
+};
+
+export const listarAmbientesPorSedeController =
+async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const sedeId =
+      Number(req.params.sedeId);
+
+    const data =
+      await listarAmbientesPorSedeService(
+        sedeId
+      );
+
+    res.json(data);
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      message:
+        "Error al listar ambientes por sede"
+
     });
 
   }

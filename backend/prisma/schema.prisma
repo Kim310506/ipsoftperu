@@ -23,7 +23,9 @@ model User {
   createdAt DateTime @default(now())
 
   // RELACIONES
-  visitasAccionadas Visita[] @relation("AccionPor")
+  visitasAccionadas    Visita[]              @relation("AccionPor")
+  ocurrencias          Ocurrencia[]
+  historialOcurrencias HistorialOcurrencia[]
 }
 
 model UnidadNegocio {
@@ -63,8 +65,9 @@ model Sede {
 
   usuarios User[]
 
-  pabellones Pabellon[]
-  visitas    Visita[]
+  pabellones  Pabellon[]
+  visitas     Visita[]
+  ocurrencias Ocurrencia[]
 }
 
 model Pabellon {
@@ -91,9 +94,10 @@ model Ambiente {
   id     Int    @id @default(autoincrement())
   nombre String
 
-  pisoId  Int
-  piso    Piso     @relation(fields: [pisoId], references: [id])
-  visitas Visita[]
+  pisoId      Int
+  piso        Piso         @relation(fields: [pisoId], references: [id])
+  visitas     Visita[]
+  ocurrencias Ocurrencia[]
 }
 
 model Visita {
@@ -112,12 +116,6 @@ model Visita {
 
   horaEntrada String?
   horaSalida  String?
-   * /* ACCION
-   */
-  /**
-   * /* =========================
-   */
-
   accionPorId Int?
 
   accionPor User? @relation("AccionPor", fields: [accionPorId], references: [id])
@@ -130,9 +128,11 @@ model Visita {
    * =========================
    */
   /**
+   * /**
    * /* RELACIONES
    */
   /**
+   * /**
    * /* =========================
    */
 
@@ -185,4 +185,85 @@ model ContactoExterno {
   visita Visita @relation(fields: [visitaId], references: [id])
 
   @@index([visitaId])
+}
+
+model Ocurrencia {
+  id Int @id @default(autoincrement())
+
+  codigo String @unique
+
+  categoria    String
+  tipo         String
+  subcategoria String
+
+  detalle String
+
+  motivo  String?
+  vinculo String?
+
+  personaInvolucrada String?
+
+  estado    String
+  prioridad String?
+
+  fecha DateTime @default(now())
+
+  usuarioId Int
+  usuario   User @relation(fields: [usuarioId], references: [id])
+
+  sedeId Int
+  sede   Sede @relation(fields: [sedeId], references: [id])
+
+  ambienteId Int
+  ambiente   Ambiente @relation(fields: [ambienteId], references: [id])
+
+  // Nota: Asegúrate de tener definido el modelo EvidenciaOcurrencia en algún lado si vas a usarlo.
+  // evidencias EvidenciaOcurrencia[] 
+
+  historial HistorialOcurrencia[]
+  evidencias EvidenciaOcurrencia[]
+  createdAt DateTime @default(now())
+}
+
+model HistorialOcurrencia {
+  id Int @id @default(autoincrement())
+
+  tipo String
+  // REPORTE | SOLUCION | CIERRE | COMENTARIO
+
+  mensaje String
+
+  estadoAnterior String?
+  estadoNuevo    String?
+
+  usuarioId Int
+  usuario   User @relation(fields: [usuarioId], references: [id])
+
+  ocurrenciaId Int
+  ocurrencia   Ocurrencia @relation(fields: [ocurrenciaId], references: [id])
+
+  evidencias EvidenciaHistorial[]
+
+  createdAt DateTime @default(now())
+}
+
+model EvidenciaHistorial {
+  id Int @id @default(autoincrement())
+
+  url String
+
+  historialId Int
+  historial   HistorialOcurrencia @relation(fields: [historialId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+model EvidenciaOcurrencia {
+  id Int @id @default(autoincrement())
+
+  url String
+
+  ocurrenciaId Int
+  ocurrencia   Ocurrencia @relation(fields: [ocurrenciaId], references: [id])
+
+  createdAt DateTime @default(now())
 }

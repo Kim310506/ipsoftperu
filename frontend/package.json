@@ -12,6 +12,9 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.16.1",
+    "datatables.net": "^2.3.8",
+    "datatables.net-dt": "^2.3.8",
+    "datatables.net-react": "^1.0.2",
     "file-saver": "^2.0.5",
     "html5-qrcode": "^2.3.8",
     "jspdf": "^4.2.1",

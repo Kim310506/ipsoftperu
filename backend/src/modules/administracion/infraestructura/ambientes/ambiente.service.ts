@@ -136,3 +136,53 @@ export const eliminarAmbienteService = async (
   });
 
 };
+export const listarAmbientesPorSedeService =
+async (sedeId: number) => {
+
+  return await prisma.ambiente.findMany({
+
+    where: {
+
+      piso: {
+
+        pabellon: {
+
+          sedeId: sedeId
+
+        }
+
+      }
+
+    },
+
+    include: {
+
+      piso: {
+
+        include: {
+
+          pabellon: {
+
+            include: {
+
+              sede: true
+
+            }
+
+          }
+
+        }
+
+      }
+
+    },
+
+    orderBy: {
+
+      nombre: "asc"
+
+    }
+
+  });
+
+};

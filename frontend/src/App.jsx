@@ -15,9 +15,9 @@ import VisitasDashboard from "./pages/modulos/visitas/Dashboard";
 import ProveedoresLogin from "./pages/modulos/proveedores/Login";
 import ProveedoresDashboard from "./pages/modulos/proveedores/Dashboard";
 
-/* INCIDENCIAS 
-import IncidenciaLogin from "./pages/modulos/incidencia/Login";
-import IncidenciaDashboard from "./pages/modulos/incidencia/Dashboard";*/
+/* INCIDENTES */
+import IncidentesLogin from "./pages/modulos/incidentes/Login";
+import IncidentesDashboard from "./pages/modulos/incidentes/Dashboard";
 
 /* INVENTARIO 
 import InventarioLogin from "./pages/modulos/inventario/Login";
@@ -68,7 +68,10 @@ export default function App() {
       {/* VISITAS */}
       <Route path="/visitas/login" element={<VisitasLogin />} />
       <Route path="/visitas/dashboard" element={<VisitasDashboard />} />
-      
+
+      {/* INCIDENTES */}
+      <Route path="/incidentes/login" element={<IncidentesLogin />} />
+      <Route path="/incidentes/dashboard" element={<IncidentesDashboard />} />
 
       {/* PROVEEDORES */}
       <Route path="/proveedores/login" element={<ProveedoresLogin />} />
