@@ -12,6 +12,7 @@ import pabellonRoutes from "./modules/administracion/infraestructura/pabellones/
 import visitasRoutes from "./modules/visitas/visitas/visita.routes";
 import visitantesRoutes from "./modules/visitas/visitantes/visitante.routes";
 import incidentesRoutes from "./modules/incidentes/incidentes.routes";
+import sismosRoutes from "./modules/sismos/sismos.routes";
 
 const app = express();
 /* ========================= */
@@ -35,9 +36,12 @@ app.use( "/pabellones",pabellonRoutes);
 app.use( "/visitas",visitasRoutes);
 app.use( "/visitantes",visitantesRoutes);
 app.use( "/incidentes",incidentesRoutes);
+app.use( "/sismos",sismosRoutes);
+
 app.use(
   "/uploads",
   express.static(
     path.join(process.cwd(), "uploads")
   )
+  
 );export default app;

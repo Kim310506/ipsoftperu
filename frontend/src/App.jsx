@@ -35,9 +35,9 @@ import MantenimientoDashboard from "./pages/modulos/mantenimiento/Dashboard";*/
 import RiesgoLogin from "./pages/modulos/riesgo/Login";
 import RiesgoDashboard from "./pages/modulos/riesgo/Dashboard";*/
 
-/* SISMOS 
+/* SISMOS */
 import SismosLogin from "./pages/modulos/sismos/Login";
-import SismosDashboard from "./pages/modulos/sismos/Dashboard";*/
+import SismosDashboard from "./pages/modulos/sismos/Dashboard";
 
 export default function App() {
 
@@ -82,8 +82,10 @@ export default function App() {
         path="/registro-externo/:codigo"
         element={<RegistroExterno />}
       />
-  
 
+      {/* SISMOS */}
+      <Route path="/sismos/login" element={<SismosLogin />} />
+      <Route path="/sismos/dashboard" element={<SismosDashboard />} />
     </Routes>
   );
 }

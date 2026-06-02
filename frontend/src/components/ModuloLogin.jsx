@@ -41,7 +41,7 @@ export default function ModuloLogin({
       );
 
       const data = await response.json();
-
+console.log("LOGIN DATA:", data);
       /* ERROR */
       if (!response.ok) {
         setError(data.message || "Error en credenciales");

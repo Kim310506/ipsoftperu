@@ -26,6 +26,7 @@ model User {
   visitasAccionadas    Visita[]              @relation("AccionPor")
   ocurrencias          Ocurrencia[]
   historialOcurrencias HistorialOcurrencia[]
+  reportesSismo        ReporteSismo[]
 }
 
 model UnidadNegocio {
@@ -65,9 +66,10 @@ model Sede {
 
   usuarios User[]
 
-  pabellones  Pabellon[]
-  visitas     Visita[]
-  ocurrencias Ocurrencia[]
+  pabellones    Pabellon[]
+  visitas       Visita[]
+  ocurrencias   Ocurrencia[]
+  reportesSismo ReporteSismo[]
 }
 
 model Pabellon {
@@ -129,9 +131,11 @@ model Visita {
    */
   /**
    * /**
+   * /**
    * /* RELACIONES
    */
   /**
+   * /**
    * /**
    * /* =========================
    */
@@ -220,9 +224,9 @@ model Ocurrencia {
   // Nota: Asegúrate de tener definido el modelo EvidenciaOcurrencia en algún lado si vas a usarlo.
   // evidencias EvidenciaOcurrencia[] 
 
-  historial HistorialOcurrencia[]
+  historial  HistorialOcurrencia[]
   evidencias EvidenciaOcurrencia[]
-  createdAt DateTime @default(now())
+  createdAt  DateTime              @default(now())
 }
 
 model HistorialOcurrencia {
@@ -257,6 +261,7 @@ model EvidenciaHistorial {
 
   createdAt DateTime @default(now())
 }
+
 model EvidenciaOcurrencia {
   id Int @id @default(autoincrement())
 
@@ -264,6 +269,57 @@ model EvidenciaOcurrencia {
 
   ocurrenciaId Int
   ocurrencia   Ocurrencia @relation(fields: [ocurrenciaId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model ReporteSismo {
+  id Int @id @default(autoincrement())
+
+  codigo String @unique
+
+  fechaIncidente DateTime
+  horaIncidente  String
+
+  fechaReporte DateTime
+  horaReporte  String
+
+  responsableId Int
+  responsable   User @relation(fields: [responsableId], references: [id])
+
+  sedeId Int
+  sede   Sede @relation(fields: [sedeId], references: [id])
+
+  operacion    Boolean
+  corteEnergia Boolean
+
+  evacuaron        Boolean
+  tiempoEvacuacion String?
+
+  danios            Boolean
+  descripcionDanios String?
+
+  victimas         Boolean
+  cantidadVictimas Int?
+
+  continuidad            Boolean
+  descripcionContinuidad String?
+
+  estado String @default("REPORTADO")
+
+  createdAt DateTime @default(now())
+
+  evidencias EvidenciaSismo[]
+}
+
+model EvidenciaSismo {
+  id Int @id @default(autoincrement())
+
+  url String
+
+  reporteSismoId Int
+
+  reporteSismo ReporteSismo @relation(fields: [reporteSismoId], references: [id])
 
   createdAt DateTime @default(now())
 }

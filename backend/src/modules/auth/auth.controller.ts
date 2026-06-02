@@ -25,7 +25,10 @@ console.log("BODY:", req.body);
       where: {
         correo,
         password
-      }
+      },
+       include: {
+    sede: true
+  }
 
     });
 

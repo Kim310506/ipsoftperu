@@ -508,124 +508,105 @@ const enviarSolucion = async () => {
   )}
 
 
-  {/* APARECE DESPUÉS DEL REPORTE */}
-  {reporteExistente && (
+  {/* SOLUCIÓN + GESTIÓN DEL CASO */}
+{reporteExistente && (
+  <div className="mt-10">
 
-    <div className="mt-10">
+    <h2 className="text-4xl font-bold text-[#1f2937] mb-5">
+      Solución 🔧
+    </h2>
 
-      <h2
-        className="
-          text-4xl
-          font-bold
-          text-[#1f2937]
-          mb-5
-        "
-      >
-        Solución 🔧
-      </h2>
+    {/* SI NO HAY SOLUCIÓN O FUE RECHAZADA */}
+    {!solucionExistente || incidente.estado === "RECHAZADO" ? (
+      <>
+        <p className="text-xs uppercase tracking-widest text-gray-500 mb-2 font-bold">
+          DESCRIPCIÓN DE LA SOLUCIÓN:
+        </p>
 
-      {!solucionExistente ? (
+        <textarea
+          value={mensajeSolucion}
+          onChange={(e) => setMensajeSolucion(e.target.value)}
+          placeholder="Describa el trabajo realizado..."
+          className="w-full bg-white border border-gray-200 rounded-2xl p-4 h-32 resize-none outline-none mb-4 text-sm"
+        />
 
-        <>
+        <input
+          type="file"
+          multiple
+          onChange={(e) => setArchivos([...e.target.files])}
+          className="mb-4"
+        />
 
-          <p
-            className="
-              text-xs
-              uppercase
-              tracking-widest
-              text-gray-500
-              mb-2
-              font-bold
-            "
-          >
-            DESCRIPCIÓN DE LA SOLUCIÓN:
-          </p>
+        <button
+          onClick={enviarSolucion}
+          className="w-full bg-purple-700 hover:bg-purple-800 text-white py-4 rounded-2xl font-bold"
+        >
+          ✈ Enviar Solución
+        </button>
+      </>
+    ) : (
+      <>
+        {/* SOLUCIÓN ENVIADA */}
+        <div className="mb-6">
 
-          <textarea
-            value={mensajeSolucion}
-            onChange={(e) => setMensajeSolucion(e.target.value)}
-            placeholder="Describa el trabajo realizado..."
-            className="w-full bg-[#f5f5f5] border border-gray-300 rounded-2xl p-4 h-32 resize-none outline-none mb-4"
-            />
-
-          <p
-            className="
-              text-xs
-              uppercase
-              tracking-widest
-              text-purple-700
-              mb-2
-              font-bold
-            "
-          >
-            SUBIR NUEVA EVIDENCIA (FOTO):
-          </p>
-
-          <div
-            className="
-              border
-              border-dashed
-              border-gray-300
-              rounded-2xl
-              p-4
-              mb-5
-              bg-[#fafafa]
-            "
-          >
-            <input
-                type="file"
-                multiple
-                onChange={(e) => setArchivos([...e.target.files])}
-                />
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-3">
+            <p className="text-sm text-gray-700 uppercase font-medium">
+              {solucionExistente.mensaje}
+            </p>
           </div>
 
-          <button
-            onClick={enviarSolucion}
-            className="w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-xl font-bold"
-            >
-            ✈ Enviar Solución
-            </button>
+          <div className="bg-purple-600 text-white rounded-2xl p-4">
+            <div className="font-semibold">
+              {solucionExistente.usuario?.correo}
+            </div>
 
-        </>
-
-      ) : (
-
-        <>
-
-          <div
-            className="
-              bg-white
-              border
-              border-gray-200
-              rounded-2xl
-              p-4
-              text-gray-700
-            "
-          >
-            {solucionExistente.mensaje}
+            <div className="text-xs mt-1">
+              {new Date(solucionExistente.createdAt).toLocaleString()}
+            </div>
           </div>
 
-          <div
-            className="
-              bg-purple-600
-              text-white
-              text-center
-              py-3
-              rounded-xl
-              font-bold
-              mt-4
-            "
-          >
-            Solución enviada
-          </div>
+          {/* 🔥 GESTIÓN DEL CASO */}
+          {incidente.estado !== "CERRADO" && (
+            <div className="mt-6">
 
-        </>
+              <h3 className="text-xl font-bold text-[#0f172a] mb-3">
+                Gestión del Caso
+              </h3>
 
-      )}
+              <div className="flex gap-3">
 
-    </div>
+                <button
+                  onClick={aprobarSolucion}
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-bold"
+                >
+                  ✔ Aprobar solución
+                </button>
 
-  )}
+                <button
+                  onClick={rechazarSolucion}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-bold"
+                >
+                  ✖ Rechazar solución
+                </button>
+
+              </div>
+
+            </div>
+          )}
+
+        </div>
+      </>
+    )}
+
+    {/* CASO CERRADO */}
+    {incidente.estado === "CERRADO" && (
+      <div className="mt-6 bg-green-100 text-green-900 p-4 rounded-2xl font-bold text-center">
+        CASO CERRADO ✔
+      </div>
+    )}
+
+  </div>
+)}
 
 </div>
 

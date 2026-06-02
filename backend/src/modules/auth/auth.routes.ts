@@ -12,6 +12,9 @@ const user = await prisma.user.findFirst({
   where: {
     correo,
     password
+  },
+   include: {
+    sede: true
   }
 });
 
