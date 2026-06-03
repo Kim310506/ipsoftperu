@@ -210,3 +210,156 @@ const ultimosReportes =
   };
 
 };
+export const obtenerSedesAutorizablesService =
+async () => {
+
+  const sedes = await prisma.sede.findMany({
+    include: {
+      usuarios: true
+    }
+  });
+
+  return sedes
+    .map((sede) => {
+
+      const pvig = sede.usuarios.filter(
+        (usuario) =>
+          usuario.rol &&
+          usuario.rol.includes("PERSONAL DE VIGILANCIA")
+      );
+
+      return {
+        id: sede.id,
+        nombre: sede.nombre,
+        totalPVIG: pvig.length
+      };
+    })
+    .filter(
+      (sede) => sede.totalPVIG > 0
+    );
+};
+export const autorizarSedeService =
+async (
+  sedeId: number,
+  archivo: string
+) => {
+
+  return await prisma.autorizacionSismo.upsert({
+
+    where: {
+      sedeId
+    },
+
+    update: {
+      plano: archivo,
+      estado: "ACTIVO"
+    },
+
+    create: {
+      sedeId,
+      plano: archivo,
+      estado: "ACTIVO"
+    }
+
+  });
+
+};
+export const listarAutorizacionesService =
+async () => {
+
+  return await prisma.autorizacionSismo.findMany({
+
+    include: {
+      sede: true
+    },
+
+    orderBy: {
+      createdAt: "desc"
+    }
+
+  });
+
+};
+export const cambiarEstadoAutorizacionService =
+async (
+  sedeId: number,
+  estado: string
+) => {
+
+  return await prisma.autorizacionSismo.update({
+
+    where: {
+      sedeId
+    },
+
+    data: {
+      estado
+    }
+
+  });
+
+};
+export const monitoreoOsegService = async () => {
+
+  const autorizadas =
+    await prisma.autorizacionSismo.findMany({
+
+      where: {
+        estado: "ACTIVO"
+      },
+
+      include: {
+        sede: true
+      }
+
+    });
+
+  const reportes =
+    await prisma.reporteSismo.findMany({
+
+      include: {
+        sede: true,
+        responsable: true
+      },
+
+      orderBy: {
+        createdAt: "desc"
+      }
+
+    });
+
+  return autorizadas.map((aut) => {
+
+    const reporte = reportes.find(
+      (r) => r.sedeId === aut.sedeId
+    );
+
+    return {
+
+      sedeId: aut.sedeId,
+
+      sede: aut.sede.nombre,
+
+      estado:
+        reporte
+          ? "REPORTADO"
+          : "PENDIENTE",
+
+      contacto:
+        reporte?.responsable?.rol ||
+        "-",
+
+      detalle:
+        reporte
+          ? "Sin novedad"
+          : "-",
+
+      hora:
+        reporte?.horaReporte ||
+        "-"
+
+    };
+
+  });
+
+};

@@ -87,40 +87,72 @@ useEffect(() => {
   };
 
 }, [reportes]);
+const tieneReporte = reportes.length > 0;
   return (
 
     <div className="space-y-6">
 
       {/* ESTADO */}
       <div
-        className="
-          bg-white
-          rounded-2xl
-          shadow-sm
-          p-6
-        "
-      >
-        <div className="flex items-center gap-3">
+  className="
+    bg-white
+    rounded-2xl
+    shadow-sm
+    p-6
+  "
+>
+  <div className="flex items-center gap-3">
 
-          <Activity
-            className="text-green-500"
-            size={30}
-          />
+    {tieneReporte ? (
+      <Activity
+        className="text-red-500"
+        size={30}
+      />
+    ) : (
+      <Activity
+        className="text-green-500"
+        size={30}
+      />
+    )}
 
-          <div>
+    <div>
 
-            <h2 className="font-bold text-xl">
-              Sin Actividad
-            </h2>
+      {tieneReporte ? (
+        <>
+          <h2 className="font-bold text-xl text-red-600">
+            ALERTA SÍSMICA ACTIVA
+          </h2>
 
-            <p className="text-gray-500">
-              Sistema en espera.
-            </p>
+          <p className="text-gray-500">
+            Evento sísmico detectado el{" "}
+            {new Date(
+              reportes[0].createdAt
+            ).toLocaleDateString("es-PE")}
+            {" "}
+            {new Date(
+              reportes[0].createdAt
+            ).toLocaleTimeString("es-PE", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        </>
+      ) : (
+        <>
+          <h2 className="font-bold text-xl">
+            Sin Actividad
+          </h2>
 
-          </div>
+          <p className="text-gray-500">
+            Sistema en espera.
+          </p>
+        </>
+      )}
 
-        </div>
-      </div>
+    </div>
+
+  </div>
+</div>
 
       {/* REPORTE */}
       <div
@@ -151,12 +183,10 @@ useEffect(() => {
 
           </div>
 
-         <button
+ <button
+  disabled={tieneReporte}
   onClick={() => setOpenModal(true)}
-  className="
-    bg-red-500
-    hover:bg-red-600
-    text-white
+  className={`
     px-5
     py-3
     rounded-xl
@@ -164,10 +194,25 @@ useEffect(() => {
     items-center
     gap-2
     font-semibold
-  "
+    transition
+
+    ${
+      tieneReporte
+        ? "bg-green-600 text-white cursor-not-allowed"
+        : "bg-red-500 hover:bg-red-600 text-white"
+    }
+  `}
 >
-  <Megaphone size={18} />
-  REPORTAR
+  {tieneReporte ? (
+    <>
+      ✓ REPORTE ENVIADO
+    </>
+  ) : (
+    <>
+      <Megaphone size={18} />
+      REPORTAR
+    </>
+  )}
 </button>
 
         </div>

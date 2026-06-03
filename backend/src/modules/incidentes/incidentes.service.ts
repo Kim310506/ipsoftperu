@@ -297,9 +297,122 @@ export const crearSolucionService = async (
   await prisma.ocurrencia.update({
     where: { id: ocurrenciaId },
     data: {
-      estado: "SOLUCION_ENVIADA"
+      estado: "SOLUCIONADO"
     }
   });
 
   return solucion;
+};
+
+export const dashboardOcurrenciasService = async () => {
+  const totalOcurrencias = await prisma.ocurrencia.count();
+
+  const pendientes = await prisma.ocurrencia.count({
+    where: { estado: "PENDIENTE" },
+  });
+
+  const reportados = await prisma.ocurrencia.count({
+    where: { estado: "REPORTADO" },
+  });
+
+  const solucionados = await prisma.ocurrencia.count({
+    where: { estado: "SOLUCION_ENVIADA" },
+  });
+
+  const cerrados = await prisma.ocurrencia.count({
+    where: { estado: "CERRADO" },
+  });
+
+  const rechazados = await prisma.ocurrencia.count({
+    where: { estado: "RECHAZADO" },
+  });
+
+  // =========================
+  // TRAER OCURRENCIAS CON RELACIONES
+  // =========================
+  const ocurrencias = await prisma.ocurrencia.findMany({
+    include: {
+      sede: true,
+    },
+  });
+
+  // =========================
+  // MOTIVO
+  // =========================
+  const motivoMap = new Map<string, number>();
+
+  ocurrencias.forEach((o) => {
+    const key = o.motivo || "Sin motivo";
+    motivoMap.set(key, (motivoMap.get(key) || 0) + 1);
+  });
+
+  const motivoData = Array.from(motivoMap, ([name, value]) => ({
+    name,
+    value,
+  }));
+
+  // =========================
+  // SEDE
+  // =========================
+  const sedeMap = new Map<string, number>();
+
+  ocurrencias.forEach((o) => {
+    const key = o.sede?.nombre || "Sin sede";
+    sedeMap.set(key, (sedeMap.get(key) || 0) + 1);
+  });
+
+  const sedeData = Array.from(sedeMap, ([name, value]) => ({
+    name,
+    value,
+  }));
+
+  // =========================
+  // VÍNCULO
+  // =========================
+  const vinculoMap = new Map<string, number>();
+
+  ocurrencias.forEach((o) => {
+    const key = o.vinculo || "Sin vínculo";
+    vinculoMap.set(key, (vinculoMap.get(key) || 0) + 1);
+  });
+
+  const vinculoData = Array.from(vinculoMap, ([name, value]) => ({
+    name,
+    value,
+  }));
+
+  // =========================
+  // PERSONAS TOP
+  // =========================
+  const personasMap = new Map<string, number>();
+
+  ocurrencias.forEach((o) => {
+    const key = o.personaInvolucrada || "Sin nombre";
+    personasMap.set(key, (personasMap.get(key) || 0) + 1);
+  });
+
+  const personasData = Array.from(personasMap, ([name, value]) => ({
+    name,
+    value,
+  }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
+
+  // =========================
+  // RETURN FINAL
+  // =========================
+  return {
+    totalOcurrencias,
+
+    pendientes,
+    reportados,
+    solucionados,
+    cerrados,
+    rechazados,
+
+    motivoData,
+    sedeData,
+    vinculoData,
+    personasData,
+  };
 };

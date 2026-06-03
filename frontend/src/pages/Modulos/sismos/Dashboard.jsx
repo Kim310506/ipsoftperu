@@ -5,7 +5,10 @@ import { useNavigate } from "react-router-dom";
 
 import SidebarSismos from "./components/SidebarSismos";
 
-import InicioSismos from "./components/InicioSismos";
+import InicioPVigilancia from "./components/InicioPVigilancia";
+import InicioPSeguridad from "./components/InicioPSeguridad";
+import InicioOSeguridad from "./components/InicioOSeguridad";
+
 import ReportarSismo from "./components/ReportarSismo";
 import DashboardSismo from "./components/DashboardSismos";
 
@@ -19,7 +22,8 @@ export default function DashboardSismos() {
   const usuario = JSON.parse(
     localStorage.getItem("sismosUser") || "null"
   );
-
+console.log("USUARIO:", usuario);
+console.log("ROL:", usuario?.rol);
   const cerrarSesion = () => {
 
     localStorage.removeItem("sismosToken");
@@ -70,11 +74,25 @@ export default function DashboardSismos() {
         {/* Sismos */}
 
         {menuActivo === "inicio" && (
-          <InicioSismos usuario={usuario} />
-        )}
+          <>
+            {usuario?.rol?.includes(
+              "PERSONAL DE SEGURIDAD"
+            ) && (
+              <InicioPSeguridad usuario={usuario} />
+            )}
 
-        {menuActivo === "dashboard" && (
-          <DashboardSismo />
+            {usuario?.rol?.includes(
+              "PERSONAL DE VIGILANCIA"
+            ) && (
+              <InicioPVigilancia usuario={usuario} />
+            )}
+
+            {usuario?.rol?.includes(
+              "OPERADOR DE SEGURIDAD"
+            ) && (
+              <InicioOSeguridad usuario={usuario} />
+            )}
+          </>
         )}
 
       </main>

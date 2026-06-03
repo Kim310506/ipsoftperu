@@ -11,21 +11,21 @@ export default function SismosLogin() {
 
     if (
       user.rol ===
-      "PERSONAL DE SEGURIDAD"
+      "PERSONAL DE SEGURIDAD (PSEG)"
     ) {
       return "/sismos/dashboard";
     }
 
     if (
       user.rol ===
-      "PERSONAL DE VIGILANCIA"
+      "PERSONAL DE VIGILANCIA (PVIG)"
     ) {
       return "/sismos/dashboard";
     }
 
     if (
       user.rol ===
-      "OPERADOR DE SEGURIDAD"
+      "OPERADOR DE SEGURIDAD (OSEG)"
     ) {
       return "/sismos/dashboard";
     }

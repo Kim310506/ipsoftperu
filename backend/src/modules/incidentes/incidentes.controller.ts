@@ -11,7 +11,8 @@ import {
   eliminarOcurrenciaService,
   resumenOcurrenciasService,
   crearReporteService,
-  crearSolucionService
+  crearSolucionService,
+  dashboardOcurrenciasService
 
 } from "./incidentes.service";
 
@@ -301,5 +302,16 @@ async (req: Request, res: Response) => {
       message: "Error al registrar solución"
     });
 
+  }
+};
+export const dashboardOcurrencias = async (req: Request, res: Response) => {
+  try {
+    const data = await dashboardOcurrenciasService();
+    res.json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error dashboard ocurrencias",
+    });
   }
 };

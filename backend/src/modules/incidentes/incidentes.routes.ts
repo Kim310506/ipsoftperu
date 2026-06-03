@@ -13,7 +13,8 @@ import {
   eliminarOcurrencia,
   resumenOcurrencias,
   crearReporte,
-  crearSolucion
+  crearSolucion,
+  dashboardOcurrencias
 
 } from "./incidentes.controller";
 
@@ -26,7 +27,7 @@ router.get(
   "/",
   listarOcurrencias
 );
-
+router.get("/dashboard", dashboardOcurrencias);
 // OBTENER
 router.get(
   "/:id",

@@ -10,7 +10,7 @@ export default function ModalCrearUsuario({
    const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState("USUARIO");
+  const [roles, setRoles] = useState([]);
   const [sedeId, setSedeId] = useState("");
 const [sedes, setSedes] = useState([]);
 const [modulos, setModulos] = useState([]);
@@ -53,6 +53,13 @@ const manejarModulo = (modulo) => {
   }
 
 };
+const manejarRol = (rol) => {
+  if (roles.includes(rol)) {
+    setRoles(roles.filter((r) => r !== rol));
+  } else {
+    setRoles([...roles, rol]);
+  }
+};
   const crearUsuario = async () => {
 
     try {
@@ -61,7 +68,7 @@ const manejarModulo = (modulo) => {
           nombre,
           correo,
           password,
-          rol,
+          rol: roles.join(","),
           modulo: modulos.join(","),
           sedeId
         }
@@ -73,7 +80,7 @@ const manejarModulo = (modulo) => {
         setNombre("");
         setCorreo("");
         setPassword("");
-        setRol("");
+        setRoles([]);
         setSedeId("");
         setModulos([]);
       setOpenModal(false);
@@ -180,28 +187,49 @@ const manejarModulo = (modulo) => {
             {/* ROL */}
             <div className="relative w-full">
               <label className="block text-[12px] uppercase font-black text-[#7184a3] mb-2">
-                Rol
+                Roles
               </label>
 
-              <select
-              value={rol}
-              onChange={(e) => setRol(e.target.value)}
-              className="w-full bg-[#f5f7fb] rounded-[22px] px-6 py-5 pr-14 font-bold text-[#8b97ad] appearance-none"
-            >
-              <option>ADMIN</option>
-              <option>SOLICITANTE DE ACCESO (SA)</option>
-              <option>RESPONSABLE DE AREA (RA)</option>
-              <option>RECEPCION DE SEGURIDAD (REC)</option>
-              <option>SOLICITANTE DE ACCESO (SA)</option>
-              <option>RESPONSABLE SAFETY (RSA)</option>
-              <option >OPERADOR DE SEGURIDAD (OS)</option>
-              <option>MEDICO OCUPACIONAL (MO)</option>
-              <option>PREVENCIONISTA SST (PR)</option>
-              <option>RESPONSABLE DE AREA (RA)</option>
-              <option>RECEPCION DE SEGURIDAD (REC)</option>
-            </select>
+              <details className="group">
+                <summary className="list-none bg-[#f5f7fb] rounded-[22px] px-6 py-5 font-bold text-[#8b97ad] flex justify-between cursor-pointer">
+                  {roles.length > 0
+                    ? roles.join(", ")
+                    : "Seleccionar roles"}
 
-              <FaChevronDown className="absolute right-5 top-[58px] text-[13px] text-[#8b97ad]" />
+                  <FaChevronDown className="group-open:rotate-180 transition" />
+                </summary>
+
+                <div className="absolute mt-3 w-full bg-white rounded-[24px] shadow-lg border p-5 flex flex-col gap-4 z-50">
+
+                  {[
+                    "ADMIN",
+                    "SOLICITANTE DE ACCESO (SA)",
+                    "RESPONSABLE DE AREA (RA)",
+                    "RECEPCION DE SEGURIDAD (REC)",
+                    "RESPONSABLE SAFETY (RSA)",
+                    "OPERADOR DE SEGURIDAD (OSEG)",
+                    "PERSONAL DE VIGILANCIA (PVIG)",
+                    "PERSONAL DE SEGURIDAD (PSEG)",
+                  ].map((rolItem) => (
+                    <label
+                      key={rolItem}
+                      className="flex items-center gap-3"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={roles.includes(rolItem)}
+                        onChange={() => manejarRol(rolItem)}
+                        className="w-5 h-5 accent-[#0456b3]"
+                      />
+
+                      <span className="font-bold text-sm">
+                        {rolItem}
+                      </span>
+                    </label>
+                  ))}
+
+                </div>
+              </details>
             </div>
 
             {/* ACCESOS */}
@@ -339,7 +367,7 @@ const manejarModulo = (modulo) => {
 
                     <input
                       type="checkbox"
-                      checked={modulos.includes("SISMO")}
+                      checked={modulos.includes("SISMOS")}
                       onChange={() =>
                         manejarModulo("SISMO")
                       }

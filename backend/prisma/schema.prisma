@@ -66,10 +66,11 @@ model Sede {
 
   usuarios User[]
 
-  pabellones    Pabellon[]
-  visitas       Visita[]
-  ocurrencias   Ocurrencia[]
-  reportesSismo ReporteSismo[]
+  pabellones        Pabellon[]
+  visitas           Visita[]
+  ocurrencias       Ocurrencia[]
+  reportesSismo     ReporteSismo[]
+  autorizacionSismo AutorizacionSismo?
 }
 
 model Pabellon {
@@ -132,9 +133,11 @@ model Visita {
   /**
    * /**
    * /**
+   * /**
    * /* RELACIONES
    */
   /**
+   * /**
    * /**
    * /**
    * /* =========================
@@ -320,6 +323,20 @@ model EvidenciaSismo {
   reporteSismoId Int
 
   reporteSismo ReporteSismo @relation(fields: [reporteSismoId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model AutorizacionSismo {
+  id Int @id @default(autoincrement())
+
+  sedeId Int  @unique
+  sede   Sede @relation(fields: [sedeId], references: [id])
+
+  plano String
+
+  estado String @default("PENDIENTE")
+  // PENDIENTE, APROBADO, RECHAZADO
 
   createdAt DateTime @default(now())
 }
