@@ -18,7 +18,20 @@ export default function InicioSismos() {
 const [reportes, setReportes] = useState([]);
 useEffect(() => {
   cargarReportes();
+  cargarAlerta();
+  cargarSedesReportadas(); // 👈 NUEVO
+
+  const interval = setInterval(() => {
+    cargarAlerta();
+    cargarSedesReportadas(); // 👈 refresco
+  }, 5000);
+
+  return () => clearInterval(interval);
 }, []);
+const usuario = JSON.parse(
+  localStorage.getItem("sismosUser")
+);
+const [alerta, setAlerta] = useState(null);
 const [openDetalle, setOpenDetalle] =
   useState(false);
 
@@ -27,10 +40,6 @@ const [reporteSeleccionado,
   useState(null);
 const cargarReportes = async () => {
   try {
-
-    const usuario = JSON.parse(
-      localStorage.getItem("sismosUser")
-    );
 
     const { data } = await api.get("/sismos");
 
@@ -87,8 +96,35 @@ useEffect(() => {
   };
 
 }, [reportes]);
-const tieneReporte = reportes.length > 0;
-  return (
+const [sedesReportadas, setSedesReportadas] = useState([]);
+const tieneReporteSede = sedesReportadas.some(
+  (r) => r.sedeId === usuario.sedeId
+);
+const cargarAlerta = async () => {
+  try {
+    const { data } = await api.get("/sismos/alerta");
+
+    setAlerta(data.activa); // 🔥 GLOBAL, sin filtro
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+const alertaActiva = alerta;
+const tieneReporteActivo = reportes.some(
+  (r) =>
+    r.sedeId === usuario.sedeId &&
+    r.estado === "REPORTADO"
+);
+const cargarSedesReportadas = async () => {
+  try {
+    const { data } = await api.get("/sismos/sedes-reportadas");
+    setSedesReportadas(data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+ return (
 
     <div className="space-y-6">
 
@@ -103,7 +139,7 @@ const tieneReporte = reportes.length > 0;
 >
   <div className="flex items-center gap-3">
 
-    {tieneReporte ? (
+{alerta ? (
       <Activity
         className="text-red-500"
         size={30}
@@ -117,37 +153,35 @@ const tieneReporte = reportes.length > 0;
 
     <div>
 
-      {tieneReporte ? (
-        <>
-          <h2 className="font-bold text-xl text-red-600">
-            ALERTA SÍSMICA ACTIVA
-          </h2>
+      {alerta ? (
+  <>
+    <h2 className="font-bold text-xl text-red-600">
+      ALERTA SÍSMICA ACTIVA
+    </h2>
 
-          <p className="text-gray-500">
-            Evento sísmico detectado el{" "}
-            {new Date(
-              reportes[0].createdAt
-            ).toLocaleDateString("es-PE")}
-            {" "}
-            {new Date(
-              reportes[0].createdAt
-            ).toLocaleTimeString("es-PE", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
+    <p className="text-gray-500">
+      {alerta.reporte ? (
+        <>
+          Evento sísmico detectado el{" "}
+          {new Date(alerta.reporte.fechaReporte).toLocaleDateString("es-PE")}{" "}
+          {alerta.reporte.horaReporte}
         </>
       ) : (
-        <>
-          <h2 className="font-bold text-xl">
-            Sin Actividad
-          </h2>
-
-          <p className="text-gray-500">
-            Sistema en espera.
-          </p>
-        </>
+        "Evento sísmico detectado"
       )}
+    </p>
+  </>
+) : (
+  <>
+    <h2 className="font-bold text-xl">
+      Sin Actividad
+    </h2>
+
+    <p className="text-gray-500">
+      Sistema en espera.
+    </p>
+  </>
+)}
 
     </div>
 
@@ -182,37 +216,19 @@ const tieneReporte = reportes.length > 0;
             </h2>
 
           </div>
-
- <button
-  disabled={tieneReporte}
+<button
+  disabled={tieneReporteSede}
   onClick={() => setOpenModal(true)}
   className={`
-    px-5
-    py-3
-    rounded-xl
-    flex
-    items-center
-    gap-2
-    font-semibold
-    transition
-
+    px-5 py-3 rounded-xl flex items-center gap-2 font-semibold transition
     ${
-      tieneReporte
+      tieneReporteSede
         ? "bg-green-600 text-white cursor-not-allowed"
         : "bg-red-500 hover:bg-red-600 text-white"
     }
   `}
 >
-  {tieneReporte ? (
-    <>
-      ✓ REPORTE ENVIADO
-    </>
-  ) : (
-    <>
-      <Megaphone size={18} />
-      REPORTAR
-    </>
-  )}
+  {tieneReporteSede ? "✓ REPORTE ENVIADO" : "REPORTAR"}
 </button>
 
         </div>

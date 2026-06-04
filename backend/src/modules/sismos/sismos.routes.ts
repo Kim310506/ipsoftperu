@@ -49,7 +49,11 @@ import {
   autorizarSede,
   cambiarEstadoAutorizacion,
   listarAutorizaciones,
-  monitoreoOseg
+  monitoreoOseg,
+  cerrarSismos,
+  alertaSismica,
+  reportePorSede,
+  sedesFaltantes
 } from "./sismos.controller";
 
 const router = Router();
@@ -61,9 +65,20 @@ router.get(
   "/sedes-autorizables",
   obtenerSedesAutorizables
 );
+router.get("/sedes-reportadas", reportePorSede);
+
 router.get(
   "/autorizaciones",
   listarAutorizaciones
+);
+router.get(
+  "/sedes-faltantes",
+  sedesFaltantes
+);
+router.get("/alerta", alertaSismica);
+router.patch(
+  "/cerrar-evento",
+  cerrarSismos
 );
 router.post(
   "/autorizar",
@@ -73,6 +88,10 @@ router.post(
 router.get(
   "/monitoreo",
   monitoreoOseg
+);
+router.patch(
+  "/cerrar-evento",
+  cerrarSismos
 );
 router.put(
   "/autorizar/:id",

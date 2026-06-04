@@ -36,7 +36,16 @@ export const crearSismoService = async (
 ) => {
 
   const codigo = `SIS-${Date.now()}`;
+const existe = await prisma.reporteSismo.findFirst({
+  where: {
+    sedeId: Number(data.sedeId),
+    estado: "REPORTADO"
+  }
+});
 
+if (existe) {
+  throw new Error("Esta sede ya tiene un reporte activo");
+}
   const sismo =
     await prisma.reporteSismo.create({
 
@@ -159,11 +168,8 @@ async () => {
   const totalSedes =
     await prisma.sede.count();
 
-  const reportes =
-    await prisma.reporteSismo.findMany();
-const ultimosReportes =
+const reportes =
   await prisma.reporteSismo.findMany({
-    take: 10,
     orderBy: {
       createdAt: "desc"
     },
@@ -172,6 +178,23 @@ const ultimosReportes =
       responsable: true
     }
   });
+
+const sedesVistas = new Set();
+
+const ultimosReportes = reportes.filter(
+  (reporte) => {
+
+    if (
+      sedesVistas.has(reporte.sedeId)
+    ) {
+      return false;
+    }
+
+    sedesVistas.add(reporte.sedeId);
+
+    return true;
+  }
+);
   return {
 
     totalSedes,
@@ -301,31 +324,36 @@ async (
 };
 export const monitoreoOsegService = async () => {
 
+  const existeEventoActivo =
+    await prisma.reporteSismo.findFirst({
+      where: {
+        estado: "REPORTADO"
+      }
+    });
+
+  if (!existeEventoActivo) {
+    return [];
+  }
+
   const autorizadas =
     await prisma.autorizacionSismo.findMany({
-
       where: {
         estado: "ACTIVO"
       },
-
       include: {
         sede: true
       }
-
     });
 
   const reportes =
     await prisma.reporteSismo.findMany({
-
+      where: {
+        estado: "REPORTADO"
+      },
       include: {
         sede: true,
         responsable: true
-      },
-
-      orderBy: {
-        createdAt: "desc"
       }
-
     });
 
   return autorizadas.map((aut) => {
@@ -335,31 +363,84 @@ export const monitoreoOsegService = async () => {
     );
 
     return {
-
       sedeId: aut.sedeId,
-
       sede: aut.sede.nombre,
-
-      estado:
-        reporte
-          ? "REPORTADO"
-          : "PENDIENTE",
-
-      contacto:
-        reporte?.responsable?.rol ||
-        "-",
-
-      detalle:
-        reporte
-          ? "Sin novedad"
-          : "-",
-
-      hora:
-        reporte?.horaReporte ||
-        "-"
-
+      estado: reporte ? "REPORTADO" : "PENDIENTE",
+      contacto: reporte?.responsable?.rol || "-",
+      detalle: reporte ? "Sin novedad" : "-",
+      hora: reporte?.horaReporte || "-"
     };
 
   });
+
+};
+export const cerrarSismosService = async () => {
+  return await prisma.reporteSismo.updateMany({
+    where: {
+      estado: {
+        in: ["PENDIENTE", "REPORTADO"]
+      }
+    },
+    data: {
+      estado: "CERRADO"
+    }
+  });
+};
+export const alertaSismicaService = async () => {
+
+  const activo = await prisma.reporteSismo.findFirst({
+    where: {
+      estado: "REPORTADO"
+    },
+    include: {
+      sede: true,
+      responsable: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  return {
+    activa: !!activo,
+    reporte: activo
+  };
+
+};
+export const reportePorSedeService = async () => {
+  return await prisma.reporteSismo.findMany({
+    where: {
+      estado: "REPORTADO"
+    },
+    select: {
+      sedeId: true
+    }
+  });
+};
+export const sedesFaltantesService = async () => {
+
+  const autorizadas =
+    await prisma.autorizacionSismo.findMany({
+      where: {
+        estado: "ACTIVO"
+      },
+      include: {
+        sede: true
+      }
+    });
+
+  const reportadas =
+    await prisma.reporteSismo.findMany({
+      where: {
+        estado: "REPORTADO"
+      }
+    });
+
+  return autorizadas.filter(
+    aut =>
+      !reportadas.some(
+        rep => rep.sedeId === aut.sedeId
+      )
+  );
 
 };

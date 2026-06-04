@@ -1,32 +1,35 @@
 import { useEffect, useState } from "react";
 import api from "../../../../api/axios";
 import {
+  Activity,
   AlertTriangle,
   Radio
 } from "lucide-react";
-
+import ReportarFaltanteModal from "./ReportarFaltanteModal";
 export default function InicioOSeguridad() {
 
   const [monitoreo, setMonitoreo] =
     useState([]);
-
-  const [alertaActiva, setAlertaActiva] =
-    useState(true);
+const [alerta, setAlerta] = useState(null);
+const alertaActiva = alerta;
 
   useEffect(() => {
 
-    cargarMonitoreo();
+  cargarMonitoreo();
+  cargarAlerta();
 
-    const interval =
-      setInterval(
-        cargarMonitoreo,
-        5000
-      );
+  const interval =
+    setInterval(() => {
 
-    return () =>
-      clearInterval(interval);
+      cargarMonitoreo();
+      cargarAlerta();
 
-  }, []);
+    }, 5000);
+
+  return () =>
+    clearInterval(interval);
+
+}, []);
 
   const cargarMonitoreo =
     async () => {
@@ -47,70 +50,134 @@ export default function InicioOSeguridad() {
       }
 
     };
+    const monitoreoVisible = monitoreo.filter(
+  (item) => item.estado !== "CERRADO"
+);
+    const cargarAlerta = async () => {
+  try {
 
+    const { data } =
+      await api.get("/sismos/alerta");
+
+    setAlerta(data.activa);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+};
+const cerrarEvento = async () => {
+  try {
+
+    await api.patch("/sismos/cerrar-evento");
+    await cargarAlerta();
+    setAlerta(false);
+
+    cargarMonitoreo();
+    cargarAlerta();
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+};
+const [openFaltante, setOpenFaltante] =
+  useState(false);
+
+const [sedesFaltantes,
+  setSedesFaltantes] =
+  useState([]);
+
+const [sedeSeleccionada,
+  setSedeSeleccionada] =
+  useState("");
+  const abrirModalFaltante =
+  async () => {
+
+    try {
+
+      const { data } =
+        await api.get(
+          "/sismos/sedes-faltantes"
+        );
+
+      setSedesFaltantes(data);
+
+      setOpenFaltante(true);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
   return (
 
     <div className="space-y-6">
 
       {/* ALERTA */}
 
-      {alertaActiva && (
+             <div
+  className="
+    bg-white
+    rounded-2xl
+    shadow-sm
+    p-6
+  "
+>
+  <div className="flex items-center gap-3">
 
-        <div
-          className="
-            bg-red-100
-            border
-            border-red-300
-            rounded-xl
-            p-5
-            flex
-            justify-between
-            items-center
-          "
-        >
+{alerta ? (
+      <Activity
+        className="text-red-500"
+        size={30}
+      />
+    ) : (
+      <Activity
+        className="text-green-500"
+        size={30}
+      />
+    )}
 
-          <div>
+    <div>
 
-            <h2
-              className="
-                text-3xl
-                font-bold
-                text-red-900
-              "
-            >
-              ALERTA SÍSMICA ACTIVA
-            </h2>
+      {alerta ? (
+  <>
+    <h2 className="font-bold text-xl text-red-600">
+      ALERTA SÍSMICA ACTIVA
+    </h2>
 
-            <p className="text-red-700">
-
-              Evento:
-              {" "}
-              Sismo Detectado
-
-            </p>
-
-          </div>
-
-          <button
-            onClick={() =>
-              setAlertaActiva(false)
-            }
-            className="
-              border
-              border-black
-              px-4
-              py-2
-              rounded
-              bg-white
-            "
-          >
-            Cerrar Evento
-          </button>
-
-        </div>
-
+    <p className="text-gray-500">
+      {alerta.reporte ? (
+        <>
+          Evento sísmico detectado el{" "}
+          {new Date(alerta.reporte.fechaReporte).toLocaleDateString("es-PE")}{" "}
+          {alerta.reporte.horaReporte}
+        </>
+      ) : (
+        "Evento sísmico detectado"
       )}
+    </p>
+  </>
+) : (
+  <>
+    <h2 className="font-bold text-xl">
+      Sin Actividad
+    </h2>
 
+    <p className="text-gray-500">
+      Sistema en espera.
+    </p>
+  </>
+)}
+
+    </div>
+
+  </div>
+</div>
       {/* MONITOREO */}
 
       <div
@@ -160,18 +227,18 @@ export default function InicioOSeguridad() {
           </div>
 
           <button
-            className="
-              bg-red-400
-              text-white
-              px-4
-              py-2
-              rounded-lg
-              font-semibold
-            "
-          >
-            REPORTAR FALTANTE
-          </button>
-
+          onClick={abrirModalFaltante}
+          className="
+            bg-red-400
+            text-white
+            px-4
+            py-2
+            rounded-lg
+            font-semibold
+          "
+        >
+          REPORTAR FALTANTE
+        </button>
         </div>
 
         <table className="w-full">
@@ -211,7 +278,7 @@ export default function InicioOSeguridad() {
 
           <tbody>
 
-            {monitoreo.map(
+            {monitoreoVisible.map(
               (item) => (
 
                 <tr
@@ -235,42 +302,41 @@ export default function InicioOSeguridad() {
 
                   <td className="p-3">
 
-                    {item.estado ===
-                    "REPORTADO" ? (
+  {item.estado === "REPORTADO" ? (
 
-                      <span
-                        className="
-                          bg-green-600
-                          text-white
-                          px-3
-                          py-1
-                          rounded-md
-                          text-xs
-                          font-bold
-                        "
-                      >
-                        REPORTADO
-                      </span>
+    <span
+      className="
+        bg-green-600
+        text-white
+        px-3
+        py-1
+        rounded-md
+        text-xs
+        font-bold
+      "
+    >
+      REPORTADO
+    </span>
 
-                    ) : (
+  ) : (
 
-                      <span
-                        className="
-                          bg-red-300
-                          text-white
-                          px-3
-                          py-1
-                          rounded-md
-                          text-xs
-                          font-bold
-                        "
-                      >
-                        PENDIENTE
-                      </span>
+    <span
+      className="
+        bg-red-300
+        text-white
+        px-3
+        py-1
+        rounded-md
+        text-xs
+        font-bold
+      "
+    >
+      PENDIENTE
+    </span>
 
-                    )}
+  )}
 
-                  </td>
+</td>
 
                   <td className="p-3">
                     {item.contacto}
@@ -294,7 +360,13 @@ export default function InicioOSeguridad() {
         </table>
 
       </div>
-
+<ReportarFaltanteModal
+  open={openFaltante}
+  onClose={() =>
+    setOpenFaltante(false)
+  }
+  sedes={sedesFaltantes}
+/>
     </div>
 
   );

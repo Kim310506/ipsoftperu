@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-
 import {
 
   listarSismosService,
@@ -10,7 +9,11 @@ import {
   autorizarSedeService,
   cambiarEstadoAutorizacionService,
   listarAutorizacionesService,
-  monitoreoOsegService
+  monitoreoOsegService,
+  cerrarSismosService,
+  alertaSismicaService,
+  reportePorSedeService,
+  sedesFaltantesService
 
 } from "./sismos.service";
 
@@ -292,6 +295,86 @@ async (
 
     res.status(500).json({
       message: "Error monitoreo"
+    });
+
+  }
+
+};
+export const cerrarSismos = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+
+    const data = await cerrarSismosService();
+
+    res.json({
+      message: "Evento cerrado",
+      data
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error"
+    });
+
+  }
+};
+export const alertaSismica = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+
+    const data = await alertaSismicaService();
+
+    res.json(data);
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error alerta sísmica"
+    });
+
+  }
+};
+export const reportePorSede = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const data = await reportePorSedeService();
+    res.json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error al obtener reportes por sede"
+    });
+  }
+};
+export const sedesFaltantes = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const data =
+      await sedesFaltantesService();
+
+    res.json(data);
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      message: "Error"
     });
 
   }

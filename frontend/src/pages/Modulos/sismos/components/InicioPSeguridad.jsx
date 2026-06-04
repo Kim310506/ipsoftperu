@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "../../../../api/axios";
 import {
+  Activity,
   ShieldCheck,
   Building2,
   FileText,
@@ -16,12 +17,20 @@ const [autorizaciones,
   setAutorizaciones] =
   useState([]);
   const [sedes, setSedes] = useState([]);
+  const [alerta, setAlerta] = useState(null);
   const [alertaActiva, setAlertaActiva] = useState(null);
 
-  useEffect(() => {
-    cargarDatos();
-    cargarAutorizaciones();
-  }, []);
+useEffect(() => {
+  cargarDatos();
+  cargarAutorizaciones();
+  cargarAlerta();
+
+  const interval = setInterval(() => {
+    cargarAlerta();
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, []);
 const [openAutorizar, setOpenAutorizar] =
   useState(false);
 
@@ -53,6 +62,16 @@ const [plano, setPlano] =
       console.log(error);
     }
   };
+const cargarAlerta = async () => {
+  try {
+    const { data } = await api.get("/sismos/alerta");
+
+    setAlerta(data.activa); // 🔥 GLOBAL, sin filtro
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 const abrirModalAutorizar =
   async () => {
 
@@ -161,35 +180,64 @@ async () => {
 
       {/* ALERTA */}
 
-      <div className="bg-red-100 border border-red-300 rounded-xl p-5">
+       <div
+  className="
+    bg-white
+    rounded-2xl
+    shadow-sm
+    p-6
+  "
+>
+  <div className="flex items-center gap-3">
 
-        <div className="flex items-center gap-3">
+{alerta ? (
+      <Activity
+        className="text-red-500"
+        size={30}
+      />
+    ) : (
+      <Activity
+        className="text-green-500"
+        size={30}
+      />
+    )}
 
-          <AlertTriangle
-            className="text-red-600"
-            size={30}
-          />
+    <div>
 
-          <div>
+      {alerta ? (
+  <>
+    <h2 className="font-bold text-xl text-red-600">
+      ALERTA SÍSMICA ACTIVA
+    </h2>
 
-            <h2 className="font-bold text-2xl text-red-900">
-              ALERTA SÍSMICA ACTIVA
-            </h2>
+    <p className="text-gray-500">
+      {alerta.reporte ? (
+        <>
+          Evento sísmico detectado el{" "}
+          {new Date(alerta.reporte.fechaReporte).toLocaleDateString("es-PE")}{" "}
+          {alerta.reporte.horaReporte}
+        </>
+      ) : (
+        "Evento sísmico detectado"
+      )}
+    </p>
+  </>
+) : (
+  <>
+    <h2 className="font-bold text-xl">
+      Sin Actividad
+    </h2>
 
-            <p className="text-red-700">
+    <p className="text-gray-500">
+      Sistema en espera.
+    </p>
+  </>
+)}
 
-              Evento: Sismo Detectado
+    </div>
 
-              {alertaActiva &&
-                ` ${alertaActiva.fecha} ${alertaActiva.hora}`}
-
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
+  </div>
+</div>
 
       {/* TABLA */}
 

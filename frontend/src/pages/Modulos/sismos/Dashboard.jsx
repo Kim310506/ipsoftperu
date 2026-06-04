@@ -94,6 +94,9 @@ console.log("ROL:", usuario?.rol);
             )}
           </>
         )}
+        {menuActivo === "dashboard" && (
+  <DashboardSismo />
+)}
 
       </main>
 

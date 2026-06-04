@@ -375,6 +375,8 @@ export default function DashboardSismos() {
 
               <div className="text-xs text-gray-500">
                 {item.responsable?.nombre}
+                {" - "}
+                {item.responsable?.rol}
               </div>
 
             </td>
