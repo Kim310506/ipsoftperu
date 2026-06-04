@@ -1,5 +1,6 @@
 import { FaXmark, FaUser, FaEnvelope, FaLock, FaChevronDown } from "react-icons/fa6";
 import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 import api from "../../../../api/axios"; 
 // ajusta la ruta según tu proyecto
 export default function ModalCrearUsuario({
@@ -35,30 +36,133 @@ useEffect(() => {
   cargarSedes();
 
 }, []);
+const obtenerModuloDeRol = (rol) => {
+
+  for (const modulo in rolesPorModulo) {
+
+    if (
+      rolesPorModulo[modulo].includes(rol)
+    ) {
+      return modulo;
+    }
+
+  }
+
+  return null;
+
+};
 const manejarModulo = (modulo) => {
+
+  let nuevosModulos;
 
   if (modulos.includes(modulo)) {
 
-    setModulos(
-      modulos.filter((m) => m !== modulo)
-    );
+    nuevosModulos =
+      modulos.filter(
+        m => m !== modulo
+      );
 
   } else {
 
-    setModulos([
+    nuevosModulos = [
       ...modulos,
       modulo
-    ]);
+    ];
 
   }
+
+  setModulos(nuevosModulos);
+
+  const rolesValidos =
+    nuevosModulos.flatMap(
+      m =>
+        rolesPorModulo[m] || []
+    );
+
+  setRoles(
+    roles.filter(
+      r =>
+        rolesValidos.includes(r)
+    )
+  );
+
+};
+const rolesPorModulo = {
+
+  ADMIN: [
+    "ADMIN"
+  ],
+
+  VISITAS: [
+    "SOLICITANTE DE ACCESO (SA)",
+    "RESPONSABLE DE AREA (RA)",
+    "RECEPCION DE SEGURIDAD (REC)"
+  ],
+
+  INCIDENTES: [
+    "RESPONSABLE SAFETY",
+    "RESPONSABLE SECURITY",
+    "ENCARGADO DE SOLUCIONAR SAFETY",
+    "ENCARGADO DE SOLUCIONAR SECURITY",
+    "SEGURIDAD DEL LOCAL"
+  ],
+
+  SISMOS: [
+    "PERSONAL DE VIGILANCIA (PVIG)",
+    "PERSONAL DE SEGURIDAD (PSEG)",
+    "OPERADOR DE SEGURIDAD (OSEG)"
+  ]
 
 };
 const manejarRol = (rol) => {
+
+  const moduloRol =
+    obtenerModuloDeRol(rol);
+
+  const rolesDeEseModulo =
+    rolesPorModulo[moduloRol];
+
+  const rolesSeleccionadosDeEseModulo =
+    roles.filter(r =>
+      rolesDeEseModulo.includes(r)
+    );
+
   if (roles.includes(rol)) {
-    setRoles(roles.filter((r) => r !== rol));
-  } else {
-    setRoles([...roles, rol]);
+
+    setRoles(
+      roles.filter(r => r !== rol)
+    );
+
+    return;
+
   }
+
+  if (
+    rolesSeleccionadosDeEseModulo.length > 0
+  ) {
+
+    Swal.fire({
+  icon: "info",
+  title: "Solo un rol por módulo",
+  html: `
+    <div style="font-size:14px">
+      El módulo <b>${moduloRol}</b> ya tiene un rol asignado.<br><br>
+      Debes desmarcar el rol actual antes de seleccionar otro.
+    </div>
+  `,
+  confirmButtonText: "Aceptar",
+  confirmButtonColor: "#345ccf"
+});
+
+    return;
+
+  }
+
+  setRoles([
+    ...roles,
+    rol
+  ]);
+
 };
   const crearUsuario = async () => {
 
@@ -96,7 +200,14 @@ const manejarRol = (rol) => {
   };
 
   if (!openModal) return null;
-
+const rolesDisponibles = [
+  ...new Set(
+    modulos.flatMap(
+      modulo =>
+        rolesPorModulo[modulo] || []
+    )
+  )
+];
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-5">
 
@@ -183,69 +294,35 @@ const manejarRol = (rol) => {
 
           {/* GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-
-            {/* ROL */}
-            <div className="relative w-full">
-              <label className="block text-[12px] uppercase font-black text-[#7184a3] mb-2">
-                Roles
-              </label>
-
-              <details className="group">
-                <summary className="list-none bg-[#f5f7fb] rounded-[22px] px-6 py-5 font-bold text-[#8b97ad] flex justify-between cursor-pointer">
-                  {roles.length > 0
-                    ? roles.join(", ")
-                    : "Seleccionar roles"}
-
-                  <FaChevronDown className="group-open:rotate-180 transition" />
-                </summary>
-
-                <div className="absolute mt-3 w-full bg-white rounded-[24px] shadow-lg border p-5 flex flex-col gap-4 z-50">
-
-                  {[
-                    "ADMIN",
-                    "SOLICITANTE DE ACCESO (SA)",
-                    "RESPONSABLE DE AREA (RA)",
-                    "RECEPCION DE SEGURIDAD (REC)",
-                    "RESPONSABLE SAFETY (RSA)",
-                    "OPERADOR DE SEGURIDAD (OSEG)",
-                    "PERSONAL DE VIGILANCIA (PVIG)",
-                    "PERSONAL DE SEGURIDAD (PSEG)",
-                  ].map((rolItem) => (
-                    <label
-                      key={rolItem}
-                      className="flex items-center gap-3"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={roles.includes(rolItem)}
-                        onChange={() => manejarRol(rolItem)}
-                        className="w-5 h-5 accent-[#0456b3]"
-                      />
-
-                      <span className="font-bold text-sm">
-                        {rolItem}
-                      </span>
-                    </label>
-                  ))}
-
-                </div>
-              </details>
-            </div>
-
-            {/* ACCESOS */}
+{/* ACCESOS */}
             <div className="relative w-full">
               <label className="block text-[12px] uppercase font-black text-[#7184a3] mb-2">
                 Accesos a módulos
               </label>
 
               <details className="group">
-                <summary className="list-none bg-[#f5f7fb] rounded-[22px] px-6 py-5 font-bold text-[#8b97ad] flex justify-between cursor-pointer">
-                  Seleccionar módulos
-                  <FaChevronDown className="group-open:rotate-180 transition" />
-                </summary>
+<summary className="list-none bg-[#f5f7fb] rounded-[22px] px-6 py-5 font-bold text-[#8b97ad] flex justify-between cursor-pointer">
 
-                <div className="absolute mt-3 w-full bg-white rounded-[24px] shadow-lg border p-5 flex flex-col gap-4 z-50">
+  <span className="truncate">
+    {modulos.length > 0
+      ? modulos.join(", ")
+      : "Seleccionar módulos"}
+  </span>
 
+  <FaChevronDown className="group-open:rotate-180 transition flex-shrink-0" />
+
+</summary>
+<div
+  className="
+    absolute mt-3 w-full
+    bg-white rounded-[24px]
+    shadow-lg border
+    p-5
+    z-50
+    max-h-[320px]
+    overflow-y-auto
+  "
+>
                   <label className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -253,7 +330,13 @@ const manejarRol = (rol) => {
                     onChange={() =>
                       manejarModulo("ADMIN")
                     }
-                    className="w-5 h-5 accent-[#0456b3]"
+                    className="
+                    min-w-[20px]
+                    min-h-[20px]
+                    w-5
+                    h-5
+                    accent-[#0456b3]
+                  "
                   />
 
                   <span className="font-bold text-sm">
@@ -268,7 +351,13 @@ const manejarRol = (rol) => {
                       onChange={() =>
                         manejarModulo("VISITAS")
                       }
-                      className="w-5 h-5 accent-[#0456b3]"
+                      className="
+                      min-w-[20px]
+                      min-h-[20px]
+                      w-5
+                      h-5
+                      accent-[#0456b3]
+                    "
                     />
 
                     <span className="font-bold text-sm">
@@ -284,7 +373,13 @@ const manejarRol = (rol) => {
                       onChange={() =>
                         manejarModulo("PROVEEDORES")
                       }
-                      className="w-5 h-5 accent-[#0456b3]"
+                      className="
+                        min-w-[20px]
+                        min-h-[20px]
+                        w-5
+                        h-5
+                        accent-[#0456b3]
+                      "
                     />
 
                     <span className="font-bold text-sm">
@@ -299,7 +394,13 @@ const manejarRol = (rol) => {
                       onChange={() =>
                         manejarModulo("INCIDENTES")
                       }
-                      className="w-5 h-5 accent-[#0456b3]"
+                      className="
+                        min-w-[20px]
+                        min-h-[20px]
+                        w-5
+                        h-5
+                        accent-[#0456b3]
+                      "
                     />
 
                     <span className="font-bold text-sm">
@@ -315,7 +416,13 @@ const manejarRol = (rol) => {
                       onChange={() =>
                         manejarModulo("INVENTARIOS")
                       }
-                      className="w-5 h-5 accent-[#0456b3]"
+                      className="
+                        min-w-[20px]
+                        min-h-[20px]
+                        w-5
+                        h-5
+                        accent-[#0456b3]
+                      "
                     />
 
                     <span className="font-bold text-sm">
@@ -330,7 +437,13 @@ const manejarRol = (rol) => {
                       onChange={() =>
                         manejarModulo("EXTINTORES")
                       }
-                      className="w-5 h-5 accent-[#0456b3]"
+                      className="
+                        min-w-[20px]
+                        min-h-[20px]
+                        w-5
+                        h-5
+                        accent-[#0456b3]
+                      "
                     />
 
                     <span className="font-bold text-sm">
@@ -344,7 +457,13 @@ const manejarRol = (rol) => {
                       onChange={() =>
                         manejarModulo("MANTENIMIENTO")
                       }
-                      className="w-5 h-5 accent-[#0456b3]"
+                      className="
+                        min-w-[20px]
+                        min-h-[20px]
+                        w-5
+                        h-5
+                        accent-[#0456b3]
+                      "
                     />
                     <span className="font-bold text-sm">
                       MANTENIMIENTO
@@ -357,7 +476,13 @@ const manejarRol = (rol) => {
                       onChange={() =>
                         manejarModulo("RIESGO")
                       }
-                      className="w-5 h-5 accent-[#0456b3]"
+                      className="
+                          min-w-[20px]
+                          min-h-[20px]
+                          w-5
+                          h-5
+                          accent-[#0456b3]
+                        "
                     />
                     <span className="font-bold text-sm">
                       RIESGO
@@ -369,9 +494,15 @@ const manejarRol = (rol) => {
                       type="checkbox"
                       checked={modulos.includes("SISMOS")}
                       onChange={() =>
-                        manejarModulo("SISMO")
+                        manejarModulo("SISMOS")
                       }
-                      className="w-5 h-5 accent-[#0456b3]"
+                      className="
+                        min-w-[20px]
+                        min-h-[20px]
+                        w-5
+                        h-5
+                        accent-[#0456b3]
+                      "
                     />
 
                     <span className="font-bold text-sm">
@@ -379,6 +510,97 @@ const manejarRol = (rol) => {
                     </span>
 
                   </label>
+                </div>
+              </details>
+            </div>
+            {/* ROL */}
+            <div className="relative w-full">
+              <label className="block text-[12px] uppercase font-black text-[#7184a3] mb-2">
+                Roles
+              </label>
+
+              <details className="group">
+                <summary className="list-none bg-[#f5f7fb] rounded-[22px] px-6 py-5 font-bold text-[#8b97ad] flex justify-between cursor-pointer">
+                  {roles.length > 0
+                    ? roles.join(", ")
+                    : "Seleccionar roles"}
+
+                  <FaChevronDown className="group-open:rotate-180 transition" />
+                </summary>
+
+<div
+  className="
+    absolute mt-3 w-full
+    bg-white rounded-[24px]
+    shadow-lg border
+    p-5
+    flex flex-col gap-4
+    z-50
+    max-h-[280px]
+    overflow-y-auto
+  "
+>
+                 {modulos.map((modulo) => (
+
+  <div
+    key={modulo}
+    className="border-b border-gray-100 pb-4 mb-4"
+  >
+
+    <div className="mb-3">
+      <p className="text-[11px] uppercase tracking-[2px] font-black text-[#345ccf]">
+        {modulo}
+      </p>
+
+      <div className="w-10 h-[2px] bg-[#345ccf] rounded-full mt-1" />
+    </div>
+
+    <div className="flex flex-col gap-3">
+
+      {(rolesPorModulo[modulo] || []).map(
+        (rolItem) => (
+
+          <label
+            key={rolItem}
+            className="
+              flex items-center gap-3
+              p-3 rounded-xl
+              hover:bg-[#f5f7fb]
+              cursor-pointer
+              transition
+            "
+          >
+
+            <input
+              type="checkbox"
+              checked={roles.includes(rolItem)}
+              onChange={() =>
+                manejarRol(rolItem)
+              }
+              className="
+                min-w-[20px]
+                min-h-[20px]
+                w-5
+                h-5
+                accent-[#345ccf]
+              "
+            />
+
+            <span className="font-semibold text-sm text-[#1d2b4f]">
+              {rolItem}
+            </span>
+
+          </label>
+
+        )
+      )}
+
+    </div>
+
+  </div>
+
+))}
+
                 </div>
               </details>
             </div>

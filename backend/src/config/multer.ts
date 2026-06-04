@@ -1,14 +1,24 @@
 // src/config/multer.ts
 
 import multer from "multer";
-import path from "path";
 import fs from "fs";
 
 const storage = multer.diskStorage({
 
   destination: (req, file, cb) => {
 
-    const dir = "uploads/ocurrencias";
+    let dir =
+      "uploads/ocurrencias/evidencias_iniciales";
+
+    // cuando envías una solución
+    if (
+      req.originalUrl.includes("/solucion")
+    ) {
+
+      dir =
+        "uploads/ocurrencias/soluciones";
+
+    }
 
     if (!fs.existsSync(dir)) {
 

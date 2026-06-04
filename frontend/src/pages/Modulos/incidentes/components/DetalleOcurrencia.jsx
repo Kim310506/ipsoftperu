@@ -11,6 +11,9 @@ const [historial, setHistorial] =
 useState([]);
 const [mensajeSolucion, setMensajeSolucion] = useState("");
 const [archivos, setArchivos] = useState([]);
+const [motivoRechazo, setMotivoRechazo] = useState("");
+const [mostrarRechazo, setMostrarRechazo] =
+  useState(false);
   const [incidente, setIncidente] = useState(null);
 
   useEffect(() => {
@@ -24,7 +27,7 @@ const [archivos, setArchivos] = useState([]);
     const res = await api.get(
       `/incidentes/${incidenteId}`
     );
-
+console.log("HISTORIAL", res.data.historial);
     console.log(res.data);
 
     setIncidente(res.data);
@@ -32,7 +35,7 @@ const [archivos, setArchivos] = useState([]);
     setHistorial(
       res.data.historial || []
     );
-
+    
   } catch (error) {
 
     console.log(error);
@@ -40,6 +43,7 @@ const [archivos, setArchivos] = useState([]);
   }
 
 };
+
 const grabarReporte = async () => {
 
   try {
@@ -95,33 +99,42 @@ const grabarReporte = async () => {
 
   const rechazarSolucion = async () => {
 
-    try {
+  try {
 
-      await api.put(
-`/incidentes/${incidenteId}/rechazar`
-      );
-
-      cargarDetalle();
-
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  if (!incidente) {
-    return (
-      <div className="p-10">
-        Cargando...
-      </div>
+    await api.put(
+      `/incidentes/${incidenteId}/rechazar`,
+      {
+        motivo: motivoRechazo
+      }
     );
+
+    setMotivoRechazo("");
+setMostrarRechazo(false);
+    cargarDetalle();
+
+  } catch (error) {
+
+    console.log(error);
+
   }
+
+};
+if (!incidente) {
+  return (
+    <div className="p-10">
+      Cargando...
+    </div>
+  );
+}
 const reporteExistente = historial.find(
   (item) => item.tipo === "REPORTE"
 );
 const soluciones = historial.filter(
   (item) => item.tipo === "SOLUCION"
 );
-
+const rechazos = historial.filter(
+  (item) => item.tipo === "RECHAZO"
+);
 const solucionExistente =
   soluciones.length > 0
     ? soluciones[soluciones.length - 1]
@@ -153,6 +166,39 @@ const enviarSolucion = async () => {
     console.log(error);
   }
 };
+const exportarPDF = async () => {
+
+  try {
+
+    const response = await api.get(
+      `/incidentes/${incidenteId}/pdf`,
+      {
+        responseType: "blob"
+      }
+    );
+
+    const url =
+      window.URL.createObjectURL(
+        new Blob([response.data])
+      );
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+
+    link.download =
+      `Ocurrencia_${incidente.codigo}.pdf`;
+
+    link.click();
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
  return (
   <div className="min-h-screen bg-[#f4f4f4] p-6">
 
@@ -170,18 +216,19 @@ const enviarSolucion = async () => {
       </div>
 
       <button
-        className="
-          bg-green-400
-          hover:bg-green-500
-          text-xs
-          px-4
-          py-2
-          rounded
-          font-semibold
-        "
-      >
-        Exportar PDF
-      </button>
+  onClick={exportarPDF}
+  className="
+    bg-green-400
+    hover:bg-green-500
+    text-xs
+    px-4
+    py-2
+    rounded
+    font-semibold
+  "
+>
+  Exportar PDF
+</button>
 
     </div>
 
@@ -507,102 +554,370 @@ const enviarSolucion = async () => {
 
   )}
 
+{/* REGISTRAR PRIMERA SOLUCIÓN */}
+{reporteExistente &&
+ soluciones.length === 0 &&
+ incidente.estado !== "CERRADO" && (
 
+  <div className="mb-8">
+
+    <h2 className="text-2xl font-bold mb-4">
+      Registrar Solución
+    </h2>
+
+    <textarea
+      value={mensajeSolucion}
+      onChange={(e) =>
+        setMensajeSolucion(e.target.value)
+      }
+      placeholder="Describa la solución aplicada..."
+      className="
+        w-full
+        border
+        rounded-xl
+        p-4
+        mb-4
+      "
+    />
+
+    <input
+      type="file"
+      multiple
+      onChange={(e) =>
+        setArchivos([...e.target.files])
+      }
+      className="mb-4"
+    />
+
+    <button
+      onClick={enviarSolucion}
+      className="
+        w-full
+        bg-purple-600
+        text-white
+        py-3
+        rounded-xl
+      "
+    >
+      Enviar Solución
+    </button>
+
+  </div>
+
+)}
   {/* SOLUCIÓN + GESTIÓN DEL CASO */}
 {reporteExistente && (
   <div className="mt-10">
 
     <h2 className="text-4xl font-bold text-[#1f2937] mb-5">
-      Solución 🔧
+      Soluciones 🔧
     </h2>
 
-    {/* SI NO HAY SOLUCIÓN O FUE RECHAZADA */}
-    {!solucionExistente || incidente.estado === "RECHAZADO" ? (
-      <>
-        <p className="text-xs uppercase tracking-widest text-gray-500 mb-2 font-bold">
-          DESCRIPCIÓN DE LA SOLUCIÓN:
-        </p>
+   {historial
+  .filter(
+    (item) =>
+      item.tipo === "SOLUCION" ||
+      item.tipo === "RECHAZO"
+  )
+  .map((item, index) => (
 
+    <div
+      key={item.id}
+      className="mb-6 border-b pb-6"
+    >
+
+      {item.tipo === "SOLUCION" && (
+
+       <>
+  <div className="mb-4">
+
+    <h3
+      className="
+        text-lg
+        font-bold
+        text-purple-700
+        mb-3
+      "
+    >
+      🔧 Solución
+    </h3>
+
+    <div
+      className="
+        bg-purple-100
+        rounded-2xl
+        p-4
+        text-purple-900
+        font-semibold
+        mb-3
+      "
+    >
+      {item.mensaje}
+    </div>
+
+    {item.evidencias?.length > 0 && (
+
+      <div className="space-y-3 mb-3">
+
+        {item.evidencias.map((img) => (
+
+          <img
+            key={img.id}
+            src={`http://localhost:3000${img.url}`}
+            className="
+              w-full
+              rounded-2xl
+              border
+              shadow-sm
+            "
+          />
+
+        ))}
+
+      </div>
+
+    )}
+
+    <div
+      className="
+        bg-purple-600
+        text-white
+        rounded-full
+        px-4
+        py-2
+        text-sm
+        font-semibold
+        inline-block
+        leading-4
+      "
+    >
+
+      <div>
+        {item.usuario?.correo}
+      </div>
+
+      <div className="text-xs">
+        {new Date(
+          item.createdAt
+        ).toLocaleString()}
+      </div>
+
+    </div>
+
+  </div>
+</>
+
+      )}
+
+      {item.tipo === "RECHAZO" && (
+
+        <div
+          className="
+            bg-red-100
+            border-l-4
+            border-red-500
+            p-4
+            rounded-xl
+          "
+        >
+
+          <div className="font-bold text-red-700">
+            MOTIVO DEL RECHAZO
+          </div>
+
+          <div className="mt-2">
+            {item.mensaje}
+          </div>
+
+          <div className="text-xs text-gray-500 mt-2">
+
+            {item.usuario?.correo}
+
+            {" - "}
+
+            {new Date(
+              item.createdAt
+            ).toLocaleString()}
+
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
+
+))}
+
+
+   {incidente.estado === "RECHAZADO" &&
+ soluciones.length > 0 && (
+
+      <>
         <textarea
           value={mensajeSolucion}
-          onChange={(e) => setMensajeSolucion(e.target.value)}
-          placeholder="Describa el trabajo realizado..."
-          className="w-full bg-white border border-gray-200 rounded-2xl p-4 h-32 resize-none outline-none mb-4 text-sm"
+          onChange={(e) =>
+            setMensajeSolucion(e.target.value)
+          }
+          placeholder="Nueva solución..."
+          className="
+            w-full
+            border
+            rounded-xl
+            p-4
+            mb-4
+          "
         />
 
         <input
           type="file"
           multiple
-          onChange={(e) => setArchivos([...e.target.files])}
+          onChange={(e) =>
+            setArchivos([...e.target.files])
+          }
           className="mb-4"
         />
 
         <button
           onClick={enviarSolucion}
-          className="w-full bg-purple-700 hover:bg-purple-800 text-white py-4 rounded-2xl font-bold"
+          className="
+            w-full
+            bg-purple-600
+            text-white
+            py-3
+            rounded-xl
+          "
         >
-          ✈ Enviar Solución
+          Enviar nueva solución
         </button>
+
       </>
-    ) : (
-      <>
-        {/* SOLUCIÓN ENVIADA */}
-        <div className="mb-6">
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-3">
-            <p className="text-sm text-gray-700 uppercase font-medium">
-              {solucionExistente.mensaje}
-            </p>
-          </div>
-
-          <div className="bg-purple-600 text-white rounded-2xl p-4">
-            <div className="font-semibold">
-              {solucionExistente.usuario?.correo}
-            </div>
-
-            <div className="text-xs mt-1">
-              {new Date(solucionExistente.createdAt).toLocaleString()}
-            </div>
-          </div>
-
-          {/* 🔥 GESTIÓN DEL CASO */}
-          {incidente.estado !== "CERRADO" && (
-            <div className="mt-6">
-
-              <h3 className="text-xl font-bold text-[#0f172a] mb-3">
-                Gestión del Caso
-              </h3>
-
-              <div className="flex gap-3">
-
-                <button
-                  onClick={aprobarSolucion}
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-bold"
-                >
-                  ✔ Aprobar solución
-                </button>
-
-                <button
-                  onClick={rechazarSolucion}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-bold"
-                >
-                  ✖ Rechazar solución
-                </button>
-
-              </div>
-
-            </div>
-          )}
-
-        </div>
-      </>
     )}
 
-    {/* CASO CERRADO */}
-    {incidente.estado === "CERRADO" && (
-      <div className="mt-6 bg-green-100 text-green-900 p-4 rounded-2xl font-bold text-center">
-        CASO CERRADO ✔
+    {soluciones.length > 0 &&
+      incidente.estado !== "CERRADO" && (
+
+      <div className="mt-6">
+
+        <h3 className="font-bold mb-3">
+          Gestión del Caso
+        </h3>
+
+        {!mostrarRechazo ? (
+
+  <div className="flex gap-3">
+
+    <button
+      onClick={aprobarSolucion}
+      className="
+        flex-1
+        bg-green-500
+        text-white
+        py-3
+        rounded-xl
+      "
+    >
+      ✔ Aprobar
+    </button>
+
+    <button
+      onClick={() =>
+        setMostrarRechazo(true)
+      }
+      className="
+        flex-1
+        bg-red-500
+        text-white
+        py-3
+        rounded-xl
+      "
+    >
+      ✖ Rechazar
+    </button>
+
+  </div>
+
+) : (
+
+  <div className="mt-4">
+
+    <textarea
+      value={motivoRechazo}
+      onChange={(e) =>
+        setMotivoRechazo(e.target.value)
+      }
+      placeholder="Ingrese el motivo del rechazo..."
+      className="
+        w-full
+        border
+        rounded-xl
+        p-3
+        mb-3
+      "
+    />
+
+    <div className="flex gap-2">
+
+      <button
+        onClick={rechazarSolucion}
+        className="
+          bg-red-600
+          text-white
+          px-4
+          py-2
+          rounded-xl
+        "
+      >
+        Enviar Rechazo
+      </button>
+
+      <button
+        onClick={() =>
+          setMostrarRechazo(false)
+        }
+        className="
+          bg-gray-300
+          px-4
+          py-2
+          rounded-xl
+        "
+      >
+        Cancelar
+      </button>
+
+    </div>
+
+  </div>
+
+)}
+
       </div>
+
+    )}
+
+    {incidente.estado === "CERRADO" && (
+
+      <div
+        className="
+          mt-6
+          bg-green-100
+          p-5
+          rounded-2xl
+          text-center
+        "
+      >
+
+        <div className="font-bold text-green-700">
+          CERRADO
+        </div>
+
+        <div className="text-green-600">
+          Caso cerrado correctamente ✔
+        </div>
+
+      </div>
+
     )}
 
   </div>

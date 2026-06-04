@@ -42,25 +42,43 @@ console.log("BODY:", req.body);
       });
 
     }
+/* VALIDAR MODULOS */
 
-    /* VALIDAR MODULOS */
-    console.log(user.modulo);
-    const modulosUsuario =
-      user.modulo?.split(",") || [];
+const modulosUsuario =
+  (user.modulo || "")
+    .split(",")
+    .map(m => m.trim().toUpperCase());
 
-    if (
-      !modulosUsuario.includes(modulo)
-    ) {
+const moduloSolicitado =
+  (modulo || "")
+    .trim()
+    .toUpperCase();
 
-      return res.status(403).json({
+if (
+  !modulosUsuario.includes(
+    moduloSolicitado
+  )
+) {
 
-        message:
-          "No tienes acceso a este módulo"
+  return res.status(403).json({
+    message:
+      "No tienes acceso a este módulo"
+  });
 
-      });
+}
 
-    }
+/* SOLO PARA ADMIN */
+if (
+  moduloSolicitado === "ADMIN" &&
+  user.rol?.trim().toUpperCase() !== "ADMIN"
+) {
 
+  return res.status(403).json({
+    message:
+      "No tienes permisos de administrador"
+  });
+
+}
     res.json(user);
 
   } catch (error) {

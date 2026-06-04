@@ -14,7 +14,10 @@ import {
   resumenOcurrencias,
   crearReporte,
   crearSolucion,
-  dashboardOcurrencias
+  dashboardOcurrencias,
+  cerrarOcurrencia,
+  rechazarSolucion,
+  exportarPdf
 
 } from "./incidentes.controller";
 
@@ -35,7 +38,6 @@ router.get(
 );
 
 // CREAR
-// CREAR
 router.post(
   "/",
   upload.array("evidencias", 2),
@@ -47,7 +49,18 @@ router.put(
   "/:id/estado",
   actualizarEstadoOcurrencia
 );
-
+router.put(
+  "/:id/cerrar",
+  cerrarOcurrencia
+);
+router.get(
+  "/:id/pdf",
+  exportarPdf
+);
+router.put(
+  "/:id/rechazar",
+  rechazarSolucion
+);
 // ELIMINAR
 router.delete(
   "/:id",

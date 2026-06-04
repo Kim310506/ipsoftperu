@@ -1,4 +1,4 @@
-
+import PDFDocument from "pdfkit";
 import { prisma } from "../../config/prisma";
 
 export const listarOcurrenciasService =
@@ -141,7 +141,7 @@ async (
       data: files.map((file) => ({
 
         url:
-          `/uploads/ocurrencias/${file.filename}`,
+          `/uploads/ocurrencias/evidencias_iniciales/${file.filename}`,
 
         ocurrenciaId:
           ocurrencia.id
@@ -287,7 +287,7 @@ export const crearSolucionService = async (
   if (files && files.length > 0) {
     await prisma.evidenciaHistorial.createMany({
       data: files.map((file) => ({
-        url: `/uploads/soluciones/${file.filename}`,
+        url: `/uploads/ocurrencias/soluciones/${file.filename}`,
         historialId: solucion.id
       }))
     });
@@ -415,4 +415,91 @@ export const dashboardOcurrenciasService = async () => {
     vinculoData,
     personasData,
   };
+};
+export const cerrarOcurrenciaService = async (
+  ocurrenciaId: number,
+  usuarioId: number
+) => {
+
+  return await prisma.ocurrencia.update({
+    where: {
+      id: ocurrenciaId
+    },
+    data: {
+      estado: "CERRADO"
+    }
+  });
+
+};
+
+export const rechazarSolucionService = async (
+  ocurrenciaId: number,
+  usuarioId: number,
+  motivo: string
+) => {
+
+  await prisma.historialOcurrencia.create({
+    data: {
+      tipo: "RECHAZO",
+      mensaje: motivo,
+      usuarioId,
+      ocurrenciaId
+    }
+  });
+
+  return await prisma.ocurrencia.update({
+    where: {
+      id: ocurrenciaId
+    },
+    data: {
+      estado: "RECHAZADO"
+    }
+  });
+
+};
+export const generarPdfIncidente =
+async (id: number) => {
+
+  const incidente =
+    await prisma.ocurrencia.findUnique({
+
+      where: {
+        id
+      },
+
+      include: {
+
+        sede: true,
+
+        ambiente: true,
+
+        evidencias: true,
+
+        historial: {
+
+          include: {
+
+            usuario: true,
+
+            evidencias: true
+
+          },
+
+          orderBy: {
+            createdAt: "asc"
+          }
+
+        }
+
+      }
+
+    });
+
+  if (!incidente) {
+    throw new Error(
+      "Incidente no encontrado"
+    );
+  }
+
+  return incidente;
 };
