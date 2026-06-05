@@ -31,9 +31,9 @@ import ExtintorDashboard from "./pages/modulos/extintor/Dashboard";*/
 import MantenimientoLogin from "./pages/modulos/mantenimiento/Login";
 import MantenimientoDashboard from "./pages/modulos/mantenimiento/Dashboard";*/
 
-/* RIESGO 
-import RiesgoLogin from "./pages/modulos/riesgo/Login";
-import RiesgoDashboard from "./pages/modulos/riesgo/Dashboard";*/
+/* RIESGO */
+import RiesgosLogin from "./pages/modulos/riesgos/Login";
+import RiesgosDashboard from "./pages/modulos/riesgos/Dashboard";
 
 /* SISMOS */
 import SismosLogin from "./pages/modulos/sismos/Login";
@@ -76,7 +76,9 @@ export default function App() {
       {/* PROVEEDORES */}
       <Route path="/proveedores/login" element={<ProveedoresLogin />} />
       <Route path="/proveedores/dashboard" element={<ProveedoresDashboard />} />
-
+      {/* RIESGOS */}
+      <Route path="/riesgos/login" element={<RiesgosLogin />} />
+      <Route path="/riesgos/dashboard" element={<RiesgosDashboard />} />
       {/* EXTINTORES */}
       <Route
         path="/registro-externo/:codigo"

@@ -1,5 +1,3 @@
-// src/config/multer.ts
-
 import multer from "multer";
 import fs from "fs";
 
@@ -10,14 +8,19 @@ const storage = multer.diskStorage({
     let dir =
       "uploads/ocurrencias/evidencias_iniciales";
 
-    // cuando envías una solución
     if (
       req.originalUrl.includes("/solucion")
     ) {
-
       dir =
         "uploads/ocurrencias/soluciones";
+    }
 
+    // NUEVO
+    if (
+      req.originalUrl.includes("/riesgos")
+    ) {
+      dir =
+        "uploads/riesgos";
     }
 
     if (!fs.existsSync(dir)) {

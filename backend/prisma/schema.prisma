@@ -63,7 +63,7 @@ model Sede {
 
   zonalId Int
   zonal   Zonal @relation(fields: [zonalId], references: [id])
-
+  registroRiesgos RegistroRiesgo[]
   usuarios User[]
 
   pabellones        Pabellon[]
@@ -79,7 +79,7 @@ model Pabellon {
 
   sedeId Int
   sede   Sede @relation(fields: [sedeId], references: [id])
-
+  registroRiesgos RegistroRiesgo[]
   pisos Piso[]
 }
 
@@ -91,6 +91,7 @@ model Piso {
   pabellon   Pabellon @relation(fields: [pabellonId], references: [id])
 
   ambientes Ambiente[]
+  registroRiesgos RegistroRiesgo[]
 }
 
 model Ambiente {
@@ -101,6 +102,7 @@ model Ambiente {
   piso        Piso         @relation(fields: [pisoId], references: [id])
   visitas     Visita[]
   ocurrencias Ocurrencia[]
+  registroRiesgos RegistroRiesgo[]
 }
 
 model Visita {
@@ -337,6 +339,100 @@ model AutorizacionSismo {
 
   estado String @default("PENDIENTE")
   // PENDIENTE, APROBADO, RECHAZADO
+
+  createdAt DateTime @default(now())
+}
+model ResponsableRiesgo {
+  id Int @id @default(autoincrement())
+
+  nombre          String
+  apellidoPaterno String
+  apellidoMaterno String
+
+  correo String
+
+  area      String
+  categoria String
+
+  estado String @default("ACTIVO")
+  riesgos RegistroRiesgo[]
+  createdAt DateTime @default(now())
+}
+model RegistroRiesgo {
+
+  id Int @id @default(autoincrement())
+
+  codigo String @unique
+
+  sedeId Int
+  sede Sede @relation(fields:[sedeId], references:[id])
+
+  pabellonId Int
+  pabellon Pabellon @relation(fields:[pabellonId], references:[id])
+
+  pisoId Int
+  piso Piso @relation(fields:[pisoId], references:[id])
+
+  ambienteId Int
+  ambiente Ambiente @relation(fields:[ambienteId], references:[id])
+
+  categoria String
+
+  riesgo String
+
+  probabilidad Int
+
+  impacto Int
+
+  nivel Int
+
+  descripcion String
+
+  estado String @default("PENDIENTE")
+
+  foto String?
+
+  responsableId Int?
+
+  responsable ResponsableRiesgo? @relation(fields: [responsableId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  tratamientos TratamientoRiesgo[]
+
+  seguimientos SeguimientoRiesgo[]
+}
+
+model TratamientoRiesgo {
+
+  id Int @id @default(autoincrement())
+
+  registroRiesgoId Int
+
+  registroRiesgo RegistroRiesgo @relation(fields: [registroRiesgoId], references: [id])
+
+  tipoTratamiento String
+
+  planAccion String
+
+  presupuesto String?
+
+  estado String @default("EN PROCESO")
+
+  createdAt DateTime @default(now())
+}
+
+model SeguimientoRiesgo {
+
+  id Int @id @default(autoincrement())
+
+  registroRiesgoId Int
+
+  registroRiesgo RegistroRiesgo @relation(fields: [registroRiesgoId], references: [id])
+
+  comentario String
+
+  evidencia String?
 
   createdAt DateTime @default(now())
 }
