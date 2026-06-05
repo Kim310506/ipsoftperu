@@ -7,29 +7,31 @@ export default function Card({ titulo, icon, link }) {
         flex flex-col justify-between items-center
         h-full min-h-[160px] md:min-h-[180px]
         p-4 md:p-6
-        border-2 border-[#3a48da]
+        border-2 border-gray-200
         rounded-xl
         bg-white
         hover:-translate-y-1
-        transition-all duration-200
-        shadow-sm hover:shadow-lg
+        hover:border-[#F5B300]
+        transition-all duration-300
+        shadow-sm hover:shadow-xl
       "
     >
       
       <div className="flex-grow flex flex-col justify-center items-center w-full">
         
         <div className="
-          text-[#3a48da]
+          text-[#000000]
           mb-3 md:mb-4
           group-hover:scale-110
-          transition-transform duration-200
+          group-hover:text-[#F5B300]
+          transition-all duration-300
         ">
           {icon}
         </div>
 
         <h3 className="
-          text-[#3a48da]
-          font-bold
+          text-[#000000]
+          font-black
           text-[13px] md:text-sm
           text-center
           leading-tight
@@ -45,14 +47,15 @@ export default function Card({ titulo, icon, link }) {
         w-[90%] md:w-auto
         text-center
         rounded-full
-        bg-[#3a48da]
-        text-white
+        bg-[#000000]
+        text-[#F5B300]
         text-[9px] md:text-[10px]
-        font-bold
-        group-hover:bg-[#263398]
-        transition-colors
+        font-black
+        group-hover:bg-[#F5B300]
+        group-hover:text-[#000000]
+        transition-colors duration-300
         uppercase
-        tracking-wide
+        tracking-widest
       ">
         Ir a la Aplicación
       </div>

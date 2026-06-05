@@ -17,19 +17,19 @@ import {
 const normativas = [
   {
     title: "Normativa Corporativa Seguridad",
-    url: "https://ipsoftperu.com/usil/documentos/normativas%20de%20seguridad/20130613_Normativa_Corporativa_de_Seguridad.pdf"
+    url: "#"
   },
   {
-    title: "Acta entrega normativas TDP",
-    url: "https://ipsoftperu.com/usil/documentos/normativas%20de%20seguridad/Acta_de_entrega_de_normativas_de_TDP.pdf"
+    title: "Acta entrega normativas",
+    url: "#"
   },
   {
     title: "Politica Global Seguridad",
-    url: "https://ipsoftperu.com/usil/documentos/normativas%20de%20seguridad/Politica_Global_de_Seguridad_Edicion_2.pdf"
+    url: "#"
   },
   {
     title: "Reglamento Control Acceso",
-    url: "https://ipsoftperu.com/usil/documentos/normativas%20de%20seguridad/Reglamento_de_Control_de_Acceso_Edicion1_Agosto2017.pdf"
+    url: "#"
   }
 ];
 
@@ -68,12 +68,12 @@ export default function Navbar() {
       rel="noreferrer"
       className="block group h-full"
     >
-      <div className="border rounded-lg p-4 h-full shadow hover:shadow-lg transition bg-white flex flex-col items-center justify-center text-center">
-        <div className="mb-2 text-blue-600">
+      <div className="border border-gray-200 rounded-lg p-4 h-full shadow hover:shadow-lg hover:border-[#F5B300] transition bg-white flex flex-col items-center justify-center text-center">
+        <div className="mb-2 text-[#000000] group-hover:text-[#F5B300] transition-colors">
           <FileText size={28} />
         </div>
 
-        <span className="font-medium text-gray-700 group-hover:text-blue-600 transition text-xs">
+        <span className="font-medium text-gray-700 group-hover:text-[#000000] transition text-xs">
           {title}
         </span>
       </div>
@@ -83,23 +83,23 @@ export default function Navbar() {
   return (
     <>
       {/* NAVBAR DESKTOP */}
-      <nav className="w-full bg-[#3a48da] text-white shadow-md relative z-40">
+      <nav className="w-full bg-[#000000] text-white shadow-md relative z-40 border-b border-white/10">
         <div className="max-w-screen-2xl mx-auto flex justify-between items-center px-6 md:px-12 py-4">
 
           {/* LOGO */}
           <div className="flex items-center">
             <a href="/" className="flex items-center gap-3">
               <img
-                src="/iconos/logoUSIL.png"
-                alt="Logo USIL"
-                className="h-[40px] md:h-[60px] object-contain"
+                src="/logo-upn.png"
+                alt="Logo UPN"
+                className="h-[40px] md:h-[50px] object-contain"
               />
             </a>
           </div>
 
           {/* BUTTON MOBILE */}
           <button
-            className="md:hidden border border-white/30 p-2 rounded"
+            className="md:hidden border border-white/30 p-2 rounded text-[#F5B300]"
             onClick={() => setIsMenuOpen(true)}
           >
             <Menu size={24} />
@@ -111,7 +111,7 @@ export default function Navbar() {
 
               {/* NOSOTROS */}
               <li className="relative group py-4">
-                <div className="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                <div className="flex items-center gap-1 cursor-pointer hover:text-[#F5B300] transition">
                   NOSOTROS
                   <ChevronDown
                     size={14}
@@ -120,19 +120,19 @@ export default function Navbar() {
                 </div>
 
                 <div className="absolute top-full left-0 w-64 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  <div className="bg-white rounded-lg shadow-xl border-t-4 border-[#263398] overflow-hidden">
+                  <div className="bg-white rounded-lg shadow-xl border-t-4 border-[#F5B300] overflow-hidden">
 
                     <a
-                      href="https://usil.edu.pe/nosotros/mision-vision/"
+                      href="https://www.upn.edu.pe/nosotros"
                       target="_blank"
                       rel="noreferrer"
                       className="block px-4 py-3 hover:bg-gray-50"
                     >
-                      <div className="text-[#3a48da] font-bold text-sm mb-1">
+                      <div className="text-[#000000] font-black text-sm mb-1 group-hover:text-[#F5B300]">
                         Propósito, misión y visión
                       </div>
 
-                      <div className="text-gray-500 text-[11px]">
+                      <div className="text-gray-500 text-[11px] font-normal">
                         Conoce nuestro compromiso, valores e idearios
                       </div>
                     </a>
@@ -143,7 +143,7 @@ export default function Navbar() {
 
               {/* NORMATIVAS */}
               <li className="relative group py-4">
-                <div className="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                <div className="flex items-center gap-1 cursor-pointer hover:text-[#F5B300] transition">
                   NORMATIVAS
                   <ChevronDown
                     size={14}
@@ -153,9 +153,9 @@ export default function Navbar() {
 
                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-[800px] pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
 
-                  <div className="bg-gray-100 rounded shadow-2xl border-t-4 border-[#263398] p-8">
+                  <div className="bg-gray-50 rounded shadow-2xl border-t-4 border-[#F5B300] p-8">
 
-                    <h5 className="font-bold text-[#3a48da] text-sm mb-4 border-b border-gray-300 pb-2">
+                    <h5 className="font-black text-[#000000] text-sm mb-4 border-b border-gray-300 pb-2">
                       NORMATIVAS
                     </h5>
 
@@ -173,7 +173,7 @@ export default function Navbar() {
 
               {/* EVACUACION */}
               <li className="relative group py-4">
-                <div className="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                <div className="flex items-center gap-1 cursor-pointer hover:text-[#F5B300] transition">
                   PLANOS EVACUACION
                   <ChevronDown
                     size={14}
@@ -183,9 +183,9 @@ export default function Navbar() {
 
                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-[800px] pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
 
-                  <div className="bg-gray-100 rounded shadow-2xl border-t-4 border-[#263398] p-8">
+                  <div className="bg-gray-50 rounded shadow-2xl border-t-4 border-[#F5B300] p-8">
 
-                    <h5 className="font-bold text-[#3a48da] text-sm mb-4 border-b border-gray-300 pb-2">
+                    <h5 className="font-black text-[#000000] text-sm mb-4 border-b border-gray-300 pb-2">
                       PLANOS DE EVACUACIÓN
                     </h5>
 
@@ -203,7 +203,7 @@ export default function Navbar() {
 
               {/* EXTINTORES */}
               <li className="relative group py-4">
-                <div className="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                <div className="flex items-center gap-1 cursor-pointer hover:text-[#F5B300] transition">
                   PLANOS EXTINTORES
                   <ChevronDown
                     size={14}
@@ -213,9 +213,9 @@ export default function Navbar() {
 
                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-[800px] pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
 
-                  <div className="bg-gray-100 rounded shadow-2xl border-t-4 border-[#263398] p-8">
+                  <div className="bg-gray-50 rounded shadow-2xl border-t-4 border-[#F5B300] p-8">
 
-                    <h5 className="font-bold text-[#3a48da] text-sm mb-4 border-b border-gray-300 pb-2">
+                    <h5 className="font-black text-[#000000] text-sm mb-4 border-b border-gray-300 pb-2">
                       PLANOS EXTINTORES
                     </h5>
 
@@ -235,7 +235,7 @@ export default function Navbar() {
               <li>
                 <Link
                   to="/administracion"
-                  className="bg-[#263398] hover:bg-[#1a237e] transition px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg"
+                  className="bg-[#F5B300] hover:bg-[#dca100] text-[#000000] transition px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg font-black"
                 >
                   <LogIn size={16} />
                   ADMINISTRACIÓN
@@ -245,12 +245,12 @@ export default function Navbar() {
               {/* VIDEO */}
               <li>
                 <a
-                  href="https://www.youtube.com/watch?v=rk0Zz16yISg"
+                  href="#"
                   target="_blank"
                   rel="noreferrer"
-                  className="bg-[#263398] hover:bg-[#1a237e] transition px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg"
+                  className="bg-white/10 hover:bg-white/20 border border-white/20 transition px-5 py-2.5 rounded-full flex items-center gap-2 text-white"
                 >
-                  <ArrowRight size={16} />
+                  <ArrowRight size={16} className="text-[#F5B300]" />
                   VIDEOS SEGURIDAD
                 </a>
               </li>
@@ -262,329 +262,308 @@ export default function Navbar() {
 
       {/* MOBILE MENU */}
       <div
-        className={`fixed inset-0 bg-[#263398] z-50 transform ${
-          isMenuOpen
-            ? "translate-x-0"
-            : "-translate-x-full"
-        } transition-transform duration-300 md:hidden`}
+        className={`
+          fixed inset-0 z-50 md:hidden
+          bg-gradient-to-br from-[#111111] via-[#000000] to-[#1a1a1a]
+          transform
+          ${isMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}
+          transition-all duration-500 ease-in-out
+          flex flex-col overflow-hidden
+        `}
       >
 
-        <div className="flex justify-between items-center p-6 border-b border-white/20">
-          <img
-            src="/iconos/logoUSIL.png"
-            alt="Logo"
-            className="h-[35px]"
-          />
+        {/* EFECTOS */}
+        <div className="absolute top-[-120px] right-[-120px] w-[260px] h-[260px] bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-[-120px] left-[-120px] w-[260px] h-[260px] bg-[#F5B300]/10 rounded-full blur-3xl"></div>
+
+        {/* HEADER */}
+        <div className="relative flex justify-between items-center px-6 py-5 border-b border-white/10 backdrop-blur-xl">
+
+          <div className="flex items-center gap-3">
+            <div className="bg-white p-2 rounded-xl border border-white/10 shadow-xl">
+              <img
+                src="/logo-upn.png"
+                alt="Logo UPN"
+                className="h-[30px] object-contain"
+              />
+            </div>
+
+            <div>
+              <h1 className="text-white font-black text-lg tracking-wide">
+                iCURA
+              </h1>
+
+              <p className="text-[#F5B300] text-[10px] uppercase tracking-[2px] font-bold">
+                Seguridad Integral
+              </p>
+            </div>
+          </div>
 
           <button
             onClick={() => setIsMenuOpen(false)}
-            className="border border-white/30 p-2 rounded"
-          >
-            <X size={24} />
-          </button>
-        </div>
-       ```jsx
-{/* Navbar Mobile Premium */}
-<div
-  className={`
-    fixed inset-0 z-50 md:hidden
-    bg-gradient-to-br from-[#1a237e] via-[#263398] to-[#0f172a]
-    transform
-    ${isMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}
-    transition-all duration-500 ease-in-out
-    flex flex-col overflow-hidden
-  `}
->
-
-  {/* EFECTOS */}
-  <div className="absolute top-[-120px] right-[-120px] w-[260px] h-[260px] bg-white/10 rounded-full blur-3xl"></div>
-  <div className="absolute bottom-[-120px] left-[-120px] w-[260px] h-[260px] bg-blue-400/10 rounded-full blur-3xl"></div>
-
-  {/* HEADER */}
-  <div className="relative flex justify-between items-center px-6 py-5 border-b border-white/10 backdrop-blur-xl">
-
-    <div className="flex items-center gap-3">
-      <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-xl">
-        <img
-          src="iconos/logoUSIL.png"
-          alt="Logo USIL"
-          className="h-[38px] object-contain"
-        />
-      </div>
-
-      <div>
-        <h1 className="text-white font-black text-lg tracking-wide">
-          iCURA
-        </h1>
-
-        <p className="text-white/60 text-[11px] uppercase tracking-[3px]">
-          Seguridad Integral
-        </p>
-      </div>
-    </div>
-
-    <button
-      onClick={() => setIsMenuOpen(false)}
-      className="
-        text-white
-        bg-white/10
-        border border-white/10
-        p-3
-        rounded-2xl
-        hover:bg-white/20
-        transition-all
-        duration-300
-        active:scale-95
-      "
-    >
-      <X size={22} />
-    </button>
-
-  </div>
-
-  {/* CONTENIDO */}
-  <div className="relative flex-1 overflow-y-auto px-6 py-6 text-white">
-
-    {/* NOSOTROS */}
-    <div className="mb-4 rounded-3xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xl">
-
-      <button
-        onClick={() => toggleMobileMenu('nosotros')}
-        className="
-          w-full flex justify-between items-center
-          px-5 py-5
-          text-sm font-black tracking-wide uppercase
-        "
-      >
-        Nosotros
-
-        <ChevronDown
-          size={20}
-          className={`
-            transition-transform duration-300
-            ${activeMobileMenu === 'nosotros' ? 'rotate-180' : ''}
-          `}
-        />
-      </button>
-
-      {activeMobileMenu === 'nosotros' && (
-        <div className="px-5 pb-5 flex flex-col gap-3 animate-fadeIn">
-
-          <a
-            href="https://usil.edu.pe/nosotros/mision-vision/"
             className="
-              text-sm text-white/70
-              hover:text-white
-              transition
-              flex items-center gap-3
+              text-white
+              bg-white/10
+              border border-white/10
+              p-3
+              rounded-2xl
+              hover:bg-[#F5B300] hover:text-black
+              transition-all
+              duration-300
+              active:scale-95
             "
           >
-            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-            Propósito, misión y visión
-          </a>
+            <X size={22} />
+          </button>
 
         </div>
-      )}
 
-    </div>
+        {/* CONTENIDO */}
+        <div className="relative flex-1 overflow-y-auto px-6 py-6 text-white">
 
-    {/* NORMATIVAS */}
-    <div className="mb-4 rounded-3xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xl">
+          {/* NOSOTROS */}
+          <div className="mb-4 rounded-3xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xl">
 
-      <button
-        onClick={() => toggleMobileMenu('normativas')}
-        className="
-          w-full flex justify-between items-center
-          px-5 py-5
-          text-sm font-black tracking-wide uppercase
-        "
-      >
-        Normativas
-
-        <ChevronDown
-          size={20}
-          className={`
-            transition-transform duration-300
-            ${activeMobileMenu === 'normativas' ? 'rotate-180' : ''}
-          `}
-        />
-      </button>
-
-      {activeMobileMenu === 'normativas' && (
-        <div className="px-5 pb-5 flex flex-col gap-4">
-
-          {normativas.map((n, i) => (
-            <a
-              key={i}
-              href={n.url}
+            <button
+              onClick={() => toggleMobileMenu('nosotros')}
               className="
-                text-[13px]
-                text-white/70
-                hover:text-white
-                transition-all
-                leading-relaxed
-                flex items-start gap-3
-                group
+                w-full flex justify-between items-center
+                px-5 py-5
+                text-sm font-black tracking-wide uppercase
+                hover:text-[#F5B300] transition-colors
               "
             >
-              <div className="bg-blue-500/20 p-2 rounded-xl group-hover:bg-blue-500/30 transition">
-                <FileText size={15} />
+              Nosotros
+
+              <ChevronDown
+                size={20}
+                className={`
+                  transition-transform duration-300
+                  ${activeMobileMenu === 'nosotros' ? 'rotate-180 text-[#F5B300]' : ''}
+                `}
+              />
+            </button>
+
+            {activeMobileMenu === 'nosotros' && (
+              <div className="px-5 pb-5 flex flex-col gap-3 animate-fadeIn">
+
+                <a
+                  href="https://www.upn.edu.pe/nosotros"
+                  className="
+                    text-sm text-white/70
+                    hover:text-[#F5B300]
+                    transition
+                    flex items-center gap-3
+                  "
+                >
+                  <div className="w-2 h-2 rounded-full bg-[#F5B300]"></div>
+                  Propósito, misión y visión
+                </a>
+
               </div>
+            )}
 
-              <span>{n.title}</span>
-            </a>
-          ))}
+          </div>
 
-        </div>
-      )}
+          {/* NORMATIVAS */}
+          <div className="mb-4 rounded-3xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xl">
 
-    </div>
+            <button
+              onClick={() => toggleMobileMenu('normativas')}
+              className="
+                w-full flex justify-between items-center
+                px-5 py-5
+                text-sm font-black tracking-wide uppercase
+                hover:text-[#F5B300] transition-colors
+              "
+            >
+              Normativas
 
-    {/* EVACUACION */}
-    <div className="mb-4 rounded-3xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xl">
+              <ChevronDown
+                size={20}
+                className={`
+                  transition-transform duration-300
+                  ${activeMobileMenu === 'normativas' ? 'rotate-180 text-[#F5B300]' : ''}
+                `}
+              />
+            </button>
 
-      <button
-        onClick={() => toggleMobileMenu('evacuacion')}
-        className="
-          w-full flex justify-between items-center
-          px-5 py-5
-          text-sm font-black tracking-wide uppercase
-        "
-      >
-        Planos Evacuación
+            {activeMobileMenu === 'normativas' && (
+              <div className="px-5 pb-5 flex flex-col gap-4">
 
-        <ChevronDown
-          size={20}
-          className={`
-            transition-transform duration-300
-            ${activeMobileMenu === 'evacuacion' ? 'rotate-180' : ''}
-          `}
-        />
-      </button>
+                {normativas.map((n, i) => (
+                  <a
+                    key={i}
+                    href={n.url}
+                    className="
+                      text-[13px]
+                      text-white/70
+                      hover:text-white
+                      transition-all
+                      leading-relaxed
+                      flex items-start gap-3
+                      group
+                    "
+                  >
+                    <div className="bg-white/10 p-2 rounded-xl group-hover:bg-[#F5B300] group-hover:text-black transition">
+                      <FileText size={15} />
+                    </div>
 
-      {activeMobileMenu === 'evacuacion' && (
-        <div className="px-5 pb-5 flex flex-col gap-4">
+                    <span className="mt-1">{n.title}</span>
+                  </a>
+                ))}
 
-          {evacuacion.map((e, i) => (
+              </div>
+            )}
+
+          </div>
+
+          {/* EVACUACION */}
+          <div className="mb-4 rounded-3xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xl">
+
+            <button
+              onClick={() => toggleMobileMenu('evacuacion')}
+              className="
+                w-full flex justify-between items-center
+                px-5 py-5
+                text-sm font-black tracking-wide uppercase
+                hover:text-[#F5B300] transition-colors
+              "
+            >
+              Planos Evacuación
+
+              <ChevronDown
+                size={20}
+                className={`
+                  transition-transform duration-300
+                  ${activeMobileMenu === 'evacuacion' ? 'rotate-180 text-[#F5B300]' : ''}
+                `}
+              />
+            </button>
+
+            {activeMobileMenu === 'evacuacion' && (
+              <div className="px-5 pb-5 flex flex-col gap-4">
+
+                {evacuacion.map((e, i) => (
+                  <a
+                    key={i}
+                    href="#"
+                    className="
+                      text-[13px]
+                      text-white/70
+                      hover:text-white
+                      transition-all
+                      flex items-center gap-3
+                      group
+                    "
+                  >
+                    <div className="bg-white/10 p-2 rounded-xl group-hover:bg-[#F5B300] group-hover:text-black transition">
+                      <FileText size={15} />
+                    </div>
+
+                    <span>Planos {e}</span>
+                  </a>
+                ))}
+
+              </div>
+            )}
+
+          </div>
+
+          {/* EXTINTORES */}
+          <div className="mb-8 rounded-3xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xl">
+
+            <button
+              onClick={() => toggleMobileMenu('extintores')}
+              className="
+                w-full flex justify-between items-center
+                px-5 py-5
+                text-sm font-black tracking-wide uppercase
+                hover:text-[#F5B300] transition-colors
+              "
+            >
+              Planos Extintores
+
+              <ChevronDown
+                size={20}
+                className={`
+                  transition-transform duration-300
+                  ${activeMobileMenu === 'extintores' ? 'rotate-180 text-[#F5B300]' : ''}
+                `}
+              />
+            </button>
+
+            {activeMobileMenu === 'extintores' && (
+              <div className="px-5 pb-5 flex flex-col gap-4">
+
+                {extintores.map((e, i) => (
+                  <a
+                    key={i}
+                    href="#"
+                    className="
+                      text-[13px]
+                      text-white/70
+                      hover:text-white
+                      transition-all
+                      flex items-center gap-3
+                      group
+                    "
+                  >
+                    <div className="bg-white/10 p-2 rounded-xl group-hover:bg-[#F5B300] group-hover:text-black transition">
+                      <FileText size={15} />
+                    </div>
+
+                    <span>Planos {e}</span>
+                  </a>
+                ))}
+
+              </div>
+            )}
+
+          </div>
+
+          {/* BOTONES */}
+          <div className="flex flex-col gap-4">
+
+            <Link
+              to="/administracion"
+              onClick={() => setIsMenuOpen(false)}
+              className="
+                bg-[#F5B300] text-[#000000]
+                py-4 rounded-2xl
+                flex items-center justify-center gap-3
+                font-black text-sm
+                shadow-2xl
+                hover:scale-[1.02]
+                active:scale-95
+                transition-all duration-300
+              "
+            >
+              <LogIn size={18} />
+              ADMINISTRACIÓN
+            </Link>
+
             <a
-              key={i}
               href="#"
               className="
-                text-[13px]
-                text-white/70
-                hover:text-white
-                transition-all
-                flex items-center gap-3
-                group
+                bg-white/5
+                border border-white/10
+                text-white
+                py-4 rounded-2xl
+                flex items-center justify-center gap-3
+                font-black text-sm
+                hover:bg-white/10
+                transition-all duration-300
               "
             >
-              <div className="bg-green-500/20 p-2 rounded-xl group-hover:bg-green-500/30 transition">
-                <FileText size={15} />
-              </div>
-
-              <span>Planos {e}</span>
+              <ArrowRight size={18} className="text-[#F5B300]" />
+              VIDEOS SEGURIDAD
             </a>
-          ))}
+
+          </div>
 
         </div>
-      )}
 
-    </div>
-
-    {/* EXTINTORES */}
-    <div className="mb-8 rounded-3xl bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xl">
-
-      <button
-        onClick={() => toggleMobileMenu('extintores')}
-        className="
-          w-full flex justify-between items-center
-          px-5 py-5
-          text-sm font-black tracking-wide uppercase
-        "
-      >
-        Planos Extintores
-
-        <ChevronDown
-          size={20}
-          className={`
-            transition-transform duration-300
-            ${activeMobileMenu === 'extintores' ? 'rotate-180' : ''}
-          `}
-        />
-      </button>
-
-      {activeMobileMenu === 'extintores' && (
-        <div className="px-5 pb-5 flex flex-col gap-4">
-
-          {extintores.map((e, i) => (
-            <a
-              key={i}
-              href="#"
-              className="
-                text-[13px]
-                text-white/70
-                hover:text-white
-                transition-all
-                flex items-center gap-3
-                group
-              "
-            >
-              <div className="bg-red-500/20 p-2 rounded-xl group-hover:bg-red-500/30 transition">
-                <FileText size={15} />
-              </div>
-
-              <span>Planos {e}</span>
-            </a>
-          ))}
-
-        </div>
-      )}
-
-    </div>
-
-    {/* BOTONES */}
-    <div className="flex flex-col gap-4">
-
-      <Link
-        to="/administracion"
-        onClick={() => setIsMenuOpen(false)}
-        className="
-          bg-white text-[#1a237e]
-          py-4 rounded-2xl
-          flex items-center justify-center gap-3
-          font-black text-sm
-          shadow-2xl
-          hover:scale-[1.02]
-          active:scale-95
-          transition-all duration-300
-        "
-      >
-        <LogIn size={18} />
-        ADMINISTRACIÓN
-      </Link>
-
-      <a
-        href="https://www.youtube.com/watch?v=rk0Zz16yISg"
-        className="
-          bg-[#0f172a]
-          border border-white/10
-          text-white
-          py-4 rounded-2xl
-          flex items-center justify-center gap-3
-          font-black text-sm
-          hover:bg-[#111c35]
-          transition-all duration-300
-        "
-      >
-        <ArrowRight size={18} />
-        VIDEOS SEGURIDAD
-      </a>
-
-    </div>
-
-  </div>
-
-</div>
       </div>
     </>
   );
