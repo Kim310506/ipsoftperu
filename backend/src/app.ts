@@ -14,6 +14,8 @@ import visitantesRoutes from "./modules/visitas/visitantes/visitante.routes";
 import incidentesRoutes from "./modules/incidentes/incidentes.routes";
 import sismosRoutes from "./modules/sismos/sismos.routes";
 import activoRoutes from "./modules/inventario/activo.routes";
+import riesgosRoutes from "./modules/riesgos/riesgos.routes";
+
 
 const app = express();
 /* ========================= */
@@ -39,6 +41,7 @@ app.use( "/visitantes",visitantesRoutes);
 app.use( "/incidentes",incidentesRoutes);
 app.use( "/sismos",sismosRoutes);
 app.use( "/", activoRoutes);
+app.use( "/riesgos",riesgosRoutes);
 
 app.use(
   "/uploads",

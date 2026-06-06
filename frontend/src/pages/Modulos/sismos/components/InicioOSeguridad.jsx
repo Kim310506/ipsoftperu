@@ -69,18 +69,17 @@ const alertaActiva = alerta;
 };
 const cerrarEvento = async () => {
   try {
-
     await api.patch("/sismos/cerrar-evento");
-    await cargarAlerta();
-    setAlerta(false);
 
-    cargarMonitoreo();
-    cargarAlerta();
+    // primero sincronizas con backend
+    await cargarAlerta();
+    await cargarMonitoreo();
+
+    // opcional: fuerza UI limpia si backend tarda
+    setAlerta(null);
 
   } catch (error) {
-
     console.log(error);
-
   }
 };
 const [openFaltante, setOpenFaltante] =
@@ -161,6 +160,23 @@ const [sedeSeleccionada,
         "Evento sísmico detectado"
       )}
     </p>
+     <div className="flex justify-end mt-4">
+  <button
+    onClick={cerrarEvento}
+    className="
+      border
+      border-black
+      px-4
+      py-2
+      rounded
+      bg-white
+      hover:bg-gray-100
+      transition
+    "
+  >
+    Cerrar Evento
+  </button>
+</div>
   </>
 ) : (
   <>
