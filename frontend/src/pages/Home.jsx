@@ -15,18 +15,6 @@ import {
   Building2
 } from 'lucide-react'
 
-<<<<<<< HEAD
-  const modulos = [
-    { id: 1, titulo: "Acceso de Visitas", icon: <Users size={36} />, link: "/visitas/login" },
-    { id: 2, titulo: "Acceso de Proveedores", icon: <Building2 size={36} />, link: "/proveedores/login" },
-    { id: 3, titulo: "Gestión de Incidentes", icon: <AlertTriangle size={36} />, link: "/incidentes/login" },
-    { id: 4, titulo: "Gestión de Inventarios", icon: <BoxesIcon size={36} />, link: "/inventario/login" },
-    { id: 5, titulo: "Control de Extintores", icon: <Flame size={36} />, link: "/extintor/login" },
-    { id: 6, titulo: "Gestión de Mantenimiento", icon: <Wrench size={36} />, link: "/mantenimiento/login" },
-    { id: 7, titulo: "Gestión de Riesgo", icon: <Shield size={36} />, link: "/riesgos/login" },
-    { id: 8, titulo: "Gestión de Sismo", icon: <AlertCircle size={36} />, link: "/sismos/login" },
-  ];
-=======
 const modulos = [
   { id: 1, titulo: "Acceso de Visitas", icon: <Users size={36} />, link: "/visitas/login" },
   { id: 2, titulo: "Acceso de Proveedores", icon: <Building2 size={36} />, link: "/proveedores/login" },
@@ -34,10 +22,9 @@ const modulos = [
   { id: 4, titulo: "Gestión de Inventarios", icon: <BoxesIcon size={36} />, link: "/inventario/login" },
   { id: 5, titulo: "Control de Extintores", icon: <Flame size={36} />, link: "/extintor/login" },
   { id: 6, titulo: "Gestión de Mantenimiento", icon: <Wrench size={36} />, link: "/mantenimiento/login" },
-  { id: 7, titulo: "Gestión de Riesgo", icon: <Shield size={36} />, link: "/riesgo/login" },
+  { id: 7, titulo: "Gestión de Riesgo", icon: <Shield size={36} />, link: "/riesgos/login" },
   { id: 8, titulo: "Gestión de Sismo", icon: <AlertCircle size={36} />, link: "/sismos/login" },
 ];
->>>>>>> 81a1038f3310bf11d8b293492b527ea5f64966a8
 
 export default function Home() {
   return (

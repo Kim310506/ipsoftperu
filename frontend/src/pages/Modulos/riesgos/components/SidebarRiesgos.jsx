@@ -181,8 +181,6 @@ export default function SidebarRiesgos({
             Responsables
           </button>
 
-          {rol?.includes("JEFE DE SEGURIDAD") && (
-            <>
               <button
                 onClick={() => {
                   setMenuActivo("grafico");
@@ -232,8 +230,6 @@ export default function SidebarRiesgos({
                 <FileText size={20} />
                 Reporte
               </button>
-            </>
-          )}
 
         </div>
 

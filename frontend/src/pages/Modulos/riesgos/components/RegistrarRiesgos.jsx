@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../../../../api/axios";
 
-export default function RegistrarRiesgo({ open, onClose }) {
+export default function RegistrarRiesgo({
+  open,
+  onClose,
+  onSaved
+}) {
+  
   const [sedes, setSedes] = useState([]);
   const [pabellones, setPabellones] = useState([]);
   const [pisos, setPisos] = useState([]);
@@ -74,8 +79,17 @@ export default function RegistrarRiesgo({ open, onClose }) {
     setForm((f) => ({ ...f, ambienteId: "" }));
   }, [form.pisoId, pisos]);
 
- const handleChange = (e) => {
+const handleChange = (e) => {
   const { name, value } = e.target;
+
+  if (name === "categoria") {
+    setForm((prev) => ({
+      ...prev,
+      categoria: value,
+      riesgo: "",
+    }));
+    return;
+  }
 
   const camposNumericos = [
     "sedeId",
@@ -115,18 +129,65 @@ const [imagen, setImagen] = useState(null);
     }
 
     await api.post("/riesgos", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+});
 
-    onClose();
+setForm({
+  sedeId: "",
+  pabellonId: "",
+  pisoId: "",
+  ambienteId: "",
+  categoria: "",
+  riesgo: "",
+  probabilidad: 1,
+  impacto: 1,
+  descripcion: "",
+});
+
+setImagen(null);
+
+onSaved?.();
+onClose();
 
   } catch (error) {
     console.log(error);
   }
 };
+const riesgosPorCategoria = {
+  FISICA: [
+    "Falta luces de emergencia",
+    "Falta señalética de evacuación",
+    "Rutas / puertas de salida bloqueadas",
+    "Vulneración de Perímetro",
+  ],
 
+  HUMANA: [
+    "Ingreso personal no autorizado",
+    "Pérdida/Robo de Credenciales",
+    "Suplantación de Identidad",
+  ],
+
+  PROCEDIMIENTOS: [
+    "Desactualización de Bajas",
+    "Falta de Capacitación (Brigadas)",
+    "Gestión Deficiente de Visitante",
+    "No existe Brigadas de Evacuacion",
+  ],
+
+  TECNOLÓGICA: [
+    "Falta de Detectores de Humo",
+    "Falta de extintores",
+    "Falta de Lectoras de control de accesos",
+    "Falta de Molinetes peatonales de control de accesos",
+    "Falta de Rociadores / Gabinetes",
+    "Falta de Tranqueras Vehiculares de control de accesos",
+    "Sistemas de Seguridad fuera de su vida Útil",
+  ],
+};
+const riesgosDisponibles =
+  riesgosPorCategoria[form.categoria] || [];
   if (!open) return null;
 
   return (
@@ -192,20 +253,54 @@ const [imagen, setImagen] = useState(null);
           </select>
 
           {/* CATEGORIA */}
-          <input
+          <select
             name="categoria"
-            placeholder="Categoría"
+            value={form.categoria}
             onChange={handleChange}
             className="border p-2 rounded"
-          />
+          >
+            <option value="">
+              Seleccione categoría
+            </option>
 
+            <option value="FISICA">
+              FÍSICA
+            </option>
+
+            <option value="HUMANA">
+              HUMANA
+            </option>
+
+            <option value="PROCEDIMIENTOS">
+              PROCEDIMIENTOS
+            </option>
+
+            <option value="TECNOLÓGICA">
+              TECNOLÓGICA
+            </option>
+
+          </select>
           {/* RIESGO */}
-          <input
+          <select
             name="riesgo"
-            placeholder="Riesgo específico"
+            value={form.riesgo}
             onChange={handleChange}
+            disabled={!form.categoria}
             className="border p-2 rounded"
-          />
+          >
+            <option value="">
+              Seleccione riesgo
+            </option>
+
+            {riesgosDisponibles.map((riesgo) => (
+              <option
+                key={riesgo}
+                value={riesgo}
+              >
+                {riesgo}
+              </option>
+            ))}
+          </select>
 
           {/* PROBABILIDAD */}
           <select name="probabilidad" onChange={handleChange} className="border p-2 rounded">
