@@ -4,7 +4,8 @@ import Home from "./pages/Home";
 
 import LoginAdmin from "./pages/Administracion/LoginAdmin";
 import DashboardAdmin from "./pages/Administracion/DashboardAdmin";
-import RegistroExterno from "./pages/Modulos/visitas/components/ProgramarVisitas/RegistroExterno";
+// ⚠️ CORREGIDO: "modulos" en minúscula para evitar el error de Vite
+import RegistroExterno from "./pages/modulos/visitas/components/ProgramarVisitas/RegistroExterno";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 /* VISITAS */
@@ -19,9 +20,9 @@ import ProveedoresDashboard from "./pages/modulos/proveedores/Dashboard";
 import IncidentesLogin from "./pages/modulos/incidentes/Login";
 import IncidentesDashboard from "./pages/modulos/incidentes/Dashboard";
 
-/* INVENTARIO 
+// INVENTARIO 
 import InventarioLogin from "./pages/modulos/inventario/Login";
-import InventarioDashboard from "./pages/modulos/inventario/Dashboard";*/
+import InventarioDashboard from "./pages/modulos/inventario/Dashboard";
 
 /* EXTINTORES */
 /*import ExtintorLogin from "./pages/modulos/extintor/Login";
@@ -77,7 +78,11 @@ export default function App() {
       <Route path="/proveedores/login" element={<ProveedoresLogin />} />
       <Route path="/proveedores/dashboard" element={<ProveedoresDashboard />} />
 
-      {/* EXTINTORES */}
+      {/* INVENTARIO (¡AQUÍ ESTÁN TUS RUTAS NUEVAS!) */}
+      <Route path="/inventario/login" element={<InventarioLogin />} />
+      <Route path="/inventario/dashboard" element={<InventarioDashboard />} />
+
+      {/* REGISTRO EXTERNO */}
       <Route
         path="/registro-externo/:codigo"
         element={<RegistroExterno />}
@@ -86,6 +91,7 @@ export default function App() {
       {/* SISMOS */}
       <Route path="/sismos/login" element={<SismosLogin />} />
       <Route path="/sismos/dashboard" element={<SismosDashboard />} />
+      
     </Routes>
   );
 }
