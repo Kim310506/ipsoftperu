@@ -22,7 +22,7 @@ const modulos = [
   { id: 4, titulo: "Gestión de Inventarios", icon: <BoxesIcon size={36} />, link: "/inventario/login" },
   { id: 5, titulo: "Control de Extintores", icon: <Flame size={36} />, link: "/extintor/login" },
   { id: 6, titulo: "Gestión de Mantenimiento", icon: <Wrench size={36} />, link: "/mantenimiento/login" },
-  { id: 7, titulo: "Gestión de Riesgo", icon: <Shield size={36} />, link: "/riesgo/login" },
+  { id: 7, titulo: "Gestión de Riesgo", icon: <Shield size={36} />, link: "/riesgos/login" },
   { id: 8, titulo: "Gestión de Sismo", icon: <AlertCircle size={36} />, link: "/sismos/login" },
 ];
 

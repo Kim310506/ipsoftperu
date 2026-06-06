@@ -31,7 +31,7 @@ export default function SidebarVisitas({
 
   // OBTENER ROL
   const rol = usuario?.user?.rol || usuario?.rol;
-
+const roles = (rol || "").split(",").map(r => r.trim());
   console.log("ROL:", rol);
 
   return (
@@ -119,8 +119,8 @@ export default function SidebarVisitas({
 {/* ========================= */}
 
 {/* SA */}
-{rol === "SOLICITANTE DE ACCESO (SA)" && (
-  <>
+{roles.includes("SOLICITANTE DE ACCESO (SA)") && (
+    <>
     <button
       onClick={() => {
         setMenuActivo("programar");
@@ -156,7 +156,7 @@ export default function SidebarVisitas({
 )}
 
 {/* RA */}
-{rol === "RESPONSABLE DE AREA (RA)" && (
+{roles.includes("RESPONSABLE DE AREA (RA)") && (
   <>
     <button
       onClick={() => {
@@ -193,7 +193,7 @@ export default function SidebarVisitas({
 )}
 
 {/* REC */}
-{rol === "RECEPCION DE SEGURIDAD (REC)" && (
+{roles.includes("RECEPCION DE SEGURIDAD (REC)") && (
   <>
     <button
       onClick={() => {
@@ -229,7 +229,7 @@ export default function SidebarVisitas({
   </>
 )}
 {/* ADMIN */}
-{rol === "ADMIN" && (
+{roles.includes("ADMIN") && (
   <>
     <button
       onClick={() => {

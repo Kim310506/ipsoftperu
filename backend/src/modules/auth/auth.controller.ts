@@ -48,7 +48,12 @@ const modulosUsuario =
   (user.modulo || "")
     .split(",")
     .map(m => m.trim().toUpperCase());
-
+    const rolesUsuario =
+      (user.rol || "")
+        .split(",")
+        .map(r => r.trim().toUpperCase());
+    const hasRole = (r: string) =>
+      rolesUsuario.includes(r);
 const moduloSolicitado =
   (modulo || "")
     .trim()
@@ -68,11 +73,7 @@ if (
 }
 
 /* SOLO PARA ADMIN */
-if (
-  moduloSolicitado === "ADMIN" &&
-  user.rol?.trim().toUpperCase() !== "ADMIN"
-) {
-
+if (moduloSolicitado === "ADMIN" && !hasRole("ADMIN")) {
   return res.status(403).json({
     message:
       "No tienes permisos de administrador"

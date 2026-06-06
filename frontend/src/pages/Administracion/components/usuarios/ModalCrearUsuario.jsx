@@ -111,7 +111,10 @@ const rolesPorModulo = {
     "PERSONAL DE VIGILANCIA (PVIG)",
     "PERSONAL DE SEGURIDAD (PSEG)",
     "OPERADOR DE SEGURIDAD (OSEG)"
-  ]
+  ],
+   RIESGOS: [
+    "JEFE DE SEGURIDAD",
+    "RESPONSABLE DE CATEGORIA"  ]
 
 };
 const manejarRol = (rol) => {
@@ -472,9 +475,9 @@ const rolesDisponibles = [
                   <label className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      checked={modulos.includes("RIESGO")}
+                      checked={modulos.includes("RIESGOS")}
                       onChange={() =>
-                        manejarModulo("RIESGO")
+                        manejarModulo("RIESGOS")
                       }
                       className="
                           min-w-[20px]
@@ -485,7 +488,7 @@ const rolesDisponibles = [
                         "
                     />
                     <span className="font-bold text-sm">
-                      RIESGO
+                      RIESGOS
                     </span>
                   </label>      
                   <label className="flex items-center gap-3">
@@ -506,7 +509,7 @@ const rolesDisponibles = [
                     />
 
                     <span className="font-bold text-sm">
-                      SISMO
+                      SISMOS
                     </span>
 
                   </label>
