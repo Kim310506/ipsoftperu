@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { zonales as zonalesData } from "../../../../data/infraestructura";
 
 export default function ListaAmbientes({
   vistaInfra,
@@ -22,7 +21,6 @@ export default function ListaAmbientes({
   // ======================
   // FILTROS
   // ======================
-  const [filtroZonal, setFiltroZonal] = useState("TODOS");
   const [filtroSede, setFiltroSede] = useState("TODAS");
   const [filtroPabellon, setFiltroPabellon] = useState("TODOS");
   const [filtroPiso, setFiltroPiso] = useState("TODOS");
@@ -34,7 +32,6 @@ useEffect(() => {
   setPaginaActual(1);
 }, [
   buscarAmbiente,
-  filtroZonal,
   filtroSede,
   filtroPabellon,
   filtroPiso
@@ -43,46 +40,19 @@ useEffect(() => {
 // ======================
 // TRANSFORMAR DATA DB
 // ======================
+console.log("ambientesFiltrados", ambientesFiltrados);
 const ambientes = useMemo(() => {
 
-  return ambientesFiltrados.map((a) => ({
-
+  return (ambientesFiltrados || []).map((a) => ({
     id: a.id,
-
-    nombre: a.nombre,
-
-    pisoNombre:
-      a.piso?.nombre || "",
-
-    pabellonNombre:
-      a.piso?.pabellon?.nombre || "",
-
-    sedeNombre:
-      a.piso?.pabellon?.sede?.nombre || "",
-
-    zonalNombre:
-      a.piso?.pabellon?.sede?.zonal?.nombre || ""
-
+    nombre: a.nombre || "",
+    pisoNombre: a.pisoNombre || "",
+    pabellonNombre: a.pabellonNombre || "",
+    sedeNombre: a.sedeNombre || ""
   }));
 
-}, [ambientes]);
+}, [ambientesFiltrados]);
 
- // ======================
-// ZONALES DESDE DB
-// ======================
-const zonales = useMemo(() => {
-
-  const uniques = [
-    ...new Set(
-      ambientesFiltrados.map(
-        (a) => a.zonalNombre
-      )
-    )
-  ];
-
-  return ["TODOS", ...uniques];
-
-}, [ambientes]);
 
 // ======================
 // SEDES DESDE DB
@@ -90,15 +60,6 @@ const zonales = useMemo(() => {
 const sedes = useMemo(() => {
 
   let data = ambientes;
-
-  if (filtroZonal !== "TODOS") {
-
-    data = data.filter(
-      (a) =>
-        a.zonalNombre === filtroZonal
-    );
-
-  }
 
   const uniques = [
     ...new Set(
@@ -111,62 +72,64 @@ const sedes = useMemo(() => {
   return ["TODAS", ...uniques];
 
 }, [
-  ambientesFiltrados,
-  filtroZonal
+   ambientes,
 ]);
 
   // ======================
   // PABELLONES
   // ======================
-  const pabellones = useMemo(() => {
+ const pabellones = useMemo(() => {
 
-    const data =
-      filtroSede === "TODAS"
-        ? ambientesFiltrados
-        : ambientesFiltrados.filter(
-            (a) => a.sedeNombre === filtroSede
-          );
+  const data =
+    filtroSede === "TODAS"
+      ? ambientes
+      : ambientes.filter(
+          (a) => a.sedeNombre === filtroSede
+        );
 
-    const set = new Set(
+  const uniques = [
+    ...new Set(
       data.map((a) => a.pabellonNombre)
-    );
+    )
+  ];
 
-    return ["TODOS", ...set];
+  return ["TODOS", ...uniques];
 
-  }, [ambientes, filtroSede]);
+}, [ambientes, filtroSede]);
 
   // ======================
   // PISOS
   // ======================
-  const pisos = useMemo(() => {
+ const pisos = useMemo(() => {
 
-    const data =
-      filtroPabellon === "TODOS"
-        ? ambientesFiltrados
-        : ambientesFiltrados.filter(
-            (a) => a.pabellonNombre === filtroPabellon
-          );
+  const data =
+    filtroPabellon === "TODOS"
+      ? ambientes
+      : ambientes.filter(
+          (a) =>
+            a.pabellonNombre === filtroPabellon
+        );
 
-    const set = new Set(
+  const uniques = [
+    ...new Set(
       data.map((a) => a.pisoNombre)
-    );
+    )
+  ];
 
-    return ["TODOS", ...set];
+  return ["TODOS", ...uniques];
 
-  }, [ambientesFiltrados, filtroPabellon]);
+}, [ambientes, filtroPabellon]);
 
   // ======================
   // FILTRO FINAL
   // ======================
   const dataFiltrada = ambientes.filter((a) => {
 
-    const okBusqueda = a.nombre
+    const okBusqueda = (a.nombre || "")
       .toLowerCase()
-      .includes(buscarAmbiente.toLowerCase());
-
-   const okZonal =
-    filtroZonal === "TODOS" ||
-    a.zonalNombre === filtroZonal;
+      .includes(
+        (buscarAmbiente || "").toLowerCase()
+      );
 
     const okSede =
       filtroSede === "TODAS" ||
@@ -182,7 +145,6 @@ const sedes = useMemo(() => {
 
     return (
       okBusqueda &&
-      okZonal &&
       okSede &&
       okPab &&
       okPiso
@@ -221,7 +183,6 @@ const sedes = useMemo(() => {
             onClick={() => {
               setVistaInfra("menu");
               setBuscarAmbiente("");
-              setFiltroZonal("TODOS");
               setFiltroSede("TODAS");
               setFiltroPabellon("TODOS");
               setFiltroPiso("TODOS");
@@ -251,23 +212,6 @@ const sedes = useMemo(() => {
             className="bg-white px-5 py-4 rounded-2xl border border-gray-200 font-bold w-full"
           />
 
-          {/* ZONAL */}
-          <select
-            value={filtroZonal}
-            onChange={(e) => {
-              setFiltroZonal(e.target.value);
-              setFiltroSede("TODAS");
-              setFiltroPabellon("TODOS");
-              setFiltroPiso("TODOS");
-            }}
-            className="bg-white px-5 py-4 rounded-2xl border border-gray-200 font-bold w-full"
-          >
-            {zonales.map((z) => (
-              <option key={z} value={z}>
-                {z}
-              </option>
-            ))}
-          </select>
 
           {/* SEDE */}
           <select
