@@ -27,6 +27,8 @@ model User {
   ocurrencias          Ocurrencia[]
   historialOcurrencias HistorialOcurrencia[]
   reportesSismo        ReporteSismo[]
+  contratasSeguridad ContrataProveedor[] @relation("AprobacionSeguridadContrata")
+  contratasAmbiente ContrataProveedor[] @relation("AprobacionAmbienteContrata")
 }
 
 model UnidadNegocio {
@@ -70,6 +72,7 @@ model Sede {
   visitas           Visita[]
   ocurrencias       Ocurrencia[]
   reportesSismo     ReporteSismo[]
+  contratas ContrataProveedor[]
   autorizacionSismo AutorizacionSismo?
 }
 
@@ -81,6 +84,7 @@ model Pabellon {
   sede   Sede @relation(fields: [sedeId], references: [id])
   registroRiesgos RegistroRiesgo[]
   pisos Piso[]
+  contratas ContrataProveedor[]
 }
 
 model Piso {
@@ -92,6 +96,7 @@ model Piso {
 
   ambientes Ambiente[]
   registroRiesgos RegistroRiesgo[]
+  contratas ContrataProveedor[]
 }
 
 model Ambiente {
@@ -103,6 +108,7 @@ model Ambiente {
   visitas     Visita[]
   ocurrencias Ocurrencia[]
   registroRiesgos RegistroRiesgo[]
+  contratas ContrataProveedor[]
 }
 
 model Visita {
@@ -128,23 +134,6 @@ model Visita {
   motivoAccion String?
 
   fechaAccion DateTime?
-
-  /**
-   * =========================
-   */
-  /**
-   * /**
-   * /**
-   * /**
-   * /* RELACIONES
-   */
-  /**
-   * /**
-   * /**
-   * /**
-   * /* =========================
-   */
-
   sedeId Int
 
   sede Sede @relation(fields: [sedeId], references: [id])
@@ -433,6 +422,100 @@ model SeguimientoRiesgo {
   comentario String
 
   evidencia String?
+
+  createdAt DateTime @default(now())
+}
+model ContrataProveedor {
+  id Int @id @default(autoincrement())
+
+  codigo String @unique
+
+  // UBICACIÓN
+  sedeId Int
+  sede Sede @relation(fields:[sedeId], references:[id])
+
+  pabellonId Int
+  pabellon Pabellon @relation(fields:[pabellonId], references:[id])
+
+  pisoId Int
+  piso Piso @relation(fields:[pisoId], references:[id])
+
+  ambienteId Int
+  ambiente Ambiente @relation(fields:[ambienteId], references:[id])
+
+  // DATOS DE LA CONTRATA
+  motivo String
+  empresaContratista String
+  descripcionServicio String
+
+  fechaInicio DateTime @db.Date
+  fechaFin DateTime @db.Date
+
+  horaEntrada String
+  horaSalida String
+
+  // RESPONSABLE
+  emailResponsable String
+  dniResponsable String
+  nombresResponsable String
+  apellidoPaternoResponsable String
+  apellidoMaternoResponsable String
+  telefonoResponsable String
+
+  // ACCESO
+  tokenAcceso String @unique
+  nivelRiesgo String?
+
+  // ESTADO DEL FLUJO
+  estado String @default("PENDIENTE")
+
+  // SEGURIDAD
+  aprobadoSeguridadPorId Int?
+  aprobadoSeguridadPor User? @relation("AprobacionSeguridadContrata",fields: [aprobadoSeguridadPorId],references: [id])
+  fechaAprobacionSeguridad DateTime?
+
+  // AMBIENTE
+  aprobadoAmbientePorId Int?
+  aprobadoAmbientePor User? @relation("AprobacionAmbienteContrata",fields: [aprobadoAmbientePorId],references: [id])
+  fechaAprobacionAmbiente DateTime?
+
+  // RECHAZO SEGURIDAD
+  motivoRechazo String?
+
+  createdAt DateTime @default(now())
+
+  // RELACIONES
+  trabajadores TrabajadorContrata[]
+  documentos DocumentoContrata[]
+}
+
+model TrabajadorContrata {
+  id Int @id @default(autoincrement())
+  codigo String @unique
+  dni String
+  nombres String
+  apellidoPaterno String
+  apellidoMaterno String
+  email String
+  horaIngreso DateTime?
+  horaSalida DateTime?
+   qrData  String?
+   estadoQr          String?
+  contrataId Int
+  contrata ContrataProveedor @relation(fields: [contrataId], references: [id])
+  createdAt DateTime @default(now())
+}
+model DocumentoContrata {
+
+  id Int @id @default(autoincrement())
+
+  contrataId Int
+
+  contrata ContrataProveedor @relation(fields: [contrataId], references: [id])
+
+  tipo String
+
+  archivo String
 
   createdAt DateTime @default(now())
 }

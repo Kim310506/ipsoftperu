@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
+    "@tanstack/react-table": "^8.21.3",
     "axios": "^1.16.1",
     "datatables.net": "^2.3.8",
     "datatables.net-dt": "^2.3.8",

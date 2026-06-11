@@ -114,7 +114,14 @@ const rolesPorModulo = {
   ],
    RIESGOS: [
     "JEFE DE SEGURIDAD",
-    "RESPONSABLE DE CATEGORIA"  ]
+    "RESPONSABLE DE CATEGORIA"  ],
+  PROVEEDORES: [
+     "SOLICITANTE DE ACCESO (SA)",
+    "RESPONSABLE DE AREA (RA)",
+    "RECEPCION DE SEGURIDAD (REC)",
+    "ANALISTA DE SEGURIDAD",
+    "RESPONSABLE AMBIENTE"
+ ]
 
 };
 const manejarRol = (rol) => {

@@ -15,13 +15,37 @@ const storage = multer.diskStorage({
         "uploads/ocurrencias/soluciones";
     }
 
-    // NUEVO
     if (
       req.originalUrl.includes("/riesgos")
     ) {
       dir =
         "uploads/riesgos";
     }
+
+    if (
+  req.originalUrl.includes("/documento")
+) {
+console.log("URL:", req.originalUrl);
+  console.log("BODY:", req.body)
+ const tipo = req.params.tipo;
+
+console.log("TIPO:", tipo);
+  if (tipo === "SCTR") {
+    dir =
+      "uploads/contratas/sctr";
+  }
+
+  if (tipo === "CM") {
+    dir =
+      "uploads/contratas/cm";
+  }
+
+  if (tipo === "CTA") {
+    dir =
+      "uploads/contratas/cta";
+  }
+
+}
 
     if (!fs.existsSync(dir)) {
 

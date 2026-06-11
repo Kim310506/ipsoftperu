@@ -14,6 +14,7 @@ import VisitasDashboard from "./pages/modulos/visitas/Dashboard";
 /* PROVEEDORES */
 import ProveedoresLogin from "./pages/modulos/proveedores/Login";
 import ProveedoresDashboard from "./pages/modulos/proveedores/Dashboard";
+import RegistroVisitantes from "./pages/Modulos/proveedores/components/ProgramarProveedores/RegistroVisitantes";
 
 /* INCIDENTES */
 import IncidentesLogin from "./pages/modulos/incidentes/Login";
@@ -76,10 +77,13 @@ export default function App() {
       {/* PROVEEDORES */}
       <Route path="/proveedores/login" element={<ProveedoresLogin />} />
       <Route path="/proveedores/dashboard" element={<ProveedoresDashboard />} />
+       <Route
+    path="/registro-visita/:token"
+    element={<RegistroVisitantes />}
+  />
       {/* RIESGOS */}
       <Route path="/riesgos/login" element={<RiesgosLogin />} />
       <Route path="/riesgos/dashboard" element={<RiesgosDashboard />} />
-      {/* EXTINTORES */}
       <Route
         path="/registro-externo/:codigo"
         element={<RegistroExterno />}
