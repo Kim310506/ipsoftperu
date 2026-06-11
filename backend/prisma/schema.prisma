@@ -22,11 +22,17 @@ model User {
 
   createdAt DateTime @default(now())
 
-  // RELACIONES
+  // RELACIONES CRM (Kimberly)
   visitasAccionadas    Visita[]              @relation("AccionPor")
   ocurrencias          Ocurrencia[]
   historialOcurrencias HistorialOcurrencia[]
   reportesSismo        ReporteSismo[]
+
+  // RELACIONES INVENTARIO (Carlos)
+  proveedorId Int?
+  proveedor   Proveedor?          @relation(fields: [proveedorId], references: [id])
+  servicios   HistorialServicio[]
+  bajas       HistorialBaja[]
   contratasSeguridad ContrataProveedor[] @relation("AprobacionSeguridadContrata")
   contratasAmbiente ContrataProveedor[] @relation("AprobacionAmbienteContrata")
 }
@@ -103,10 +109,104 @@ model Ambiente {
   id     Int    @id @default(autoincrement())
   nombre String
 
-  pisoId      Int
-  piso        Piso         @relation(fields: [pisoId], references: [id])
+  pisoId Int
+  piso   Piso @relation(fields: [pisoId], references: [id])
+
+  // RELACIONES
   visitas     Visita[]
   ocurrencias Ocurrencia[]
+  
+  // 🎯 NUEVO: Los activos de tu inventario ahora viven dentro de los ambientes del CRM
+  activos     Activo[]
+}
+
+model Activo {
+  id            Int      @id @default(autoincrement())
+  codigo        String   @unique
+  nombre        String
+  categoria     String
+  sistema       String
+  marca         String?
+  modelo        String?
+  serie         String?
+  estado        String   @default("ACTIVO")
+  estadoInv     String   @default("ALTA")
+  observaciones String?  @db.Text
+  foto          String?
+
+  // Relación con el Proveedor
+  proveedorId Int?
+  proveedor   Proveedor? @relation(fields: [proveedorId], references: [id])
+
+  // Ubicación del Activo (conectado a la infraestructura del CRM)
+  ambienteId Int
+  ambiente   Ambiente @relation(fields: [ambienteId], references: [id])
+
+  // Detalles adicionales
+  extintor        DetalleExtintor?
+  historial       HistorialServicio[]
+  historicalBajas HistorialBaja[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Modelos de soporte para Inventario
+model Proveedor {
+  id       Int      @id @default(autoincrement())
+  nombre   String
+  contacto String?
+  usuarios User[]
+  activos  Activo[]
+}
+
+model DetalleExtintor {
+  id                       Int      @id @default(autoincrement())
+  activoId                 Int      @unique
+  activo                   Activo   @relation(fields: [activoId], references: [id], onDelete: Cascade)
+
+  capacidad                String?
+  agente                   String?
+  numInterno               Int?
+  fabricacion              Int?
+
+  fechaUltimaRecarga       DateTime?
+  fechaUltimoMantenimiento DateTime?
+  fechaUltimaPH            DateTime? // Prueba Hidrostática
+
+  proximoServicioTipo      String?   // "RECARGA", "MANTENIMIENTO" o "PH"
+  proximoServicioFecha     DateTime? // Fecha de la alerta
+  vencimientoPH            DateTime? // Fecha exacta de su próxima PH (Cada 5 años)
+}
+
+model HistorialServicio {
+  id          Int      @id @default(autoincrement())
+  descripcion String
+  fecha       DateTime @default(now())
+  activoId    Int
+  activo      Activo   @relation(fields: [activoId], references: [id])
+  usuarioId   Int
+  usuario     User     @relation(fields: [usuarioId], references: [id])
+}
+
+model HistorialBaja {
+  id                Int      @id @default(autoincrement())
+  
+  activoId          Int
+  activo            Activo   @relation(fields: [activoId], references: [id], onDelete: Cascade)
+  
+  motivoBaja        String   // Cambiado de 'motivo' a 'motivoBaja' para el controlador
+  observacionesBaja String?  @db.Text
+  fotoBaja          String?  
+  
+  usuarioId         Int? 
+  // 💡 Si en tu schema local el modelo de usuarios se llama 'User', déjalo como 'User'. 
+  // Si se llama 'Usuario', cámbialo a 'Usuario'.
+  usuario           User?    @relation(fields: [usuarioId], references: [id])
+  
+  fechaBaja         DateTime @default(now()) 
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
   registroRiesgos RegistroRiesgo[]
   contratas ContrataProveedor[]
 }

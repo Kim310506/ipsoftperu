@@ -13,6 +13,7 @@ import visitasRoutes from "./modules/visitas/visitas/visita.routes";
 import visitantesRoutes from "./modules/visitas/visitantes/visitante.routes";
 import incidentesRoutes from "./modules/incidentes/incidentes.routes";
 import sismosRoutes from "./modules/sismos/sismos.routes";
+import activoRoutes from "./modules/inventario/activo.routes";
 import riesgosRoutes from "./modules/riesgos/riesgos.routes";
 import proveedoresRoutes from "./modules/proveedores/contratas/contrata.routes";
 
@@ -40,6 +41,7 @@ app.use( "/visitas",visitasRoutes);
 app.use( "/visitantes",visitantesRoutes);
 app.use( "/incidentes",incidentesRoutes);
 app.use( "/sismos",sismosRoutes);
+app.use( "/", activoRoutes);
 app.use( "/riesgos",riesgosRoutes);
 app.use( "/contratas",proveedoresRoutes);
 
