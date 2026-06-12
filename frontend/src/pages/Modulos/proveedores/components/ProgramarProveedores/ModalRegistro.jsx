@@ -116,8 +116,6 @@ if (
 }
    await api.post("/contratas", {
   sedeId: Number(sedeId),
-  pabellonId: Number(pabellonId),
-  pisoId: Number(pisoId),
   ambienteId: Number(ambienteId),
 
   motivo,

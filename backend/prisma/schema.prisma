@@ -90,7 +90,6 @@ model Pabellon {
   sede   Sede @relation(fields: [sedeId], references: [id])
   registroRiesgos RegistroRiesgo[]
   pisos Piso[]
-  contratas ContrataProveedor[]
 }
 
 model Piso {
@@ -102,7 +101,6 @@ model Piso {
 
   ambientes Ambiente[]
   registroRiesgos RegistroRiesgo[]
-  contratas ContrataProveedor[]
 }
 
 model Ambiente {
@@ -536,13 +534,6 @@ model ContrataProveedor {
   // UBICACIÓN
   sedeId Int
   sede Sede @relation(fields:[sedeId], references:[id])
-
-  pabellonId Int
-  pabellon Pabellon @relation(fields:[pabellonId], references:[id])
-
-  pisoId Int
-  piso Piso @relation(fields:[pisoId], references:[id])
-
   ambienteId Int
   ambiente Ambiente @relation(fields:[ambienteId], references:[id])
 

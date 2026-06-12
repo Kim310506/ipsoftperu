@@ -25,12 +25,6 @@ export const crearContrata = async (data: any) => {
 
           sedeId: Number(data.sedeId),
 
-          pabellonId:
-            Number(data.pabellonId),
-
-          pisoId:
-            Number(data.pisoId),
-
           ambienteId:
             Number(data.ambienteId),
 
@@ -95,9 +89,24 @@ export const listarContratasService = async () => {
     orderBy: { createdAt: "desc" },
     include: {
       sede: true,
-      pabellon: true,
-      piso: true,
-      ambiente: true,
+
+      ambiente: {
+
+        include: {
+
+          piso: {
+
+            include: {
+
+              pabellon: true
+
+            }
+
+          }
+
+        }
+
+      },
       aprobadoSeguridadPor: true,
       aprobadoAmbientePor: true,
       trabajadores: true,
@@ -112,9 +121,23 @@ export const obtenerContrataPorTokenService = async (token: string) => {
     },
     include: {
       sede: true,
-      pabellon: true,
-      piso: true,
-      ambiente: true,
+      ambiente: {
+
+        include: {
+
+          piso: {
+
+            include: {
+
+              pabellon: true
+
+            }
+
+          }
+
+        }
+
+      },
       trabajadores: true,
       documentos: true
     },
