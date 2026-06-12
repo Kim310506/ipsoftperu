@@ -486,19 +486,6 @@ className="border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border
 <td>
 
   <div className="flex gap-2">
-
-    <button
-      className="
-        bg-blue-500
-        hover:bg-blue-600
-        text-white
-        px-3 py-2
-        rounded-xl
-      "
-    >
-      <Send size={15}/>
-    </button>
-
     <button
       className="
         bg-red-500

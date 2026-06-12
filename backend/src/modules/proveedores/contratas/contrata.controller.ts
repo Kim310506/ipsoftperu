@@ -9,7 +9,11 @@ aprobarSeguridadService,
 rechazarContrataService,
 guardarNivelRiesgoService,
 actualizarTrabajadorService,
-eliminarTrabajadorService 
+eliminarTrabajadorService ,
+listarTrabajadoresContrataService,
+verificarQrContrataService,
+registrarIngresoVisitanteService,
+registrarSalidaVisitanteService
 } from "./contrata.service";
 
 export const crearContrataController =
@@ -316,4 +320,78 @@ async (
 
   res.json(trabajador);
 
+};
+export const listarTrabajadoresContrata = async (
+  req: Request,
+  res: Response
+) => {
+  const data = await listarTrabajadoresContrataService();
+  res.json(data);
+};
+export const verificarQrContrataController = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const { qrData } = req.body;
+
+    if (!qrData) {
+      return res.status(400).json({
+        message: "QR requerido",
+      });
+    }
+
+    const trabajador =
+      await verificarQrContrataService(qrData);
+
+    return res.json(trabajador);
+
+  } catch (error: any) {
+
+    return res.status(404).json({
+      message: error.message || "Error al verificar QR",
+    });
+
+  }
+};
+// INGRESO
+export const registrarIngresoVisitanteController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const id = Number(req.params.id);
+
+    const data = await registrarIngresoVisitanteService(id);
+
+    return res.json({
+      horaIngreso: data.horaIngreso,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+
+// SALIDA
+export const registrarSalidaVisitanteController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const id = Number(req.params.id);
+
+    const data = await registrarSalidaVisitanteService(id);
+
+    return res.json({
+      horaSalida: data.horaSalida,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
 };

@@ -556,3 +556,86 @@ async (id: number) => {
   });
 
 };
+
+export const listarTrabajadoresContrataService = async () => {
+  return prisma.trabajadorContrata.findMany({
+    include: {
+      contrata: {
+        include: {
+          sede: true,
+          ambiente: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+};
+export const verificarQrContrataService = async (qrData: string) => {
+
+  const trabajador = await prisma.trabajadorContrata.findFirst({
+    where: {
+      qrData: {
+    equals: qrData.trim(),
+  }
+    },
+    include: {
+      contrata: {
+        include: {
+          sede: true,
+          ambiente: true,
+        },
+      },
+    },
+  });
+
+  if (!trabajador) {
+    throw new Error("QR inválido");
+  }
+
+  return trabajador;
+};
+// REGISTRAR INGRESO
+export const registrarIngresoVisitanteService = async (id: number) => {
+
+  const fechaPeru = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date());
+
+  return prisma.trabajadorContrata.update({
+    where: { id },
+    data: {
+      horaIngreso: fechaPeru,
+    },
+  });
+};
+
+// REGISTRAR SALIDA
+export const registrarSalidaVisitanteService = async (id: number) => {
+
+  const fechaPeru = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date());
+
+  return prisma.trabajadorContrata.update({
+    where: { id },
+    data: {
+      horaSalida: fechaPeru,
+    },
+  });
+};

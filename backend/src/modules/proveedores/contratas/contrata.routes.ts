@@ -12,7 +12,11 @@ import {
   rechazarContrata,
   guardarNivelRiesgo,
   actualizarTrabajador,
-  eliminarTrabajador
+  eliminarTrabajador,
+  listarTrabajadoresContrata,
+  verificarQrContrataController,
+  registrarIngresoVisitanteController,
+  registrarSalidaVisitanteController
 } from "./contrata.controller";
 
 const router = Router();
@@ -26,7 +30,10 @@ router.get(
   "/",
   listarContratasController
 );
-
+router.post(
+  "/verificar-qr",
+  verificarQrContrataController
+);
 router.get(
   "/token/:token",
   obtenerContrataPorToken
@@ -38,10 +45,12 @@ router.post(
   "/token/:token/trabajadores",
   registrarTrabajador
 );
+router.get("/trabajadores", listarTrabajadoresContrata);
 router.put(
   "/trabajadores/:id",
   actualizarTrabajador
 );
+
 router.delete(
   "/trabajadores/:id",
   eliminarTrabajador
@@ -55,4 +64,9 @@ router.put(
   "/token/:token/nivel-riesgo",
   guardarNivelRiesgo
 );
+// INGRESO
+router.put("/ingreso/:id", registrarIngresoVisitanteController);
+
+// SALIDA
+router.put("/salida/:id", registrarSalidaVisitanteController);
 export default router;

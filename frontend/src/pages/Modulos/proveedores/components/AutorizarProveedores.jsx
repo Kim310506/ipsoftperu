@@ -658,144 +658,342 @@ md:items-center
 {openTrabajadoresModal &&
   contrataSeleccionada && (
 
-  <div className="
-    fixed
-    inset-0
-    z-50
-    bg-black/40
-    backdrop-blur-sm
-    flex
-    items-center
-    justify-center
-    p-4
-  ">
+  <div
+    className="
+      fixed
+      inset-0
+      z-50
+      bg-black/40
+      backdrop-blur-sm
+      flex
+      items-center
+      justify-center
+      p-4
+    "
+  >
 
-    <div className="
-      bg-white
-      w-full
-      max-w-6xl
-      rounded-3xl
-      shadow-2xl
-      overflow-hidden
-    ">
+    <div
+      className="
+        bg-white
+        w-full
+        max-w-5xl
+        rounded-lg
+        shadow-2xl
+        overflow-hidden
+      "
+    >
 
       {/* HEADER */}
-      <div className="
-        bg-gradient-to-r
-        from-[#1E55C0]
-        to-[#3f83f8]
-        px-8
-        py-6
-        flex
-        items-center
-        justify-between
-      ">
+      <div
+        className="
+          bg-[#3B82F6]
+          px-5
+          py-3
+          flex
+          justify-between
+          items-center
+        "
+      >
 
-        <div>
-
-          <h2 className="text-3xl font-black text-white">
-            Lista de Trabajadores
-          </h2>
-
-          <p className="text-blue-100 mt-1">
-            Contrata: {contrataSeleccionada.codigo}
-          </p>
-
-        </div>
+        <h2
+          className="
+            text-white
+            font-bold
+            text-lg
+          "
+        >
+          Detalle de Contrata
+        </h2>
 
         <button
           onClick={() =>
             setOpenTrabajadoresModal(false)
           }
           className="
-            w-11
-            h-11
-            rounded-xl
-            bg-white/20
-            hover:bg-white/30
-            transition
             text-white
-            flex
-            items-center
-            justify-center
+            text-xl
           "
         >
-          <X size={24} />
+          <X size={20} />
         </button>
 
       </div>
 
-      {/* BODY */}
-      <div className="p-8 overflow-x-auto">
+      <div className="p-4">
 
-        <table className="w-full min-w-[900px]">
+        {/* INFORMACION */}
+        <div
+          className="
+            bg-white
+            rounded-2xl
+            shadow-sm
+            mb-5
+            overflow-hidden
+          "
+        >
 
-          <thead className="bg-[#f8fafc]">
+          <div
+            className="
+              bg-[#F8FAFC]
+              px-4
+              py-2
+              flex
+              justify-between
+              items-center
+            "
+          >
 
-            <tr className="text-left text-xs uppercase text-gray-500">
+            <h3
+              className="
+                text-blue-600
+                font-semibold
+              "
+            >
+              ℹ Información de la Contrata
+            </h3>
 
-              <th className="px-5 py-4">
-                CÓDIGO
-              </th>
+            <span
+              className="
+                bg-green-600
+                text-white
+                text-xs
+                px-3
+                py-1
+                rounded
+                font-bold
+              "
+            >
+              {contrataSeleccionada.estado}
+            </span>
 
-              <th className="px-5 py-4">
-                DNI
-              </th>
+          </div>
 
-              <th className="px-5 py-4">
-                NOMBRES
-              </th>
+          <div className="p-4">
 
-              <th className="px-5 py-4">
-                EMAIL
-              </th>
+            <label
+              className="
+                font-semibold
+                text-sm
+              "
+            >
+              Detalle de la Solicitud:
+            </label>
 
-            </tr>
+            <input
+              readOnly
+              value={contrataSeleccionada.descripcionServicio}
+              className="
+                w-full
+                mt-2
+                rounded-xl
+                bg-[#F8FAFC]
+                px-4
+                py-3
+                outline-none
+                border-0
+              "
+            />
 
-          </thead>
+            {/* DOCUMENTOS */}
 
-          <tbody>
+            <div
+              className="
+                grid
+                grid-cols-3
+                gap-8
+                mt-5
+              "
+            >
 
-            {contrataSeleccionada.trabajadores?.map(
-              (trabajador) => (
+              {contrataSeleccionada.documentos?.map(
+                (doc) => (
 
-                <tr
-                  key={trabajador.id}
+                  <div
+                    key={doc.id}
+                    className="
+                      bg-[#F8FAFC]
+                      rounded-xl
+                      p-4
+                      text-center
+                      hover:shadow-md
+                      transition
+                    "
+                  >
+
+                    <div
+                      className="
+                        font-semibold
+                        text-sm
+                        mb-2
+                      "
+                    >
+
+                      {doc.tipo === "SCTR" &&
+                        "📄 SCTR"}
+
+                      {doc.tipo === "CM" &&
+                        "🩺 Cert. Médico"}
+
+                      {doc.tipo === "CTA" &&
+                        "🪜 Cert. Altura"}
+
+                    </div>
+
+                    <a
+                      href={`http://localhost:3000${doc.archivo}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="
+                        text-blue-600
+                        hover:underline
+                        text-sm
+                      "
+                    >
+
+                      Ver {doc.tipo}
+
+                    </a>
+
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* TRABAJADORES */}
+
+        <div
+          className="
+            bg-white
+            rounded-2xl
+            shadow-sm
+            overflow-hidden
+          "
+        >
+
+          <div
+            className="
+              bg-[#F8FAFC]
+              px-4
+              py-2
+              text-blue-600
+              font-semibold
+            "
+          >
+            👥 Trabajadores (
+            {contrataSeleccionada.trabajadores
+              ?.length || 0}
+            )
+          </div>
+
+          <table className="w-full">
+
+            <thead
+              className="
+                bg-gray-50
+                text-sm
+              "
+            >
+
+              <tr>
+
+                <th
                   className="
-                    border-b
-                    border-gray-100
-                    hover:bg-[#f8fafc]
+                    text-left
+                    px-4
+                    py-3
                   "
                 >
+                  Código
+                </th>
 
-                  <td className="px-5 py-5 font-semibold">
-                    {trabajador.codigo}
-                  </td>
+                <th
+                  className="
+                    text-left
+                    px-4
+                    py-3
+                  "
+                >
+                  DNI
+                </th>
 
-                  <td className="px-5 py-5">
-                    {trabajador.dni}
-                  </td>
+                <th
+                  className="
+                    text-left
+                    px-4
+                    py-3
+                  "
+                >
+                  Nombre Completo
+                </th>
 
-                  <td className="px-5 py-5">
+                <th
+                  className="
+                    text-left
+                    px-4
+                    py-3
+                  "
+                >
+                  Email
+                </th>
 
-                    {trabajador.nombres}{" "}
-                    {trabajador.apellidoPaterno}{" "}
-                    {trabajador.apellidoMaterno}
+              </tr>
 
-                  </td>
+            </thead>
 
-                  <td className="px-5 py-5">
-                    {trabajador.email}
-                  </td>
+            <tbody>
 
-                </tr>
+              {contrataSeleccionada.trabajadores?.map(
+                (trabajador) => (
 
-              )
-            )}
+                  <tr
+                    key={trabajador.id}
+                    className="
+                      hover:bg-[#F8FAFC]
+                      transition
+                      hover:bg-gray-50
+                    "
+                  >
 
-          </tbody>
+                    <td className="px-4 py-3">
+                      {trabajador.codigo}
+                    </td>
 
-        </table>
+                    <td className="px-4 py-3">
+                      {trabajador.dni}
+                    </td>
+
+                    <td className="px-4 py-3">
+
+                      {trabajador.nombres}{" "}
+                      {
+                        trabajador.apellidoPaterno
+                      }{" "}
+                      {
+                        trabajador.apellidoMaterno
+                      }
+
+                    </td>
+
+                    <td className="px-4 py-3">
+                      {trabajador.email}
+                    </td>
+
+                  </tr>
+
+                )
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
 
       </div>
 
