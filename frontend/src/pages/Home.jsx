@@ -12,7 +12,8 @@ import {
   Wrench,
   Shield,
   Users,
-  Building2
+  Building2,
+  Key
 } from 'lucide-react'
 
 const modulos = [
@@ -24,6 +25,7 @@ const modulos = [
   { id: 6, titulo: "Gestión de Mantenimiento", icon: <Wrench size={36} />, link: "/mantenimiento/login" },
   { id: 7, titulo: "Gestión de Riesgo", icon: <Shield size={36} />, link: "/riesgos/login" },
   { id: 8, titulo: "Gestión de Sismo", icon: <AlertCircle size={36} />, link: "/sismos/login" },
+{ id: 9, titulo: "Gestión de Llaves", icon: <Key size={36} />, link: "/llaves/login" },
 ];
 
 export default function Home() {

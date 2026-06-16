@@ -16,6 +16,7 @@ import sismosRoutes from "./modules/sismos/sismos.routes";
 import activoRoutes from "./modules/inventario/activo.routes";
 import riesgosRoutes from "./modules/riesgos/riesgos.routes";
 import proveedoresRoutes from "./modules/proveedores/contratas/contrata.routes";
+import llavesRoutes from "./modules/llaves/llaves.routes";
 
 
 const app = express();
@@ -44,7 +45,7 @@ app.use( "/sismos",sismosRoutes);
 app.use( "/", activoRoutes);
 app.use( "/riesgos",riesgosRoutes);
 app.use( "/contratas",proveedoresRoutes);
-
+app.use( "/llaves",llavesRoutes);
 app.use(
   "/uploads",
   express.static(

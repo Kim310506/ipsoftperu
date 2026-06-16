@@ -38,9 +38,12 @@ import RiesgosLogin from "./pages/modulos/riesgos/Login";
 import RiesgosDashboard from "./pages/modulos/riesgos/Dashboard";
 
 /* SISMOS */
+import LlavesLogin from "./pages/modulos/llaves/Login";
+import LlavesDashboard from "./pages/modulos/llaves/Dashboard";
+
+/* LLAVES */
 import SismosLogin from "./pages/modulos/sismos/Login";
 import SismosDashboard from "./pages/modulos/sismos/Dashboard";
-
 export default function App() {
 
   return (
@@ -97,7 +100,8 @@ export default function App() {
       {/* SISMOS */}
       <Route path="/sismos/login" element={<SismosLogin />} />
       <Route path="/sismos/dashboard" element={<SismosDashboard />} />
-      
+      <Route path="/llaves/login" element={<LlavesLogin />} />
+      <Route path="/llaves/dashboard" element={<LlavesDashboard />} />
     </Routes>
   );
 }

@@ -35,6 +35,7 @@ model User {
   bajas       HistorialBaja[]
   contratasSeguridad ContrataProveedor[] @relation("AprobacionSeguridadContrata")
   contratasAmbiente ContrataProveedor[] @relation("AprobacionAmbienteContrata")
+  llaveros Llavero[]
 }
 
 model UnidadNegocio {
@@ -118,6 +119,7 @@ model Ambiente {
   activos     Activo[]
   registroRiesgos RegistroRiesgo[]
   contratas ContrataProveedor[]
+  llaves Llave[]
 }
 
 model Activo {
@@ -610,6 +612,66 @@ model DocumentoContrata {
   tipo String
 
   archivo String
+
+  createdAt DateTime @default(now())
+}
+
+model Llavero {
+  id Int @id @default(autoincrement())
+
+  codigo String @unique
+
+  nombre String
+
+  descripcion String?
+
+  tipoAgrupacion String
+
+  estado String @default("DISPONIBLE")
+
+  createdById Int
+
+  createdBy User @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  llaves Llave[]
+
+  prestamos PrestamoLlavero[]
+}
+
+model Llave {
+  id Int @id @default(autoincrement())
+
+  codigo String @unique
+
+  descripcion String?
+
+  ambienteId Int
+  ambiente Ambiente @relation(fields: [ambienteId], references: [id])
+
+  llaveroId Int
+  llavero Llavero @relation(fields: [llaveroId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model PrestamoLlavero {
+  id Int @id @default(autoincrement())
+
+  llaveroId Int
+  llavero Llavero @relation(fields: [llaveroId], references: [id])
+
+  responsableNombre String
+  responsableDni String
+
+  fechaEntrega DateTime
+  fechaDevolucion DateTime?
+
+  devueltoPor String?
+
+  estado String
+  detalle String?
 
   createdAt DateTime @default(now())
 }
