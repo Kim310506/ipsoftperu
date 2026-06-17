@@ -197,18 +197,6 @@ label="INICIO"
 />
 
 <MenuButton
-menu="administrar"
-icon={KeyRound}
-label="ADMINISTRAR"
-/>
-
-<MenuButton
-menu="llavero"
-icon={FolderPlus}
-label="CREAR LLAVERO"
-/>
-
-<MenuButton
 menu="prestamos"
 icon={ClipboardList}
 label="PRÉSTAMOS"

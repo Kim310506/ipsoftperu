@@ -46,7 +46,12 @@ console.log("TIPO:", tipo);
   }
 
 }
-
+if (
+  req.originalUrl.includes("/llaves/prestamo") ||
+  req.originalUrl.includes("/llaves/llaveros")
+) {
+  dir = "uploads/llaveros/prestamos";
+}
     if (!fs.existsSync(dir)) {
 
       fs.mkdirSync(dir, {

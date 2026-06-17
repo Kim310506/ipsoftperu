@@ -29,13 +29,16 @@ model User {
   reportesSismo        ReporteSismo[]
 
   // RELACIONES INVENTARIO (Carlos)
-  proveedorId Int?
-  proveedor   Proveedor?          @relation(fields: [proveedorId], references: [id])
-  servicios   HistorialServicio[]
-  bajas       HistorialBaja[]
+  proveedorId        Int?
+  proveedor          Proveedor?          @relation(fields: [proveedorId], references: [id])
+  servicios          HistorialServicio[]
+  bajas              HistorialBaja[]
   contratasSeguridad ContrataProveedor[] @relation("AprobacionSeguridadContrata")
-  contratasAmbiente ContrataProveedor[] @relation("AprobacionAmbienteContrata")
-  llaveros Llavero[]
+  contratasAmbiente  ContrataProveedor[] @relation("AprobacionAmbienteContrata")
+  llaveros           Llavero[]
+prestamosEntrega PrestamoLlavero[] @relation("ResponsableEntrega")
+prestamosDevolucion PrestamoLlavero[]@relation("ResponsableDevolucion")
+transferenciasResponsable  TransferenciaLlavero[]@relation("ResponsableTransferenciaLlavero")
 }
 
 model UnidadNegocio {
@@ -70,16 +73,16 @@ model Sede {
   id     Int    @id @default(autoincrement())
   nombre String
 
-  zonalId Int
-  zonal   Zonal @relation(fields: [zonalId], references: [id])
+  zonalId         Int
+  zonal           Zonal            @relation(fields: [zonalId], references: [id])
   registroRiesgos RegistroRiesgo[]
-  usuarios User[]
+  usuarios        User[]
 
   pabellones        Pabellon[]
   visitas           Visita[]
   ocurrencias       Ocurrencia[]
   reportesSismo     ReporteSismo[]
-  contratas ContrataProveedor[]
+  contratas         ContrataProveedor[]
   autorizacionSismo AutorizacionSismo?
 }
 
@@ -87,10 +90,10 @@ model Pabellon {
   id     Int    @id @default(autoincrement())
   nombre String
 
-  sedeId Int
-  sede   Sede @relation(fields: [sedeId], references: [id])
+  sedeId          Int
+  sede            Sede             @relation(fields: [sedeId], references: [id])
   registroRiesgos RegistroRiesgo[]
-  pisos Piso[]
+  pisos           Piso[]
 }
 
 model Piso {
@@ -100,7 +103,7 @@ model Piso {
   pabellonId Int
   pabellon   Pabellon @relation(fields: [pabellonId], references: [id])
 
-  ambientes Ambiente[]
+  ambientes       Ambiente[]
   registroRiesgos RegistroRiesgo[]
 }
 
@@ -114,26 +117,26 @@ model Ambiente {
   // RELACIONES
   visitas     Visita[]
   ocurrencias Ocurrencia[]
-  
+
   // 🎯 NUEVO: Los activos de tu inventario ahora viven dentro de los ambientes del CRM
-  activos     Activo[]
+  activos         Activo[]
   registroRiesgos RegistroRiesgo[]
-  contratas ContrataProveedor[]
-  llaves Llave[]
+  contratas       ContrataProveedor[]
+  llaves          Llave[]
 }
 
 model Activo {
-  id            Int      @id @default(autoincrement())
-  codigo        String   @unique
+  id            Int     @id @default(autoincrement())
+  codigo        String  @unique
   nombre        String
   categoria     String
   sistema       String
   marca         String?
   modelo        String?
   serie         String?
-  estado        String   @default("ACTIVO")
-  estadoInv     String   @default("ALTA")
-  observaciones String?  @db.Text
+  estado        String  @default("ACTIVO")
+  estadoInv     String  @default("ALTA")
+  observaciones String? @db.Text
   foto          String?
 
   // Relación con el Proveedor
@@ -163,22 +166,22 @@ model Proveedor {
 }
 
 model DetalleExtintor {
-  id                       Int      @id @default(autoincrement())
-  activoId                 Int      @unique
-  activo                   Activo   @relation(fields: [activoId], references: [id], onDelete: Cascade)
+  id       Int    @id @default(autoincrement())
+  activoId Int    @unique
+  activo   Activo @relation(fields: [activoId], references: [id], onDelete: Cascade)
 
-  capacidad                String?
-  agente                   String?
-  numInterno               Int?
-  fabricacion              Int?
+  capacidad   String?
+  agente      String?
+  numInterno  Int?
+  fabricacion Int?
 
   fechaUltimaRecarga       DateTime?
   fechaUltimoMantenimiento DateTime?
   fechaUltimaPH            DateTime? // Prueba Hidrostática
 
-  proximoServicioTipo      String?   // "RECARGA", "MANTENIMIENTO" o "PH"
-  proximoServicioFecha     DateTime? // Fecha de la alerta
-  vencimientoPH            DateTime? // Fecha exacta de su próxima PH (Cada 5 años)
+  proximoServicioTipo  String? // "RECARGA", "MANTENIMIENTO" o "PH"
+  proximoServicioFecha DateTime? // Fecha de la alerta
+  vencimientoPH        DateTime? // Fecha exacta de su próxima PH (Cada 5 años)
 }
 
 model HistorialServicio {
@@ -192,23 +195,23 @@ model HistorialServicio {
 }
 
 model HistorialBaja {
-  id                Int      @id @default(autoincrement())
-  
-  activoId          Int
-  activo            Activo   @relation(fields: [activoId], references: [id], onDelete: Cascade)
-  
-  motivoBaja        String   // Cambiado de 'motivo' a 'motivoBaja' para el controlador
-  observacionesBaja String?  @db.Text
-  fotoBaja          String?  
-  
-  usuarioId         Int? 
+  id Int @id @default(autoincrement())
+
+  activoId Int
+  activo   Activo @relation(fields: [activoId], references: [id], onDelete: Cascade)
+
+  motivoBaja        String // Cambiado de 'motivo' a 'motivoBaja' para el controlador
+  observacionesBaja String? @db.Text
+  fotoBaja          String?
+
+  usuarioId Int?
   // 💡 Si en tu schema local el modelo de usuarios se llama 'User', déjalo como 'User'. 
   // Si se llama 'Usuario', cámbialo a 'Usuario'.
-  usuario           User?    @relation(fields: [usuarioId], references: [id])
-  
-  fechaBaja         DateTime @default(now()) 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  usuario   User? @relation(fields: [usuarioId], references: [id])
+
+  fechaBaja       DateTime         @default(now())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   registroRiesgos RegistroRiesgo[]
 }
 
@@ -235,7 +238,7 @@ model Visita {
   motivoAccion String?
 
   fechaAccion DateTime?
-  sedeId Int
+  sedeId      Int
 
   sede Sede @relation(fields: [sedeId], references: [id])
 
@@ -432,6 +435,7 @@ model AutorizacionSismo {
 
   createdAt DateTime @default(now())
 }
+
 model ResponsableRiesgo {
   id Int @id @default(autoincrement())
 
@@ -444,27 +448,27 @@ model ResponsableRiesgo {
   area      String
   categoria String
 
-  estado String @default("ACTIVO")
-  riesgos RegistroRiesgo[]
-  createdAt DateTime @default(now())
+  estado    String           @default("ACTIVO")
+  riesgos   RegistroRiesgo[]
+  createdAt DateTime         @default(now())
 }
-model RegistroRiesgo {
 
+model RegistroRiesgo {
   id Int @id @default(autoincrement())
 
   codigo String @unique
 
   sedeId Int
-  sede Sede @relation(fields:[sedeId], references:[id])
+  sede   Sede @relation(fields: [sedeId], references: [id])
 
   pabellonId Int
-  pabellon Pabellon @relation(fields:[pabellonId], references:[id])
+  pabellon   Pabellon @relation(fields: [pabellonId], references: [id])
 
   pisoId Int
-  piso Piso @relation(fields:[pisoId], references:[id])
+  piso   Piso @relation(fields: [pisoId], references: [id])
 
   ambienteId Int
-  ambiente Ambiente @relation(fields:[ambienteId], references:[id])
+  ambiente   Ambiente @relation(fields: [ambienteId], references: [id])
 
   categoria String
 
@@ -480,9 +484,9 @@ model RegistroRiesgo {
 
   estado String @default("PENDIENTE")
 
-  foto String?
+  foto            String?
   historialBajaId Int?
-  historialBaja HistorialBaja? @relation(fields: [historialBajaId], references: [id])
+  historialBaja   HistorialBaja? @relation(fields: [historialBajaId], references: [id])
 
   responsableId Int?
 
@@ -496,7 +500,6 @@ model RegistroRiesgo {
 }
 
 model TratamientoRiesgo {
-
   id Int @id @default(autoincrement())
 
   registroRiesgoId Int
@@ -515,7 +518,6 @@ model TratamientoRiesgo {
 }
 
 model SeguimientoRiesgo {
-
   id Int @id @default(autoincrement())
 
   registroRiesgoId Int
@@ -528,51 +530,52 @@ model SeguimientoRiesgo {
 
   createdAt DateTime @default(now())
 }
+
 model ContrataProveedor {
   id Int @id @default(autoincrement())
 
   codigo String @unique
 
   // UBICACIÓN
-  sedeId Int
-  sede Sede @relation(fields:[sedeId], references:[id])
+  sedeId     Int
+  sede       Sede     @relation(fields: [sedeId], references: [id])
   ambienteId Int
-  ambiente Ambiente @relation(fields:[ambienteId], references:[id])
+  ambiente   Ambiente @relation(fields: [ambienteId], references: [id])
 
   // DATOS DE LA CONTRATA
-  motivo String
-  empresaContratista String
+  motivo              String
+  empresaContratista  String
   descripcionServicio String
 
   fechaInicio DateTime @db.Date
-  fechaFin DateTime @db.Date
+  fechaFin    DateTime @db.Date
 
   horaEntrada String
-  horaSalida String
+  horaSalida  String
 
   // RESPONSABLE
-  emailResponsable String
-  dniResponsable String
-  nombresResponsable String
+  emailResponsable           String
+  dniResponsable             String
+  nombresResponsable         String
   apellidoPaternoResponsable String
   apellidoMaternoResponsable String
-  telefonoResponsable String
+  telefonoResponsable        String
 
   // ACCESO
-  tokenAcceso String @unique
+  tokenAcceso String  @unique
   nivelRiesgo String?
 
   // ESTADO DEL FLUJO
   estado String @default("PENDIENTE")
 
   // SEGURIDAD
-  aprobadoSeguridadPorId Int?
-  aprobadoSeguridadPor User? @relation("AprobacionSeguridadContrata",fields: [aprobadoSeguridadPorId],references: [id])
+  aprobadoSeguridadPorId   Int?
+  aprobadoSeguridadPor     User?     @relation("AprobacionSeguridadContrata", fields: [aprobadoSeguridadPorId], references: [id])
   fechaAprobacionSeguridad DateTime?
 
   // AMBIENTE
-  aprobadoAmbientePorId Int?
-  aprobadoAmbientePor User? @relation("AprobacionAmbienteContrata",fields: [aprobadoAmbientePorId],references: [id])
+  aprobadoAmbientePorId   Int?
+  aprobadoAmbientePor     User?     @relation("AprobacionAmbienteContrata", fields: [aprobadoAmbientePorId], references: [id])
   fechaAprobacionAmbiente DateTime?
 
   // RECHAZO SEGURIDAD
@@ -582,27 +585,32 @@ model ContrataProveedor {
 
   // RELACIONES
   trabajadores TrabajadorContrata[]
-  documentos DocumentoContrata[]
+  documentos   DocumentoContrata[]
+  prestamos PrestamoLlavero[]
+
+transferenciasOrigen TransferenciaLlavero[] @relation("TransferenciaOrigen")
+
+transferenciasDestino TransferenciaLlavero[] @relation("TransferenciaDestino")
 }
 
 model TrabajadorContrata {
-  id Int @id @default(autoincrement())
-  codigo String @unique
-  dni String
-  nombres String
+  id              Int               @id @default(autoincrement())
+  codigo          String            @unique
+  dni             String
+  nombres         String
   apellidoPaterno String
   apellidoMaterno String
-  email String
-  horaIngreso String?
-  horaSalida String?
-   qrData  String?
-   estadoQr          String?
-  contrataId Int
-  contrata ContrataProveedor @relation(fields: [contrataId], references: [id])
-  createdAt DateTime @default(now())
+  email           String
+  horaIngreso     String?
+  horaSalida      String?
+  qrData          String?
+  estadoQr        String?
+  contrataId      Int
+  contrata        ContrataProveedor @relation(fields: [contrataId], references: [id])
+  createdAt       DateTime          @default(now())
 }
-model DocumentoContrata {
 
+model DocumentoContrata {
   id Int @id @default(autoincrement())
 
   contrataId Int
@@ -633,9 +641,8 @@ model Llavero {
 
   createdBy User @relation(fields: [createdById], references: [id])
 
-  createdAt DateTime @default(now())
-
-  llaves Llave[]
+  createdAt      DateTime @default(now())
+  llaves         Llave[]
 
   prestamos PrestamoLlavero[]
 }
@@ -648,30 +655,66 @@ model Llave {
   descripcion String?
 
   ambienteId Int
-  ambiente Ambiente @relation(fields: [ambienteId], references: [id])
+  ambiente   Ambiente @relation(fields: [ambienteId], references: [id])
 
   llaveroId Int
-  llavero Llavero @relation(fields: [llaveroId], references: [id], onDelete: Cascade)
+  llavero   Llavero @relation(fields: [llaveroId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
 
 model PrestamoLlavero {
+
   id Int @id @default(autoincrement())
 
   llaveroId Int
   llavero Llavero @relation(fields: [llaveroId], references: [id])
 
-  responsableNombre String
-  responsableDni String
+  contrataId Int?
+  contrata ContrataProveedor? @relation(fields: [contrataId], references: [id])
 
-  fechaEntrega DateTime
+  tipoMovimiento String
+
+  responsableEntregaId Int?
+  responsableEntrega User? @relation("ResponsableEntrega", fields: [responsableEntregaId], references: [id])
+
+  responsableDevolucionId Int?
+  responsableDevolucion User? @relation("ResponsableDevolucion", fields: [responsableDevolucionId], references: [id])
+
+  fechaEntrega DateTime @default(now())
+
   fechaDevolucion DateTime?
 
-  devueltoPor String?
-
   estado String
+
   detalle String?
 
+  fotoEntrega String?
+
+  fotoDevolucion String?
+
   createdAt DateTime @default(now())
+
+  transferencias TransferenciaLlavero[]
+}
+model TransferenciaLlavero {
+
+  id Int @id @default(autoincrement())
+
+  prestamoId Int
+  prestamo PrestamoLlavero @relation(fields: [prestamoId], references: [id])
+
+  contrataOrigenId Int
+  contrataOrigen ContrataProveedor @relation(name: "TransferenciaOrigen",fields: [contrataOrigenId],references: [id])
+
+  contrataDestinoId Int
+  contrataDestino ContrataProveedor @relation(name: "TransferenciaDestino",fields: [contrataDestinoId],references: [id] )
+
+  responsableId Int?
+
+  responsable User? @relation(name: "ResponsableTransferenciaLlavero",fields: [responsableId],references: [id])
+
+  fecha DateTime @default(now())
+
+  detalle String?
 }

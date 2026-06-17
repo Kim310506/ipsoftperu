@@ -322,12 +322,23 @@ useEffect(()=>{
 const verificar=
 async()=>{
 
+try{
+
 if(
-!nombreLlavero
-)
+!sedeId
+||
+!pabellonId
+||
+!pisoId
+){
+
+setLlaveroExistente(
+null
+);
+
 return;
 
-try{
+}
 
 const {
 data
@@ -338,20 +349,60 @@ await api.get(
 
 const existe=
 data.find(
-x=>
 
-x.nombre===
-nombreLlavero
+l=>{
 
-||
+const llave=
+l.llaves?.[0];
 
-x.codigo===
-codigoLlavero
+return(
+
+String(
+llave?.ambiente
+?.piso
+?.id
+)
+===
+pisoId
+
+&&
+
+String(
+llave?.ambiente
+?.piso
+?.pabellon
+?.id
+)
+===
+pabellonId
+
+&&
+
+String(
+llave?.ambiente
+?.piso
+?.pabellon
+?.sede
+?.id
+)
+===
+sedeId
+
+&&
+
+l.tipoAgrupacion
+===
+tipoAgrupacion
+
+);
+
+}
 
 );
 
 setLlaveroExistente(
-existe ||
+existe
+||
 null
 );
 
@@ -369,8 +420,10 @@ verificar();
 
 },
 [
-nombreLlavero,
-codigoLlavero
+sedeId,
+pabellonId,
+pisoId,
+tipoAgrupacion
 ]);
 
 const guardar = async () => {
@@ -403,15 +456,31 @@ ambienteId,
 
 llavero:
 llaveroExistente
-? {
+
+?
+
+{
+
 id:
-llaveroExistente.id
+llaveroExistente.id,
+
+existente:
+true
+
 }
-: {
+
+:
+
+{
+
 nombre:
 nombreLlavero,
+
 codigo:
-codigoLlavero
+codigoLlavero,
+
+tipoAgrupacion
+
 },
 
 llave:{
@@ -436,7 +505,15 @@ onClose();
 
 }catch(err){
 
-console.log(err);
+console.log(
+err?.response?.data
+);
+
+alert(
+err?.response?.data?.message
+||
+"Error registrando"
+);
 
 }
 
@@ -824,22 +901,23 @@ llaveroExistente && (
 
 <div
 className="
-rounded-2xl
-bg-blue-50
+rounded-3xl
+bg-emerald-50
 border
-border-blue-200
-p-4
+border-emerald-300
+p-5
 "
 >
 
 <div
 className="
-font-semibold
-text-blue-700
+text-emerald-700
+font-bold
+text-lg
 "
 >
 
-✓ Llavero encontrado
+🔑 Llavero ya existente
 
 </div>
 
@@ -847,11 +925,24 @@ text-blue-700
 className="
 text-sm
 text-slate-600
-mt-1
+mt-2
 "
 >
 
-Se reutilizará el llavero existente.
+Código:
+
+<b>
+
+{
+llaveroExistente.codigo
+}
+
+</b>
+
+<br/>
+
+No se creará otro llavero.
+La nueva llave será agregada automáticamente.
 
 </div>
 
