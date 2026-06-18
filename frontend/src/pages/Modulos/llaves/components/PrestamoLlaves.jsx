@@ -1,25 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
+import {useEffect,
+useMemo,
+useState,
+useRef} from "react";
 
 export default function PrestamoLlaveros() {
 
 const [llaveros,setLlaveros]=useState([]);
 const [contratas,setContratas]=useState([]);
-
+const [cameraOpen,setCameraOpen]=useState(false);
+const [stream,setStream]=useState(null);
+const videoRef=useRef(null);
+const canvasRef=useRef(null);
 const [search,setSearch]=useState("");
-
 const [modal,setModal]=useState(null);
-
 const [loading,setLoading]=useState(false);
-
 const [tipoMovimiento,setTipoMovimiento]=
 useState("ENTREGA");
-
 const [fotoEntrega,setFotoEntrega]=
 useState(null);
-
 const [fotoDevolucion,setFotoDevolucion]=
 useState(null);
-
 const [form,setForm]=useState({
 detalle:""
 });
@@ -71,7 +71,8 @@ alert(
 
 };
 
-const abrirModal=(data)=>{
+const abrirModal=
+(data)=>{
 
 setModal(data);
 
@@ -82,6 +83,19 @@ detalle:""
 setFotoEntrega(null);
 
 setFotoDevolucion(null);
+
+if(
+tipoMovimiento
+!==
+"TRANSFERENCIA"
+){
+
+setTimeout(
+abrirCamara,
+300
+);
+
+}
 
 };
 
@@ -237,7 +251,155 @@ setLoading(false);
 }
 
 };
+const abrirCamara=
+async()=>{
 
+try{
+
+const media=
+await navigator
+.mediaDevices
+.getUserMedia({
+
+video:{
+facingMode:
+"environment"
+},
+
+audio:false
+
+});
+
+setStream(
+media
+);
+
+setCameraOpen(
+true
+);
+
+setTimeout(()=>{
+
+if(
+videoRef.current
+){
+
+videoRef.current.srcObject=
+media;
+
+}
+
+},100);
+
+}catch{
+
+alert(
+"No se pudo abrir cámara"
+);
+
+}
+
+};
+const cerrarCamara=
+()=>{
+
+stream
+?.getTracks()
+.forEach(
+t=>
+t.stop()
+);
+
+setStream(null);
+
+setCameraOpen(false);
+
+};
+const tomarFoto=
+()=>{
+
+const canvas=
+canvasRef.current;
+
+const video=
+videoRef.current;
+
+canvas.width=
+video.videoWidth;
+
+canvas.height=
+video.videoHeight;
+
+const ctx=
+canvas.getContext(
+"2d"
+);
+
+ctx.drawImage(
+
+video,
+
+0,
+0,
+
+canvas.width,
+canvas.height
+
+);
+
+canvas.toBlob(
+
+(blob)=>{
+
+const archivo=
+new File(
+
+[blob],
+
+"foto.jpg",
+
+{
+type:
+"image/jpeg"
+}
+
+);
+
+if(
+tipoMovimiento
+===
+"ENTREGA"
+){
+
+setFotoEntrega(
+archivo
+);
+
+}
+
+if(
+tipoMovimiento
+===
+"DEVOLUCION"
+){
+
+setFotoDevolucion(
+archivo
+);
+
+}
+
+cerrarCamara();
+
+},
+
+"image/jpeg",
+
+0.9
+
+);
+
+};
 const disponibles=
 llaveros.filter(
 x=>
@@ -250,90 +412,88 @@ x=>
 x.estado==="PRESTADO"
 ).length;
 
-const filas=
-useMemo(()=>{
+const filas = useMemo(() => {
 
-return contratas
+  return contratas
+    .map(c => {
 
-.filter(c=>{
+  const llave =
+    llaveros
+      .flatMap(l =>
+        l.llaves?.map(k => ({
+          ...k,
+          llavero: l
+        })) || []
+      )
+      .find(k =>
+        k.ambienteId === c.ambienteId
+      );
 
-return`
+  const prestamos =
+    llave?.llavero?.prestamos || [];
 
-${c.codigo}
-${c.sede?.nombre}
-${c.ambiente?.nombre}
+  const movimientosDeContrata =
+    prestamos.filter(p =>
+      p.contrataId === c.id ||
+      p.transferencias?.some(
+        t =>
+          t.contrataOrigenId === c.id ||
+          t.contrataDestinoId === c.id
+      )
+    );
 
-`
+  const todoDevuelto =
+    movimientosDeContrata.length > 0 &&
+    movimientosDeContrata.every(
+      p => p.estado === "DEVUELTO"
+    );
 
-.toLowerCase()
+  const mostrar =
+    movimientosDeContrata.length === 0 ||
+    !todoDevuelto;
 
-.includes(
-search.toLowerCase()
-);
+  const prestamoActivo =
+    prestamos.find(
+      p => p.estado === "ACTIVO"
+    );
+
+  /*
+    QUIÉN TIENE EL LLAVERO AHORITA
+  */
+  const ultimaTransferencia =
+    prestamoActivo?.transferencias?.at(-1);
+
+  const responsableActualId =
+    ultimaTransferencia
+      ? ultimaTransferencia.contrataDestinoId
+      : prestamoActivo?.contrataId;
+
+  const esResponsableActual =
+    responsableActualId === c.id;
+
+  return {
+    ...c,
+    llavero: llave?.llavero,
+    llave,
+    prestamoActivo,
+    mostrar,
+    esResponsableActual
+  };
 
 })
 
-.map(c=>{
+    .filter(c =>
+      c.mostrar &&
+      `
+      ${c.codigo}
+      ${c.sede?.nombre}
+      ${c.ambiente?.nombre}
+      `
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    );
 
-const llave=
-
-llaveros
-
-.flatMap(
-
-l=>
-
-l.llaves?.map(
-k=>({
-
-...k,
-
-llavero:l
-
-})
-
-)
-
-||
-
-[]
-
-)
-
-.find(
-
-k=>
-
-k.ambienteId===
-
-c.ambienteId
-
-);
-
-const prestamoActivo =
-  llave?.llavero?.prestamos?.find(
-    p => p.estado === "ACTIVO"
-  );
-
-const esResponsableActual =
-  prestamoActivo?.contrataId === c.id;
-
-return{
-  ...c,
-  llavero: llave?.llavero,
-  llave,
-  prestamoActivo,
-  esResponsableActual
-};
-
-});
-
-},[
-contratas,
-llaveros,
-search
-]);
-
+}, [contratas, llaveros, search]);
 return(
 
 <div
@@ -542,43 +702,24 @@ c.aprobadoAmbientePor
 <TD>
 
 {
-
-c.llavero?.estado
-===
-"DISPONIBLE"
+c.llavero?.estado === "DISPONIBLE"
 
 ?
-
-(
 
 <Action
 text="Entregar"
 color="#16a34a"
 onClick={()=>{
-setTipoMovimiento(
-"ENTREGA"
-);
+setTipoMovimiento("ENTREGA");
 abrirModal(c);
 }}
 />
-
-)
 
 :
 
-<>
-{
-!c.esResponsableActual && (
-<Action
-text="Transferir"
-color="#f59e0b"
-onClick={()=>{
-setTipoMovimiento("TRANSFERENCIA");
-abrirModal(c);
-}}
-/>
-)
-}
+c.esResponsableActual
+
+?
 
 <Action
 text="Devolver"
@@ -588,7 +729,35 @@ setTipoMovimiento("DEVOLUCION");
 abrirModal(c);
 }}
 />
-</>
+
+:
+
+<div
+style={{
+display:"flex",
+gap:10
+}}
+>
+
+<Action
+text="Transferir"
+color="#f59e0b"
+onClick={()=>{
+setTipoMovimiento("TRANSFERENCIA");
+abrirModal(c);
+}}
+/>
+
+<Action
+text="Devolver"
+color="#dc2626"
+onClick={()=>{
+setTipoMovimiento("DEVOLUCION");
+abrirModal(c);
+}}
+/>
+
+</div>
 
 }
 
@@ -607,97 +776,342 @@ abrirModal(c);
 </div>
 
 {
+modal && (
 
-modal&&(
+<div style={overlay}>
+
+<div style={modalBox}>
+
+
+{/* HEADER */}
 
 <div
-style={overlay}
+style={{
+background:
+tipoMovimiento==="ENTREGA"
+? "linear-gradient(135deg,#16a34a,#22c55e)"
+: tipoMovimiento==="DEVOLUCION"
+? "linear-gradient(135deg,#dc2626,#ef4444)"
+: "linear-gradient(135deg,#f59e0b,#f97316)",
+
+padding:28,
+color:"#fff"
+}}
 >
 
 <div
-style={modalBox}
+style={{
+display:"flex",
+justifyContent:"space-between",
+alignItems:"center"
+}}
 >
 
-<h2>
+<div>
 
-Movimiento
+<div
+style={{
+fontSize:26,
+fontWeight:800
+}}
+>
 
-</h2>
-
-<p>
-
-🔑
 {
+tipoMovimiento==="ENTREGA"
+? "🔑 Entrega de Llavero"
+
+: tipoMovimiento==="DEVOLUCION"
+
+? "📥 Devolución"
+
+: "🔄 Transferencia"
+
+}
+
+</div>
+
+<div
+style={{
+opacity:.9,
+marginTop:8
+}}
+>
+
+Registro seguro del movimiento
+
+</div>
+
+</div>
+
+<button
+onClick={()=>{
+cerrarCamara();
+cerrarModal();
+}}
+style={{
+background:"rgba(255,255,255,.2)",
+border:"none",
+color:"#fff",
+width:42,
+height:42,
+borderRadius:999,
+cursor:"pointer"
+}}
+>
+
+✕
+
+</button>
+
+</div>
+
+</div>
+
+
+{/* BODY */}
+
+<div
+style={{
+padding:30
+}}
+>
+
+<div
+style={{
+background:"#f8fafc",
+borderRadius:20,
+padding:20,
+marginBottom:22
+}}
+>
+
+<Info
+label="Llavero"
+value={
 modal.llavero?.codigo
 }
+/>
 
-</p>
-
-<p>
-
-🏢
-{
+<Info
+label="Ambiente"
+value={
 modal.ambiente?.nombre
 }
+/>
 
-</p>
-
-<p>
-
-👤
-{
-modal.aprobadoAmbientePor
-?.nombre
+<Info
+label="Responsable"
+value={
+modal.aprobadoAmbientePor?.nombre
 }
+/>
 
-</p>
+</div>
+
 
 {
-
-tipoMovimiento
-!==
-"TRANSFERENCIA"
-
+tipoMovimiento!=="TRANSFERENCIA"
 &&
 
-<input
+<div
+style={{
+marginBottom:20
+}}
+>
 
-type="file"
+<div
+style={{
+fontWeight:700,
+marginBottom:14
+}}
+>
 
-accept="image/*"
+📷 Evidencia fotográfica
 
-capture="environment"
+</div>
 
-onChange={
-e=>
 
-tipoMovimiento
-===
-"ENTREGA"
+{
+
+cameraOpen
 
 ?
 
-setFotoEntrega(
-e.target.files?.[0]
-)
+<div
+style={{
+position:"relative"
+}}
+>
+
+<video
+ref={videoRef}
+autoPlay
+playsInline
+style={{
+
+width:"100%",
+height:340,
+
+objectFit:"cover",
+
+borderRadius:24,
+
+background:"#000"
+
+}}
+/>
+
+<canvas
+ref={canvasRef}
+style={{
+display:"none"
+}}
+/>
+
+<button
+
+onClick={tomarFoto}
+
+style={{
+
+position:"absolute",
+
+bottom:20,
+
+left:"50%",
+
+transform:
+"translateX(-50%)",
+
+width:84,
+
+height:84,
+
+borderRadius:"50%",
+
+background:"#fff",
+
+border:
+"8px solid #2563eb",
+
+cursor:"pointer"
+
+}}
+
+>
+
+📸
+
+</button>
+
+</div>
 
 :
 
-setFotoDevolucion(
-e.target.files?.[0]
-)
+<div
+style={{
+border:
+"2px dashed #cbd5e1",
+
+borderRadius:24,
+
+padding:40,
+
+textAlign:"center"
+}}
+>
+
+{
+
+fotoEntrega
+||
+fotoDevolucion
+
+?
+
+<>
+
+<div
+style={{
+fontSize:60
+}}
+>
+✅
+</div>
+
+<div
+style={{
+marginTop:10,
+fontWeight:700
+}}
+>
+
+Foto capturada
+
+</div>
+
+</>
+
+:
+
+<>
+
+<div
+style={{
+fontSize:50
+}}
+>
+📷
+</div>
+
+<button
+
+onClick={abrirCamara}
+
+style={{
+
+marginTop:16,
+
+background:
+"#2563eb",
+
+color:"#fff",
+
+padding:
+"14px 28px",
+
+border:"none",
+
+borderRadius:16,
+
+fontWeight:700,
+
+cursor:"pointer"
+
+}}
+
+>
+
+Abrir cámara
+
+</button>
+
+</>
 
 }
 
-/>
+</div>
 
 }
+
+</div>
+
+}
+
 
 <textarea
 
 name="detalle"
-
-placeholder="Observación"
 
 value={
 form.detalle
@@ -707,52 +1121,81 @@ onChange={
 handleChange
 }
 
+placeholder="Observaciones del movimiento..."
+
 style={{
+
 width:"100%",
-height:120,
-marginTop:15
+
+height:130,
+
+border:
+"1px solid #e2e8f0",
+
+borderRadius:18,
+
+padding:18,
+
+fontSize:15,
+
+resize:"none"
+
 }}
 
 />
 
+
 <div
 style={{
 display:"flex",
-gap:10,
-marginTop:20
+gap:14,
+marginTop:28
 }}
 >
 
 <button
-onClick={
-prestar
-}
-disabled={
-loading
-}
-style={save}
->
 
-{
-loading
-?
-"Guardando..."
-:
-"Confirmar"
-}
+onClick={()=>{
+cerrarCamara();
+cerrarModal();
+}}
 
-</button>
-
-<button
-onClick={
-cerrarModal
-}
 style={cancel}
+
 >
 
 Cancelar
 
 </button>
+
+
+<button
+
+onClick={prestar}
+
+disabled={loading}
+
+style={save}
+
+>
+
+{
+
+loading
+
+?
+
+"Guardando..."
+
+:
+
+"Confirmar movimiento"
+
+}
+
+</button>
+
+</div>
 
 </div>
 
@@ -761,7 +1204,6 @@ Cancelar
 </div>
 
 )
-
 }
 
 </div>
@@ -832,7 +1274,114 @@ fontSize:28
 </div>
 
 );
+const overlay={
 
+position:"fixed",
+
+inset:0,
+
+background:
+"rgba(15,23,42,.65)",
+
+backdropFilter:
+"blur(12px)",
+
+display:"grid",
+
+placeItems:"center",
+
+zIndex:999
+
+};
+
+const modalBox={
+
+width:"min(760px,95vw)",
+
+maxHeight:"92vh",
+
+overflow:"auto",
+
+background:"#fff",
+
+borderRadius:34,
+
+boxShadow:
+"0 30px 100px rgba(0,0,0,.25)"
+
+};
+
+const save={
+
+flex:1,
+
+padding:18,
+
+background:
+"linear-gradient(135deg,#2563eb,#1d4ed8)",
+
+color:"#fff",
+
+border:"none",
+
+borderRadius:18,
+
+fontWeight:800,
+
+cursor:"pointer"
+
+};
+
+const cancel={
+
+flex:1,
+
+padding:18,
+
+background:"#f1f5f9",
+
+border:"none",
+
+borderRadius:18,
+
+fontWeight:700,
+
+cursor:"pointer"
+
+};
+
+const Info=({
+label,
+value
+})=>(
+
+<div
+style={{
+marginBottom:14
+}}
+>
+
+<div
+style={{
+fontSize:12,
+color:"#64748b"
+}}
+>
+{label}
+</div>
+
+<div
+style={{
+fontWeight:700,
+fontSize:18
+}}
+>
+{value||"-"}
+</div>
+
+</div>
+
+);
 const TH=
 ({children})=>
 
@@ -904,30 +1453,3 @@ boxShadow:
 </button>
 
 );
-
-const overlay={
-position:"fixed",
-inset:0,
-background:"rgba(0,0,0,.4)"
-};
-
-const modalBox={
-width:"min(500px,95%)",
-background:"#fff",
-margin:"40px auto",
-padding:30,
-borderRadius:20
-};
-
-const save={
-flex:1,
-padding:14,
-background:"#2563eb",
-color:"#fff",
-border:"none"
-};
-
-const cancel={
-flex:1,
-padding:14
-};

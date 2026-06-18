@@ -212,6 +212,25 @@ label="REPORTES"
 
 )
 }
+{/* RECEPCION SEGURIDAD */}
+
+{
+roles.includes(
+"RECEPCION DE SEGURIDAD"
+) && (
+
+<>
+
+<MenuButton
+menu="reportes"
+icon={FileText}
+label="REPORTES"
+/>
+
+</>
+
+)
+}
 
 {/* ADMIN */}
 

@@ -6,7 +6,8 @@ listarLlavesController,
 crearLlave,
 registrarMovimientoController,
 listarLlaverosController,
-reporteLlaverosController
+reporteLlaverosController,
+detalleReporteLlaveroController
 } from "./llaves.controller";
 
 const router = Router();
@@ -31,4 +32,8 @@ router.post(
   registrarMovimientoController
 );
 router.get("/llaveros/reporte", reporteLlaverosController);
+router.get(
+"/llaveros/reporte/:id",
+detalleReporteLlaveroController
+);
 export default router;

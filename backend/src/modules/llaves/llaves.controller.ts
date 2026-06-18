@@ -4,7 +4,8 @@ import {
   crearLlaveService,
   registrarMovimientoService,
   listarLlaverosService,
-  reporteLlaverosService
+  reporteLlaverosService,
+  detalleReporteLlaveroService
 } from "./llaves.service";
 
 // LISTAR LLAVES
@@ -121,4 +122,29 @@ export const reporteLlaverosController = async (
       message: error.message
     });
   }
+};
+export const detalleReporteLlaveroController =
+async (
+req: Request,
+res: Response
+) => {
+
+try {
+
+const data =
+await detalleReporteLlaveroService(
+Number(req.params.id)
+);
+
+res.json(data);
+
+}
+catch(error:any){
+
+res.status(500).json({
+message:error.message
+});
+
+}
+
 };

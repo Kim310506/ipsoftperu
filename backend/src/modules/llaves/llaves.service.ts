@@ -335,27 +335,140 @@ export const reporteLlaverosService = async (
   fechaInicio?: string,
   fechaFin?: string
 ) => {
-  const where: any = {};
 
-  if (fechaInicio || fechaFin) {
-    where.createdAt = {};
+const where:any = {};
 
-    if (fechaInicio) {
-      where.createdAt.gte = new Date(fechaInicio);
-    }
+if (fechaInicio || fechaFin) {
 
-    if (fechaFin) {
-      where.createdAt.lte = new Date(fechaFin);
-    }
-  }
+where.fechaEntrega = {};
 
-  return prisma.prestamoLlavero.findMany({
-    where,
-    include: {
-      llavero: true
-    },
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
+if (fechaInicio) {
+
+where.fechaEntrega.gte =
+new Date(
+`${fechaInicio}T00:00:00`
+);
+
+}
+
+if (fechaFin) {
+
+where.fechaEntrega.lte =
+new Date(
+`${fechaFin}T23:59:59`
+);
+
+}
+
+}
+
+return prisma.prestamoLlavero.findMany({
+
+where,
+
+include:{
+
+llavero:true,
+
+contrata:true,
+
+responsableEntrega:{
+select:{
+id:true,
+nombre:true
+}
+},
+
+responsableDevolucion:{
+select:{
+id:true,
+nombre:true
+}
+},
+
+transferencias:{
+
+include:{
+
+contrataOrigen:{
+select:{
+id:true,
+codigo:true
+}
+},
+
+contrataDestino:{
+select:{
+id:true,
+codigo:true
+}
+},
+
+responsable:{
+select:{
+id:true,
+nombre:true
+}
+}
+
+},
+
+orderBy:{
+fecha:"asc"
+}
+
+}
+
+},
+
+orderBy:{
+fechaEntrega:"desc"
+}
+
+});
+
+};
+export const detalleReporteLlaveroService =
+async (
+id:number
+)=>{
+
+return prisma.prestamoLlavero.findUnique({
+
+where:{
+id:Number(id)
+},
+
+include:{
+
+llavero:true,
+
+contrata:true,
+
+responsableEntrega:true,
+
+responsableDevolucion:true,
+
+transferencias:{
+
+orderBy:{
+fecha:"asc"
+},
+
+include:{
+
+contrataOrigen:true,
+
+contrataDestino:true,
+
+responsable:true
+
+}
+
+}
+
+}
+
+});
+
 };
