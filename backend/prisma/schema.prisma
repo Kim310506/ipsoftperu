@@ -36,9 +36,6 @@ model User {
   contratasSeguridad ContrataProveedor[] @relation("AprobacionSeguridadContrata")
   contratasAmbiente  ContrataProveedor[] @relation("AprobacionAmbienteContrata")
   llaveros           Llavero[]
-prestamosEntrega PrestamoLlavero[] @relation("ResponsableEntrega")
-prestamosDevolucion PrestamoLlavero[]@relation("ResponsableDevolucion")
-transferenciasResponsable  TransferenciaLlavero[]@relation("ResponsableTransferenciaLlavero")
 }
 
 model UnidadNegocio {
@@ -607,6 +604,9 @@ model TrabajadorContrata {
   estadoQr        String?
   contrataId      Int
   contrata        ContrataProveedor @relation(fields: [contrataId], references: [id])
+  prestamosEntrega PrestamoLlavero[] @relation("TrabajadorEntrega")
+  prestamosDevolucion PrestamoLlavero[] @relation("TrabajadorDevolucion")
+  transferenciasResponsable TransferenciaLlavero[] @relation("TrabajadorTransferencia")
   createdAt       DateTime          @default(now())
 }
 
@@ -676,25 +676,16 @@ model PrestamoLlavero {
   tipoMovimiento String
 
   responsableEntregaId Int?
-  responsableEntrega User? @relation("ResponsableEntrega", fields: [responsableEntregaId], references: [id])
-
+  responsableEntrega TrabajadorContrata? @relation( "TrabajadorEntrega",fields: [responsableEntregaId],references: [id])
   responsableDevolucionId Int?
-  responsableDevolucion User? @relation("ResponsableDevolucion", fields: [responsableDevolucionId], references: [id])
-
+  responsableDevolucion TrabajadorContrata? @relation("TrabajadorDevolucion",fields: [responsableDevolucionId],references: [id])
   fechaEntrega DateTime @default(now())
-
   fechaDevolucion DateTime?
-
   estado String
-
   detalle String?
-
   fotoEntrega String?
-
   fotoDevolucion String?
-
   createdAt DateTime @default(now())
-
   transferencias TransferenciaLlavero[]
 }
 model TransferenciaLlavero {
@@ -712,7 +703,7 @@ model TransferenciaLlavero {
 
   responsableId Int?
 
-  responsable User? @relation(name: "ResponsableTransferenciaLlavero",fields: [responsableId],references: [id])
+  responsable TrabajadorContrata? @relation("TrabajadorTransferencia",fields: [responsableId],references: [id])
 
   fecha DateTime @default(now())
 

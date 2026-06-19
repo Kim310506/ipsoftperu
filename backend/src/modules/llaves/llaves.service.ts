@@ -375,14 +375,20 @@ contrata:true,
 responsableEntrega:{
 select:{
 id:true,
-nombre:true
+dni:true,
+nombres:true,
+apellidoPaterno:true,
+apellidoMaterno:true
 }
 },
 
 responsableDevolucion:{
 select:{
 id:true,
-nombre:true
+dni:true,
+nombres:true,
+apellidoPaterno:true,
+apellidoMaterno:true
 }
 },
 
@@ -407,7 +413,10 @@ codigo:true
 responsable:{
 select:{
 id:true,
-nombre:true
+dni:true,
+nombres:true,
+apellidoPaterno:true,
+apellidoMaterno:true
 }
 }
 

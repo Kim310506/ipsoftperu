@@ -457,7 +457,7 @@ hover:bg-gray-700
 
 {
 x.responsableEntrega
-?.nombre
+?.nombres
 ||
 
 "—"
@@ -497,7 +497,7 @@ x.responsableDevolucion
 
 {
 x.responsableDevolucion
-?.nombre
+?.nombres
 }
 
 </div>
@@ -682,25 +682,6 @@ Llavero
 
 <div>
 
-<div className="text-sm text-gray-500">
-
-Contrata
-
-</div>
-
-<div className="font-bold">
-
-{
-detalle.contrata
-?.empresaContratista
-||
-
-"-"
-
-}
-
-</div>
-
 </div>
 
 
@@ -712,7 +693,7 @@ Estado
 
 </div>
 
-<div>
+<div className="mt-2">
 
 <span className="
 bg-blue-100
@@ -772,7 +753,7 @@ Responsable
 
 {
 detalle.responsableEntrega
-?.nombre
+?.nombres
 ||
 
 "No registrado"
@@ -986,7 +967,7 @@ t.contrataDestino
 
 {
 t.responsable
-?.nombre
+?.nombres
 ||
 
 "-"
@@ -1078,7 +1059,7 @@ Responsable
 {
 detalle
 .responsableDevolucion
-?.nombre
+?.nombres
 ||
 
 "No registrado"

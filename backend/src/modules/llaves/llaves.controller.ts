@@ -48,7 +48,7 @@ export const registrarMovimientoController = async (
   try {
 
     const files = (req as any).files;
-
+console.log("FILES:", files);
     const payload: any = {
       llaveroId: Number(req.body.llaveroId),
       contrataId: Number(req.body.contrataId),
@@ -86,7 +86,7 @@ export const registrarMovimientoController = async (
       payload.fotoDevolucion =
         files.fotoDevolucion[0].filename;
     }
-
+console.log("PAYLOAD:", payload);
     const resultado =
       await registrarMovimientoService(payload);
 
@@ -109,18 +109,33 @@ export const reporteLlaverosController = async (
   res: Response
 ) => {
   try {
+
     const { fechaInicio, fechaFin } = req.query;
 
-    const data = await reporteLlaverosService(
-      fechaInicio as string,
-      fechaFin as string
-    );
+    console.log("FECHAS:", {
+      fechaInicio,
+      fechaFin
+    });
 
-    res.json(data);
+    const data =
+      await reporteLlaverosService(
+        fechaInicio as string,
+        fechaFin as string
+      );
+
+    console.log("DATA:", data);
+
+    return res.json(data);
+
   } catch (error: any) {
-    res.status(500).json({
+
+    console.log("ERROR REPORTE:");
+    console.log(error);
+
+    return res.status(500).json({
       message: error.message
     });
+
   }
 };
 export const detalleReporteLlaveroController =

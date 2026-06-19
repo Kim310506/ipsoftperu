@@ -21,9 +21,9 @@ useState(null);
 const [fotoDevolucion,setFotoDevolucion]=
 useState(null);
 const [form,setForm]=useState({
-detalle:""
+  detalle:"",
+  trabajadorId:""
 });
-
 useEffect(()=>{
 cargar();
 },[]);
@@ -77,7 +77,8 @@ const abrirModal=
 setModal(data);
 
 setForm({
-detalle:""
+detalle:"",
+trabajadorId:""
 });
 
 setFotoEntrega(null);
@@ -124,7 +125,10 @@ const prestar = async () => {
   try {
 
     setLoading(true);
-
+    if (!form.trabajadorId) {
+  alert("Seleccione un responsable");
+  return;
+}
     const fd = new FormData();
 
     if (!modal?.llavero?.id) {
@@ -144,30 +148,24 @@ const prestar = async () => {
       String(modal.id)
     );
 if (tipoMovimiento === "ENTREGA") {
-
   fd.append(
     "responsableEntregaId",
-    String(modal.aprobadoAmbientePorId)
+    String(form.trabajadorId)
   );
-
 }
 
 if (tipoMovimiento === "DEVOLUCION") {
-
   fd.append(
     "responsableDevolucionId",
-    String(modal.aprobadoAmbientePorId)
+    String(form.trabajadorId)
   );
-
 }
 
 if (tipoMovimiento === "TRANSFERENCIA") {
-
   fd.append(
     "responsableTransferenciaId",
-    String(modal.aprobadoAmbientePorId)
+    String(form.trabajadorId)
   );
-
 }
     fd.append(
       "tipoMovimiento",
@@ -635,7 +633,7 @@ background:"#f8fafc"
 <TH>Sede</TH>
 <TH>Ambiente</TH>
 <TH>Llavero</TH>
-<TH>Responsable</TH>
+<TH>Motivo</TH>
 <TH>Acción</TH>
 
 </tr>
@@ -690,11 +688,8 @@ c.llavero?.codigo
 
 <TD>
 
-👤
-
 {
-c.aprobadoAmbientePor
-?.nombre
+c.motivo
 }
 
 </TD>
@@ -899,12 +894,44 @@ modal.ambiente?.nombre
 }
 />
 
-<Info
-label="Responsable"
-value={
-modal.aprobadoAmbientePor?.nombre
-}
-/>
+<div style={{ marginBottom:20 }}>
+
+  <div
+    style={{
+      fontWeight:700,
+      marginBottom:10
+    }}
+  >
+    👤 Responsable
+  </div>
+
+  <select
+    name="trabajadorId"
+    value={form.trabajadorId}
+    onChange={handleChange}
+    style={{
+      width:"100%",
+      padding:16,
+      borderRadius:16,
+      border:"1px solid #e2e8f0"
+    }}
+  >
+    <option value="">
+      Seleccione trabajador
+    </option>
+
+    {modal.trabajadores?.map(t=>(
+      <option
+        key={t.id}
+        value={t.id}
+      >
+        {t.nombres} {t.apellidoPaterno} {t.apellidoMaterno}
+      </option>
+    ))}
+
+  </select>
+
+</div>
 
 </div>
 
@@ -1107,7 +1134,6 @@ Abrir cámara
 </div>
 
 }
-
 
 <textarea
 
