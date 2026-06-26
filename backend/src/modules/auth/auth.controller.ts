@@ -1,16 +1,10 @@
 import { Request, Response } from "express";
-
 import { prisma } from "../../config/prisma";
-
-/* ========================= */
-/* LOGIN */
-/* ========================= */
 
 export const login = async (
   req: Request,
   res: Response
 ) => {
-
   try {
 
     const {
@@ -18,80 +12,74 @@ export const login = async (
       password,
       modulo
     } = req.body;
-console.log("BODY:", req.body);
 
-    const user = await prisma.user.findFirst({
+    console.log("BODY:", req.body);
 
+    const moduloSolicitado = (modulo || "")
+      .trim()
+      .toUpperCase();
+
+    // Buscar todos los usuarios con ese correo y contraseña
+    const users = await prisma.user.findMany({
       where: {
         correo,
         password
       },
-       include: {
-    sede: true
-  }
-
+      include: {
+        sede: true
+      }
     });
 
-    /* USUARIO NO EXISTE */
-    if (!user) {
-
+    // No existe ningún usuario con ese correo y contraseña
+    if (users.length === 0) {
       return res.status(401).json({
-
         message: "Credenciales incorrectas"
-
       });
-
     }
-/* VALIDAR MODULOS */
 
-const modulosUsuario =
-  (user.modulo || "")
-    .split(",")
-    .map(m => m.trim().toUpperCase());
-    const rolesUsuario =
-      (user.rol || "")
+    // Buscar el usuario que tenga acceso al módulo solicitado
+    const user = users.find(u => {
+      const modulos = (u.modulo || "")
         .split(",")
-        .map(r => r.trim().toUpperCase());
-    const hasRole = (r: string) =>
-      rolesUsuario.includes(r);
-const moduloSolicitado =
-  (modulo || "")
-    .trim()
-    .toUpperCase();
+        .map(m => m.trim().toUpperCase());
 
-if (
-  !modulosUsuario.includes(
-    moduloSolicitado
-  )
-) {
+      return modulos.includes(moduloSolicitado);
+    });
 
-  return res.status(403).json({
-    message:
-      "No tienes acceso a este módulo"
-  });
+    // Existe el correo y contraseña, pero no tiene acceso al módulo
+    if (!user) {
+      return res.status(403).json({
+        message: "No tienes acceso a este módulo"
+      });
+    }
 
-}
+    /* VALIDAR ROLES */
+    const rolesUsuario = (user.rol || "")
+      .split(",")
+      .map(r => r.trim().toUpperCase());
 
-/* SOLO PARA ADMIN */
-if (moduloSolicitado === "ADMIN" && !hasRole("ADMIN")) {
-  return res.status(403).json({
-    message:
-      "No tienes permisos de administrador"
-  });
+    const hasRole = (rol: string) =>
+      rolesUsuario.includes(rol.toUpperCase());
 
-}
-    res.json(user);
+    /* SOLO PARA ADMIN */
+    if (
+      moduloSolicitado === "ADMIN" &&
+      !hasRole("ADMIN")
+    ) {
+      return res.status(403).json({
+        message: "No tienes permisos de administrador"
+      });
+    }
+
+    return res.json(user);
 
   } catch (error) {
 
-    console.log(error);
+    console.error(error);
 
-    res.status(500).json({
-
+    return res.status(500).json({
       message: "Error en login"
-
     });
 
   }
-
 };
