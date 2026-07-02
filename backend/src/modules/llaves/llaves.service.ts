@@ -1,4 +1,33 @@
 import { prisma } from "../../config/prisma";
+export const listarContratasService = async () => {
+
+  const contratas = await prisma.contrataProveedor.findMany({
+  include: {
+    sede: true,
+    ambiente: true,
+    trabajadores: true,
+  }
+});
+  const contratasInhouse = await prisma.contrataProveedorInhouse.findMany({
+  include: {
+    sede: true,
+    ambiente: true,
+    trabajadores: true,
+  }
+});
+  const data = [
+    ...contratas.map(c => ({
+      ...c,
+      tipo: "CONTRATA"
+    })),
+    ...contratasInhouse.map(c => ({
+      ...c,
+      tipo: "INHOUSE"
+    }))
+  ];
+
+  return data;
+};
 export const listarLlavesService = async () => {
   return prisma.llave.findMany({
     include: {
@@ -23,31 +52,72 @@ export const listarLlavesService = async () => {
   });
 };
 export const listarLlaverosService = async () => {
-  return prisma.llavero.findMany({
+
+  const llaveros = await prisma.llavero.findMany({
     include: {
       llaves: true,
-
       prestamos: {
         include: {
-          contrata: true,
-          responsableEntrega: true,
-          responsableDevolucion: true,
-          transferencias: {
-            include: {
-              contrataOrigen: true,
-              contrataDestino: true,
-              responsable: true
-            }
-          }
+          transferencias: true
         }
       },
-
       createdBy: true
     },
     orderBy: {
       createdAt: "desc"
     }
   });
+
+  const contratas = await prisma.contrataProveedor.findMany();
+  const contratasInhouse = await prisma.contrataProveedorInhouse.findMany();
+
+  const trabajadores = await prisma.trabajadorContrata.findMany();
+  const trabajadoresInhouse = await prisma.trabajadorContrataInhouse.findMany();
+
+  for (const llavero of llaveros) {
+
+    for (const prestamo of llavero.prestamos as any[]) {
+
+      // Empresa
+      prestamo.contrata =
+        prestamo.tipoContrata === "CONTRATA"
+          ? contratas.find(c => c.id === prestamo.contrataId) ?? null
+          : contratasInhouse.find(c => c.id === prestamo.contrataId) ?? null;
+
+      // Responsable entrega
+      prestamo.responsableEntrega =
+        prestamo.tipoResponsableEntrega === "CONTRATA"
+          ? trabajadores.find(t => t.id === prestamo.responsableEntregaId) ?? null
+          : trabajadoresInhouse.find(t => t.id === prestamo.responsableEntregaId) ?? null;
+
+      // Responsable devolución
+      prestamo.responsableDevolucion =
+        prestamo.tipoResponsableDevolucion === "CONTRATA"
+          ? trabajadores.find(t => t.id === prestamo.responsableDevolucionId) ?? null
+          : trabajadoresInhouse.find(t => t.id === prestamo.responsableDevolucionId) ?? null;
+
+      // Transferencias
+      for (const transferencia of prestamo.transferencias as any[]) {
+
+        transferencia.contrataOrigen =
+          transferencia.tipoOrigen === "CONTRATA"
+            ? contratas.find(c => c.id === transferencia.contrataOrigenId) ?? null
+            : contratasInhouse.find(c => c.id === transferencia.contrataOrigenId) ?? null;
+
+        transferencia.contrataDestino =
+          transferencia.tipoDestino === "CONTRATA"
+            ? contratas.find(c => c.id === transferencia.contrataDestinoId) ?? null
+            : contratasInhouse.find(c => c.id === transferencia.contrataDestinoId) ?? null;
+
+        transferencia.responsable =
+          transferencia.tipoResponsable === "CONTRATA"
+            ? trabajadores.find(t => t.id === transferencia.responsableId) ?? null
+            : trabajadoresInhouse.find(t => t.id === transferencia.responsableId) ?? null;
+      }
+    }
+  }
+
+  return llaveros;
 };
 export const crearLlaveService =
 async (
@@ -173,35 +243,37 @@ export const registrarMovimientoService = async (
 data: {
   llaveroId: number;
   contrataId?: number;
+  tipoContrata: string;
 
   tipoMovimiento: string;
   detalle?: string;
 
   responsableEntregaId?: number;
+  tipoResponsableEntrega?: string;
+
   responsableDevolucionId?: number;
+  tipoResponsableDevolucion?: string;
+
   responsableTransferenciaId?: number;
+  tipoResponsableTransferencia?: string;
 
   fotoEntrega?: string;
   fotoDevolucion?: string;
 
   contrataDestinoId?: number;
+  tipoContrataDestino?: string;
 }
 ) => {
 
   const llavero = await prisma.llavero.findUnique({
-    where: {
-      id: data.llaveroId
-    }
+    where: { id: data.llaveroId }
   });
 
-  if (!llavero) {
-    throw new Error("Llavero no encontrado");
-  }
+  if (!llavero) throw new Error("Llavero no encontrado");
 
-  // ========================
+  // =========================
   // ENTREGA
-  // ========================
-
+  // =========================
   if (data.tipoMovimiento === "ENTREGA") {
 
     if (llavero.estado === "PRESTADO") {
@@ -210,123 +282,120 @@ data: {
 
     return prisma.$transaction(async (tx) => {
 
-      const prestamo =
-        await tx.prestamoLlavero.create({
-          data: {
-            llaveroId: data.llaveroId,
-            contrataId: data.contrataId,
-            tipoMovimiento: "ENTREGA",
-            estado: "ACTIVO",
-            detalle: data.detalle,
-            responsableEntregaId: data.responsableEntregaId,
-            fotoEntrega: data.fotoEntrega
-          }
-        });
+      const prestamo = await tx.prestamoLlavero.create({
+        data: {
+          llaveroId: data.llaveroId,
+
+          contrataId: data.contrataId!,
+          tipoContrata: data.tipoContrata,
+
+          tipoMovimiento: "ENTREGA",
+          estado: "ACTIVO",
+          detalle: data.detalle ?? null,
+
+          responsableEntregaId: data.responsableEntregaId ?? null,
+          tipoResponsableEntrega: data.tipoResponsableEntrega ?? "",
+          responsableDevolucionId: data.responsableDevolucionId ?? null,
+          tipoResponsableDevolucion: data.tipoResponsableDevolucion ?? "",
+          fotoEntrega: data.fotoEntrega ?? null
+        }
+      });
 
       await tx.llavero.update({
-        where: {
-          id: data.llaveroId
-        },
-        data: {
-          estado: "PRESTADO"
-        }
+        where: { id: data.llaveroId },
+        data: { estado: "PRESTADO" }
       });
 
       return prestamo;
     });
   }
 
-  // ========================
-  // DEVOLUCION
-  // ========================
-
+  // =========================
+  // DEVOLUCIÓN
+  // =========================
   if (data.tipoMovimiento === "DEVOLUCION") {
 
-    const prestamo =
-      await prisma.prestamoLlavero.findFirst({
-        where: {
-          llaveroId: data.llaveroId,
-          estado: "ACTIVO"
-        }
-      });
-
-    if (!prestamo) {
-      throw new Error("No existe préstamo activo");
-    }
-
-    return prisma.$transaction(async (tx) => {
-
-      const actualizado =
-        await tx.prestamoLlavero.update({
-          where: {
-            id: prestamo.id
-          },
-          data: {
-            estado: "DEVUELTO",
-            fechaDevolucion: new Date(),
-            responsableDevolucionId:data.responsableDevolucionId,
-            fotoDevolucion: data.fotoDevolucion,
-            detalle: data.detalle
-          }
-        });
-
-      await tx.llavero.update({
-        where: {
-          id: data.llaveroId
-        },
-        data: {
-          estado: "DISPONIBLE"
-        }
-      });
-
-      return actualizado;
-    });
-  }
-  // ========================
-  // TRANSFERENCIA
-  // ========================
-if (data.tipoMovimiento === "TRANSFERENCIA") {
-
-  const prestamo =
-    await prisma.prestamoLlavero.findFirst({
+    const prestamo = await prisma.prestamoLlavero.findFirst({
       where: {
         llaveroId: data.llaveroId,
         estado: "ACTIVO"
       }
     });
 
-  if (!prestamo) {
-    throw new Error("No existe préstamo activo");
+    if (!prestamo) throw new Error("No existe préstamo activo");
+
+    return prisma.$transaction(async (tx) => {
+
+      const actualizado = await tx.prestamoLlavero.update({
+        where: { id: prestamo.id },
+        data: {
+          estado: "DEVUELTO",
+          fechaDevolucion: new Date(),
+
+          responsableDevolucionId: data.responsableDevolucionId ?? null,
+          tipoResponsableDevolucion: data.tipoResponsableDevolucion ?? "",
+
+          fotoDevolucion: data.fotoDevolucion ?? null,
+          detalle: data.detalle ?? null
+        }
+      });
+
+      await tx.llavero.update({
+        where: { id: data.llaveroId },
+        data: { estado: "DISPONIBLE" }
+      });
+
+      return actualizado;
+    });
   }
 
-  if (!data.contrataDestinoId) {
-    throw new Error("Debe indicar contrata destino");
-  }
+  // =========================
+  // TRANSFERENCIA
+  // =========================
+  if (data.tipoMovimiento === "TRANSFERENCIA") {
 
-  return prisma.$transaction(async (tx) => {
+    const prestamo = await prisma.prestamoLlavero.findFirst({
+      where: {
+        llaveroId: data.llaveroId,
+        estado: "ACTIVO"
+      }
+    });
 
-   const transferencia =
-  await tx.transferenciaLlavero.create({
-    data: {
-      prestamoId: prestamo.id,
-      contrataOrigenId: prestamo.contrataId!,
-      contrataDestinoId: data.contrataDestinoId!,
-      responsableId:data.responsableTransferenciaId,
-      detalle: data.detalle
+    if (!prestamo) throw new Error("No existe préstamo activo");
+
+    if (!data.contrataDestinoId) {
+      throw new Error("Debe indicar contrata destino");
     }
-  });
 
-await tx.prestamoLlavero.update({
-  where: {
-    id: prestamo.id
-  },
-  data: {
-    contrataId: data.contrataDestinoId!
-  }
-});
+    return prisma.$transaction(async (tx) => {
 
-    return transferencia;
-  });
+      const transferencia = await tx.transferenciaLlavero.create({
+        data: {
+          prestamoId: prestamo.id,
+
+          contrataOrigenId: prestamo.contrataId!,
+          tipoOrigen: prestamo.tipoContrata,
+
+          contrataDestinoId: data.contrataDestinoId!,
+          tipoDestino: data.tipoContrataDestino!,   // ✅ CLAVE
+
+          responsableId: data.responsableTransferenciaId ?? null,
+          tipoResponsable: data.tipoResponsableTransferencia ?? "",
+
+          detalle: data.detalle ?? null
+        }
+      });
+
+      await tx.prestamoLlavero.update({
+        where: { id: prestamo.id },
+        data: {
+          contrataId: data.contrataDestinoId!,
+          tipoContrata: data.tipoContrataDestino!   // ✅ CLAVE REAL
+        }
+      });
+
+      return transferencia;
+    });
   }
 
   throw new Error("Movimiento inválido");
@@ -336,148 +405,149 @@ export const reporteLlaverosService = async (
   fechaFin?: string
 ) => {
 
-const where:any = {};
+  const where: any = {};
 
-if (fechaInicio || fechaFin) {
+  if (fechaInicio || fechaFin) {
+    where.fechaEntrega = {};
 
-where.fechaEntrega = {};
+    if (fechaInicio) {
+      where.fechaEntrega.gte = new Date(`${fechaInicio}T00:00:00`);
+    }
 
-if (fechaInicio) {
+    if (fechaFin) {
+      where.fechaEntrega.lte = new Date(`${fechaFin}T23:59:59`);
+    }
+  }
 
-where.fechaEntrega.gte =
-new Date(
-`${fechaInicio}T00:00:00`
-);
+  const prestamos = await prisma.prestamoLlavero.findMany({
+    where,
+    include: {
+      llavero: true,
+      transferencias: true
+    },
+    orderBy: {
+      fechaEntrega: "desc"
+    }
+  });
 
-}
+  const contratas = await prisma.contrataProveedor.findMany();
+  const contratasInhouse = await prisma.contrataProveedorInhouse.findMany();
 
-if (fechaFin) {
+  const trabajadores = await prisma.trabajadorContrata.findMany();
+  const trabajadoresInhouse = await prisma.trabajadorContrataInhouse.findMany();
 
-where.fechaEntrega.lte =
-new Date(
-`${fechaFin}T23:59:59`
-);
+  for (const prestamo of prestamos as any[]) {
 
-}
+    // ================= CONTRATA =================
+    prestamo.contrata =
+      prestamo.tipoContrata === "CONTRATA"
+        ? contratas.find(c => c.id === prestamo.contrataId) ?? null
+        : contratasInhouse.find(c => c.id === prestamo.contrataId) ?? null;
 
-}
+    // ================= ENTREGA =================
+    prestamo.responsableEntrega =
+      prestamo.tipoResponsableEntrega === "CONTRATA"
+        ? trabajadores.find(t => t.id === prestamo.responsableEntregaId) ?? null
+        : trabajadoresInhouse.find(t => t.id === prestamo.responsableEntregaId) ?? null;
 
-return prisma.prestamoLlavero.findMany({
+    // ================= DEVOLUCIÓN =================
+    prestamo.responsableDevolucion =
+      prestamo.tipoResponsableDevolucion === "CONTRATA"
+        ? trabajadores.find(t => t.id === prestamo.responsableDevolucionId) ?? null
+        : trabajadoresInhouse.find(t => t.id === prestamo.responsableDevolucionId) ?? null;
 
-where,
+    // ================= TRANSFERENCIAS =================
+    for (const t of prestamo.transferencias as any[]) {
 
-include:{
+      t.contrataOrigen =
+        t.tipoOrigen === "CONTRATA"
+          ? contratas.find(c => c.id === t.contrataOrigenId) ?? null
+          : contratasInhouse.find(c => c.id === t.contrataOrigenId) ?? null;
 
-llavero:true,
+      t.contrataDestino =
+        t.tipoDestino === "CONTRATA"
+          ? contratas.find(c => c.id === t.contrataDestinoId) ?? null
+          : contratasInhouse.find(c => c.id === t.contrataDestinoId) ?? null;
 
-contrata:true,
+      t.responsable =
+        t.tipoResponsable === "CONTRATA"
+          ? trabajadores.find(r => r.id === t.responsableId) ?? null
+          : trabajadoresInhouse.find(r => r.id === t.responsableId) ?? null;
+    }
+  }
 
-responsableEntrega:{
-select:{
-id:true,
-dni:true,
-nombres:true,
-apellidoPaterno:true,
-apellidoMaterno:true
-}
-},
-
-responsableDevolucion:{
-select:{
-id:true,
-dni:true,
-nombres:true,
-apellidoPaterno:true,
-apellidoMaterno:true
-}
-},
-
-transferencias:{
-
-include:{
-
-contrataOrigen:{
-select:{
-id:true,
-codigo:true
-}
-},
-
-contrataDestino:{
-select:{
-id:true,
-codigo:true
-}
-},
-
-responsable:{
-select:{
-id:true,
-dni:true,
-nombres:true,
-apellidoPaterno:true,
-apellidoMaterno:true
-}
-}
-
-},
-
-orderBy:{
-fecha:"asc"
-}
-
-}
-
-},
-
-orderBy:{
-fechaEntrega:"desc"
-}
-
-});
-
+  return prestamos;
 };
-export const detalleReporteLlaveroService =
-async (
-id:number
-)=>{
+export const detalleReporteLlaveroService = async (id: number) => {
 
-return prisma.prestamoLlavero.findUnique({
+  const prestamo = await prisma.prestamoLlavero.findUnique({
+    where: {
+      id: Number(id),
+    },
+    include: {
+      llavero: true,
+      transferencias: {
+        orderBy: {
+          fecha: "asc",
+        },
+      },
+    },
+  });
 
-where:{
-id:Number(id)
-},
+  if (!prestamo) return null;
 
-include:{
+  // =========================
+  // DATA AUXILIAR
+  // =========================
+  const contratas = await prisma.contrataProveedor.findMany();
+  const contratasInhouse = await prisma.contrataProveedorInhouse.findMany();
 
-llavero:true,
+  const trabajadores = await prisma.trabajadorContrata.findMany();
+  const trabajadoresInhouse = await prisma.trabajadorContrataInhouse.findMany();
 
-contrata:true,
+  // =========================
+  // RESOLVER TRANSFERENCIAS
+  // =========================
+  for (const t of prestamo.transferencias as any[]) {
 
-responsableEntrega:true,
+    // 🔹 ORIGEN (CONTRATA / INHOUSE)
+    t.contrataOrigen =
+      t.tipoOrigen === "CONTRATA"
+        ? contratas.find(c => c.id === t.contrataOrigenId) ?? null
+        : contratasInhouse.find(c => c.id === t.contrataOrigenId) ?? null;
 
-responsableDevolucion:true,
+    // 🔹 DESTINO (CONTRATA / INHOUSE)
+    t.contrataDestino =
+      t.tipoDestino === "CONTRATA"
+        ? contratas.find(c => c.id === t.contrataDestinoId) ?? null
+        : contratasInhouse.find(c => c.id === t.contrataDestinoId) ?? null;
 
-transferencias:{
+    // 🔹 RESPONSABLE (CONTRATA / INHOUSE)
+    t.responsable =
+      t.tipoResponsable === "CONTRATA"
+        ? trabajadores.find(r => r.id === t.responsableId) ?? null
+        : trabajadoresInhouse.find(r => r.id === t.responsableId) ?? null;
+  }
 
-orderBy:{
-fecha:"asc"
-},
+  // =========================
+  // RESOLVER ENTREGA / DEVOLUCIÓN
+  // (ESTO TE FALTABA)
+  // =========================
 
-include:{
+  (prestamo as any).contrata =
+    prestamo.tipoContrata === "CONTRATA"
+      ? contratas.find(c => c.id === prestamo.contrataId) ?? null
+      : contratasInhouse.find(c => c.id === prestamo.contrataId) ?? null;
 
-contrataOrigen:true,
+  (prestamo as any).responsableEntrega =
+    prestamo.tipoResponsableEntrega === "CONTRATA"
+      ? trabajadores.find(t => t.id === prestamo.responsableEntregaId) ?? null
+      : trabajadoresInhouse.find(t => t.id === prestamo.responsableEntregaId) ?? null;
 
-contrataDestino:true,
+  (prestamo as any).responsableDevolucion =
+    prestamo.tipoResponsableDevolucion === "CONTRATA"
+      ? trabajadores.find(t => t.id === prestamo.responsableDevolucionId) ?? null
+      : trabajadoresInhouse.find(t => t.id === prestamo.responsableDevolucionId) ?? null;
 
-responsable:true
-
-}
-
-}
-
-}
-
-});
-
+  return prestamo;
 };

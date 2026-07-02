@@ -17,6 +17,11 @@ import ProveedoresLogin from "./pages/modulos/proveedores/Login";
 import ProveedoresDashboard from "./pages/modulos/proveedores/Dashboard";
 import RegistroVisitantes from "./pages/Modulos/proveedores/components/ProgramarProveedores/RegistroVisitantes";
 
+/* PROVEEDORES INHOUSE*/
+import ProveedoresInhouseLogin from "./pages/modulos/proveeinhouse/Login";
+import ProveedoresInhouseDashboard from "./pages/modulos/proveeinhouse/Dashboard";
+import RegistroVisitantesInhouse from "./pages/Modulos/proveeinhouse/components/ProgramarProveedores/RegistroVisitantes";
+
 /* INCIDENTES */
 import IncidentesLogin from "./pages/modulos/incidentes/Login";
 import IncidentesDashboard from "./pages/modulos/incidentes/Dashboard";
@@ -84,6 +89,13 @@ export default function App() {
        <Route
     path="/registro-visita/:token"
     element={<RegistroVisitantes />}
+  />
+     {/* PROVEEDORES INHOUSE */}
+      <Route path="/proveedoresinhouse/login" element={<ProveedoresInhouseLogin />} />
+      <Route path="/proveedoresinhouse/dashboard" element={<ProveedoresInhouseDashboard />} />
+       <Route
+    path="/registro-visita-inhouse/:token"
+    element={<RegistroVisitantesInhouse />}
   />
         {/* INVENTARIO (¡AQUÍ ESTÁN TUS RUTAS NUEVAS!) */}
       <Route path="/inventario/login" element={<InventarioLogin />} />

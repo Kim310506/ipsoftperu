@@ -42,7 +42,7 @@ fetch(
 ),
 
 fetch(
-"http://localhost:3000/contratas"
+"http://localhost:3000/llaves/contratas"
 )
 
 ]);
@@ -147,11 +147,19 @@ const prestar = async () => {
       "contrataId",
       String(modal.id)
     );
+    const tipoContrataFinal =
+  modal?.tipoContrata ||
+  modal?.tipo ||
+  modal?.contrata?.tipo ||
+  "SIN_TIPO";
+
+fd.append("tipoContrata", tipoContrataFinal);
 if (tipoMovimiento === "ENTREGA") {
   fd.append(
     "responsableEntregaId",
     String(form.trabajadorId)
   );
+  fd.append("tipoResponsableEntrega", modal.tipo); 
 }
 
 if (tipoMovimiento === "DEVOLUCION") {
@@ -159,6 +167,7 @@ if (tipoMovimiento === "DEVOLUCION") {
     "responsableDevolucionId",
     String(form.trabajadorId)
   );
+  fd.append("tipoResponsableDevolucion", modal.tipo);
 }
 
 if (tipoMovimiento === "TRANSFERENCIA") {
@@ -166,6 +175,7 @@ if (tipoMovimiento === "TRANSFERENCIA") {
     "responsableTransferenciaId",
     String(form.trabajadorId)
   );
+  fd.append("tipoResponsableTransferencia", modal.tipo);
 }
     fd.append(
       "tipoMovimiento",
@@ -182,7 +192,7 @@ if (tipoMovimiento === "TRANSFERENCIA") {
     "contrataDestinoId",
     String(modal.id)
   );
-
+fd.append("tipoContrataDestino", modal.tipo);
 }
 if(
 tipoMovimiento==="ENTREGA"
@@ -209,7 +219,8 @@ fotoDevolucion
 );
 
 }
-
+console.log("TIPO CONTRATA FINAL:", tipoContrataFinal);
+console.log("MODAL COMPLETO:", modal);
 const res=
 await fetch(
 "http://localhost:3000/llaves/prestamo",
@@ -483,6 +494,7 @@ const filas = useMemo(() => {
     .filter(c =>
       c.mostrar &&
       `
+      ${c.tipo}
       ${c.codigo}
       ${c.sede?.nombre}
       ${c.ambiente?.nombre}
@@ -628,7 +640,7 @@ style={{
 background:"#f8fafc"
 }}
 >
-
+<TH>Tipo</TH>
 <TH>Código</TH>
 <TH>Sede</TH>
 <TH>Ambiente</TH>
@@ -651,7 +663,7 @@ borderBottom:
 "1px solid #f1f5f9"
 }}
 >
-
+<TD>{c.tipo}</TD>
 <TD>{c.codigo}</TD>
 
 <TD>
@@ -824,7 +836,9 @@ tipoMovimiento==="ENTREGA"
 }
 
 </div>
-
+<div style={{ marginTop: 6, fontSize: 14, opacity: 0.9 }}>
+  Tipo de contrata: <b>{modal?.tipo || "-"}</b>
+</div>
 <div
 style={{
 opacity:.9,

@@ -5,9 +5,27 @@ import {
   registrarMovimientoService,
   listarLlaverosService,
   reporteLlaverosService,
-  detalleReporteLlaveroService
+  detalleReporteLlaveroService,
+  listarContratasService
 } from "./llaves.service";
 
+
+export const listarContratasController = async (req: Request, res: Response) => {
+  try {
+
+    const data = await listarContratasService();
+
+    return res.json(data);
+
+  } catch (error: any) {
+
+    return res.status(500).json({
+      message: "Error al listar contratas",
+      error: error.message
+    });
+
+  }
+};
 // LISTAR LLAVES
 export const listarLlavesController = async (req: Request, res: Response) => {
   try {
@@ -52,7 +70,7 @@ console.log("FILES:", files);
     const payload: any = {
       llaveroId: Number(req.body.llaveroId),
       contrataId: Number(req.body.contrataId),
-
+      tipoContrata: req.body.tipoContrata,
       tipoMovimiento: req.body.tipoMovimiento,
       detalle: req.body.detalle,
 
@@ -60,16 +78,17 @@ console.log("FILES:", files);
         req.body.responsableEntregaId
           ? Number(req.body.responsableEntregaId)
           : undefined,
-
+      tipoResponsableEntrega: req.body.tipoResponsableEntrega,
       responsableDevolucionId:
         req.body.responsableDevolucionId
           ? Number(req.body.responsableDevolucionId)
           : undefined,
-
+      tipoResponsableDevolucion: req.body.tipoResponsableDevolucion,
       responsableTransferenciaId:
         req.body.responsableTransferenciaId
           ? Number(req.body.responsableTransferenciaId)
           : undefined,
+      tipoResponsableTransferencia: req.body.tipoResponsableTransferencia,
     };
 
     if (req.body.contrataDestinoId) {

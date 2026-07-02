@@ -22,28 +22,56 @@ const storage = multer.diskStorage({
         "uploads/riesgos";
     }
 
-    if (
-  req.originalUrl.includes("/documento")
+if (
+req.originalUrl.includes("/documento")
 ) {
-console.log("URL:", req.originalUrl);
-  console.log("BODY:", req.body)
- const tipo = req.params.tipo;
 
-console.log("TIPO:", tipo);
-  if (tipo === "SCTR") {
-    dir =
-      "uploads/contratas/sctr";
-  }
+const tipo =
+req.params.tipo;
 
-  if (tipo === "CM") {
-    dir =
-      "uploads/contratas/cm";
-  }
+const esInhouse =
+req.originalUrl.includes(
+"/contratasinhouse/"
+);
 
-  if (tipo === "CTA") {
-    dir =
-      "uploads/contratas/cta";
-  }
+const base =
+esInhouse
+? "uploads/inhouse"
+: "uploads/contratas";
+
+if (tipo === "SCTR") {
+dir =
+`${base}/sctr`;
+}
+
+if (tipo === "CM") {
+dir =
+`${base}/cm`;
+}
+
+if (tipo === "CTA") {
+dir =
+`${base}/cta`;
+}
+
+}
+
+/* DOCUMENTOS EXTRA */
+if (
+req.originalUrl.includes(
+"/documentos-extra"
+)
+) {
+
+const esInhouse =
+req.originalUrl.includes(
+"/contratasinhouse/"
+);
+
+dir =
+esInhouse
+? "uploads/inhouse/documentos_extra"
+: "uploads/contratas/documentos_extra";
 
 }
 if (

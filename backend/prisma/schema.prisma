@@ -35,6 +35,8 @@ model User {
   bajas              HistorialBaja[]
   contratasSeguridad ContrataProveedor[] @relation("AprobacionSeguridadContrata")
   contratasAmbiente  ContrataProveedor[] @relation("AprobacionAmbienteContrata")
+  contratasSeguridadInhouse ContrataProveedorInhouse[] @relation("AprobacionSeguridadContrataInhouse")
+  contratasAmbienteInhouse  ContrataProveedorInhouse[] @relation("AprobacionAmbienteContrataInhouse")
   llaveros           Llavero[]
 }
 
@@ -80,6 +82,7 @@ model Sede {
   ocurrencias       Ocurrencia[]
   reportesSismo     ReporteSismo[]
   contratas         ContrataProveedor[]
+  contratasinhouse         ContrataProveedorInhouse[]
   autorizacionSismo AutorizacionSismo?
 }
 
@@ -119,6 +122,7 @@ model Ambiente {
   activos         Activo[]
   registroRiesgos RegistroRiesgo[]
   contratas       ContrataProveedor[]
+  contratasinhouse       ContrataProveedorInhouse[]
   llaves          Llave[]
 }
 
@@ -583,11 +587,6 @@ model ContrataProveedor {
   // RELACIONES
   trabajadores TrabajadorContrata[]
   documentos   DocumentoContrata[]
-  prestamos PrestamoLlavero[]
-
-transferenciasOrigen TransferenciaLlavero[] @relation("TransferenciaOrigen")
-
-transferenciasDestino TransferenciaLlavero[] @relation("TransferenciaDestino")
 }
 
 model TrabajadorContrata {
@@ -604,9 +603,6 @@ model TrabajadorContrata {
   estadoQr        String?
   contrataId      Int
   contrata        ContrataProveedor @relation(fields: [contrataId], references: [id])
-  prestamosEntrega PrestamoLlavero[] @relation("TrabajadorEntrega")
-  prestamosDevolucion PrestamoLlavero[] @relation("TrabajadorDevolucion")
-  transferenciasResponsable TransferenciaLlavero[] @relation("TrabajadorTransferencia")
   createdAt       DateTime          @default(now())
 }
 
@@ -666,19 +662,15 @@ model Llave {
 model PrestamoLlavero {
 
   id Int @id @default(autoincrement())
-
   llaveroId Int
   llavero Llavero @relation(fields: [llaveroId], references: [id])
-
   contrataId Int?
-  contrata ContrataProveedor? @relation(fields: [contrataId], references: [id])
-
+  tipoContrata String
   tipoMovimiento String
-
   responsableEntregaId Int?
-  responsableEntrega TrabajadorContrata? @relation( "TrabajadorEntrega",fields: [responsableEntregaId],references: [id])
+  tipoResponsableEntrega String
   responsableDevolucionId Int?
-  responsableDevolucion TrabajadorContrata? @relation("TrabajadorDevolucion",fields: [responsableDevolucionId],references: [id])
+  tipoResponsableDevolucion String
   fechaEntrega DateTime @default(now())
   fechaDevolucion DateTime?
   estado String
@@ -696,16 +688,99 @@ model TransferenciaLlavero {
   prestamo PrestamoLlavero @relation(fields: [prestamoId], references: [id])
 
   contrataOrigenId Int
-  contrataOrigen ContrataProveedor @relation(name: "TransferenciaOrigen",fields: [contrataOrigenId],references: [id])
-
+  tipoOrigen String
   contrataDestinoId Int
-  contrataDestino ContrataProveedor @relation(name: "TransferenciaDestino",fields: [contrataDestinoId],references: [id] )
-
+  tipoDestino String
   responsableId Int?
-
-  responsable TrabajadorContrata? @relation("TrabajadorTransferencia",fields: [responsableId],references: [id])
-
+  tipoResponsable String
   fecha DateTime @default(now())
 
   detalle String?
+}
+model ContrataProveedorInhouse {
+  id Int @id @default(autoincrement())
+
+  codigo String @unique
+
+  // UBICACIÓN
+  sedeId     Int
+  sede       Sede     @relation(fields: [sedeId], references: [id])
+  ambienteId Int
+  ambiente   Ambiente @relation(fields: [ambienteId], references: [id])
+
+  // DATOS DE LA CONTRATA
+  motivo              String
+  empresaContratista  String
+  descripcionServicio String
+
+  fechaInicio DateTime @db.Date
+  fechaFin    DateTime @db.Date
+
+  horaEntrada String
+  horaSalida  String
+
+  // RESPONSABLE
+  emailResponsable           String
+  dniResponsable             String
+  nombresResponsable         String
+  apellidoPaternoResponsable String
+  apellidoMaternoResponsable String
+  telefonoResponsable        String
+
+  // ACCESO
+  tokenAcceso String  @unique
+  nivelRiesgo String?
+
+  // ESTADO DEL FLUJO
+  estado String @default("PENDIENTE")
+
+  // SEGURIDAD
+  aprobadoSeguridadPorId   Int?
+  aprobadoSeguridadPor     User?     @relation("AprobacionSeguridadContrataInhouse", fields: [aprobadoSeguridadPorId], references: [id])
+  fechaAprobacionSeguridad DateTime?
+
+  // AMBIENTE
+  aprobadoAmbientePorId   Int?
+  aprobadoAmbientePor     User?     @relation("AprobacionAmbienteContrataInhouse", fields: [aprobadoAmbientePorId], references: [id])
+  fechaAprobacionAmbiente DateTime?
+
+  // RECHAZO SEGURIDAD
+  motivoRechazo String?
+
+  createdAt DateTime @default(now())
+
+  // RELACIONES
+  trabajadores TrabajadorContrataInhouse[]
+  documentos   DocumentoContrataInhouse[]
+}
+
+model TrabajadorContrataInhouse {
+  id              Int               @id @default(autoincrement())
+  codigo          String            @unique
+  dni             String
+  nombres         String
+  apellidoPaterno String
+  apellidoMaterno String
+  email           String
+  horaIngreso     String?
+  horaSalida      String?
+  qrData          String?
+  estadoQr        String?
+  contrataId      Int
+  contrata        ContrataProveedorInhouse @relation(fields: [contrataId], references: [id])
+  createdAt       DateTime          @default(now())
+}
+
+model DocumentoContrataInhouse {
+  id Int @id @default(autoincrement())
+
+  contrataId Int
+
+  contrata ContrataProveedorInhouse @relation(fields: [contrataId], references: [id])
+
+  tipo String
+
+  archivo String
+
+  createdAt DateTime @default(now())
 }

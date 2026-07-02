@@ -20,7 +20,7 @@ export default function SidebarProveedores({
   const [openSidebar, setOpenSidebar] = useState(false);
 
   // OBTENER USUARIO
-  const usuarioStorage = localStorage.getItem("proveedoresUser");
+  const usuarioStorage = localStorage.getItem("inhouseUser");
 
   const usuario = usuarioStorage
     ? JSON.parse(usuarioStorage)
@@ -194,6 +194,7 @@ const roles = (rol || "").split(",").map(r => r.trim());
     </button>
   </>
 )}
+
 {/* REC */}
 {roles.includes("RECEPCION DE SEGURIDAD (REC)") && (
   <>
@@ -314,6 +315,21 @@ const roles = (rol || "").split(",").map(r => r.trim());
     </button>
   </>
 )}
+<button
+  onClick={() => {
+    setMenuActivo("calendario");
+    setOpenSidebar(false);
+  }}
+  className={`rounded-2xl px-5 py-5 font-bold flex items-center gap-4 transition-all
+    ${
+      menuActivo === "calendario"
+        ? "bg-white text-[#244db7] shadow-lg"
+        : "text-white/80 hover:bg-white/10"
+    }`}
+>
+  <Calendar size={20} />
+  CALENDARIO
+</button>
         </div>
 
         {/* LOGOUT */}

@@ -7,7 +7,8 @@ crearLlave,
 registrarMovimientoController,
 listarLlaverosController,
 reporteLlaverosController,
-detalleReporteLlaveroController
+detalleReporteLlaveroController,
+listarContratasController
 } from "./llaves.controller";
 
 const router = Router();
@@ -16,19 +17,18 @@ router.post(
 crearLlave
 );
 router.get("/", listarLlavesController);
+router.get("/contratas", listarContratasController);
 router.get("/llaveros", listarLlaverosController);
 router.post(
   "/prestamo",
   upload.fields([
-    {
-      name: "fotoEntrega",
-      maxCount: 1
-    },
-    {
-      name: "fotoDevolucion",
-      maxCount: 1
-    }
+    { name: "fotoEntrega", maxCount: 1 },
+    { name: "fotoDevolucion", maxCount: 1 }
   ]),
+  (req, res, next) => {
+    req.body = req.body || {};
+    next();
+  },
   registrarMovimientoController
 );
 router.get("/llaveros/reporte", reporteLlaverosController);
