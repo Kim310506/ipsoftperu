@@ -89,6 +89,7 @@ console.log("FILES:", files);
           ? Number(req.body.responsableTransferenciaId)
           : undefined,
       tipoResponsableTransferencia: req.body.tipoResponsableTransferencia,
+      tipoContrataDestino: req.body.tipoContrataDestino,
     };
 
     if (req.body.contrataDestinoId) {
