@@ -132,6 +132,10 @@ const rolesPorModulo = {
     "RECEPCION DE SEGURIDAD (REC)",
     "ANALISTA DE SEGURIDAD",
     "RESPONSABLE AMBIENTE"
+ ],
+  ASISTENCIA: [
+     "ADMIN",
+    "EMPLEADO"
  ]
 
 
@@ -568,6 +572,25 @@ const rolesDisponibles = [
                     />
                     <span className="font-bold text-sm">
                       INHOUSE
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={modulos.includes("ASISTENCIA")}
+                      onChange={() =>
+                        manejarModulo("ASISTENCIA")
+                      }
+                      className="
+                          min-w-[20px]
+                          min-h-[20px]
+                          w-5
+                          h-5
+                          accent-[#0456b3]
+                        "
+                    />
+                    <span className="font-bold text-sm">
+                      ASISTENCIA
                     </span>
                   </label>
                 </div>

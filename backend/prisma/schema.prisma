@@ -38,6 +38,8 @@ model User {
   contratasSeguridadInhouse ContrataProveedorInhouse[] @relation("AprobacionSeguridadContrataInhouse")
   contratasAmbienteInhouse  ContrataProveedorInhouse[] @relation("AprobacionAmbienteContrataInhouse")
   llaveros           Llavero[]
+  biometria   BiometriaFacial?
+  asistencias Asistencia[]
 }
 
 model UnidadNegocio {
@@ -62,7 +64,7 @@ model UnidadNegocioZonal {
 model Zonal {
   id     Int    @id @default(autoincrement())
   nombre String
-
+  
   sedes Sede[]
 
   unidades UnidadNegocioZonal[]
@@ -71,7 +73,8 @@ model Zonal {
 model Sede {
   id     Int    @id @default(autoincrement())
   nombre String
-
+    latitud  Float?
+  longitud Float?
   zonalId         Int
   zonal           Zonal            @relation(fields: [zonalId], references: [id])
   registroRiesgos RegistroRiesgo[]
@@ -84,6 +87,7 @@ model Sede {
   contratas         ContrataProveedor[]
   contratasinhouse         ContrataProveedorInhouse[]
   autorizacionSismo AutorizacionSismo?
+  asistencias Asistencia[]
 }
 
 model Pabellon {
@@ -783,4 +787,38 @@ model DocumentoContrataInhouse {
   archivo String
 
   createdAt DateTime @default(now())
+}
+enum TipoAsistencia {
+  ENTRADA
+  SALIDA
+}
+
+model BiometriaFacial {
+  id         Int      @id @default(autoincrement())
+
+  userId     Int      @unique
+  user       User     @relation(fields: [userId], references: [id])
+
+  fotoPerfil String
+  descriptor Json
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Asistencia {
+  id             Int      @id @default(autoincrement())
+
+  userId         Int
+  user           User     @relation(fields: [userId], references: [id])
+
+  sedeId         Int
+  sede           Sede     @relation(fields: [sedeId], references: [id])
+
+  tipo           TipoAsistencia
+  fecha          DateTime @default(now())
+  latitud        Float
+  longitud       Float
+  distancia      Float
+  createdAt      DateTime @default(now())
 }

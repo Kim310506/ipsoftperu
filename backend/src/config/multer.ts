@@ -75,6 +75,12 @@ esInhouse
 
 }
 if (
+  req.originalUrl.includes("/asistencia") ||
+  req.originalUrl.includes("/biometria")
+) {
+  dir = "uploads/asistencia/biometria";
+}
+if (
   req.originalUrl.includes("/llaves/prestamo") ||
   req.originalUrl.includes("/llaves/llaveros")
 ) {

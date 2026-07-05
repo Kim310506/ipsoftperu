@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `sede` ADD COLUMN `latitud` DOUBLE NULL,
+    ADD COLUMN `longitud` DOUBLE NULL;

@@ -68,7 +68,9 @@ export const crearSedeService = async (
 
         }
 
-      }
+      },
+      latitud: data.latitud ? parseFloat(data.latitud) : null,
+      longitud: data.longitud ? parseFloat(data.longitud) : null,
 
     }
 

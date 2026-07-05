@@ -11,7 +11,8 @@ export default function CrearUbicacion({
   const [formPabellon, setFormPabellon] = useState("");
   const [formPiso, setFormPiso] = useState("");
   const [nuevoAmbiente, setNuevoAmbiente] = useState("");
-
+  const [formLatitud, setFormLatitud] = useState("");
+  const [formLongitud, setFormLongitud] = useState("");
   /* ========================= */
   /* UUNN */
   /* ========================= */
@@ -119,7 +120,7 @@ const unidadAsignada =
     setFormPiso(val.toUpperCase());
 
   };
-
+const sedeExiste = !!sedeElegida;
   /* ========================= */
   /* GUARDAR */
   /* ========================= */
@@ -192,7 +193,9 @@ const unidadAsignada =
             "/sedes",
             {
               nombre: formSede,
-              zonalId: zonalId
+              zonalId: zonalId,
+              latitud: formLatitud ? parseFloat(formLatitud) : null,
+              longitud: formLongitud ? parseFloat(formLongitud) : null,
             }
           );
 
@@ -477,31 +480,61 @@ const unidadAsignada =
             <input
               list="lista-sedes"
               value={formSede}
-              onChange={(e) =>
-                handleSedeChange(
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleSedeChange(e.target.value)}
               disabled={!formZonal}
               placeholder={
-                formZonal
-                  ? "Ej: CAMPUS I"
-                  : "Primero escriba la Zonal"
+                formZonal ? "Ej: CAMPUS I" : "Primero escriba la Zonal"
               }
               required
               className="bg-gray-50 px-5 py-4 rounded-2xl border border-gray-200 outline-none font-bold disabled:opacity-50 placeholder-gray-400 focus:border-[#0456b3] transition-colors"
             />
 
             <datalist id="lista-sedes">
-
               {sedesDisponibles.map((s) => (
-                <option
-                  key={s.id}
-                  value={s.nombre}
-                />
+                <option key={s.id} value={s.nombre} />
               ))}
-
             </datalist>
+
+            {/* 🔥 SI SEDE NO EXISTE → MOSTRAR COORDENADAS */}
+            {!sedeExiste && formSede && formZonal && (
+              <div className="grid grid-cols-2 gap-3 mt-2">
+
+                <input
+                  type="number"
+                  step="any"
+                  value={formLatitud}
+                  onChange={(e) => setFormLatitud(e.target.value)}
+                  placeholder="Latitud (ej: -12.0464)"
+                  className="bg-gray-50 px-4 py-3 rounded-xl border outline-none font-bold"
+                />
+
+                <input
+                  type="number"
+                  step="any"
+                  value={formLongitud}
+                  onChange={(e) => setFormLongitud(e.target.value)}
+                  placeholder="Longitud (ej: -77.0428)"
+                  className="bg-gray-50 px-4 py-3 rounded-xl border outline-none font-bold"
+                />
+
+              </div>
+            )}
+
+            {/* 🔥 SI YA EXISTE → MOSTRAR UUNN */}
+            {sedeExiste && (
+              <div className="mt-2 p-4 rounded-2xl bg-[#e8f0ff] border border-[#b8d2ff]">
+                <p className="text-xs font-black text-[#0456b3] uppercase">
+                  Sede registrada
+                </p>
+                <p className="text-sm text-gray-600">
+                  Lat: {sedeElegida.latitud ?? "No registrado"}
+                </p>
+
+                <p className="text-sm text-gray-600">
+                  Lng: {sedeElegida.longitud ?? "No registrado"}
+                </p>
+              </div>
+            )}
 
           </div>
 

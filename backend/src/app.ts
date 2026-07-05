@@ -17,8 +17,8 @@ import activoRoutes from "./modules/inventario/activo.routes";
 import riesgosRoutes from "./modules/riesgos/riesgos.routes";
 import proveedoresRoutes from "./modules/proveedores/contratas/contrata.routes";
 import proveedoresinhouseRoutes from "./modules/proveeinhouse/contratas/contrata.routes";
-
 import llavesRoutes from "./modules/llaves/llaves.routes";
+import asistenciaRoutes from "./modules/asistencia/asistencia.routes";
 
 
 const app = express();
@@ -31,7 +31,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
 app.use("/users", userRoutes);
 app.use("/ambientes", ambienteRoutes);
 app.use("/api/auth", authRoutes);
@@ -49,6 +49,8 @@ app.use( "/riesgos",riesgosRoutes);
 app.use( "/contratas",proveedoresRoutes);
 app.use( "/contratasinhouse",proveedoresinhouseRoutes);
 app.use( "/llaves",llavesRoutes);
+app.use( "/asistencia",asistenciaRoutes);
+
 app.use(
   "/uploads",
   express.static(
