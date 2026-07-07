@@ -52,6 +52,9 @@ import SismosDashboard from "./pages/modulos/sismos/Dashboard";
 /* ASISTENCIA */
 import AsistenciaLogin from "./pages/modulos/asistencia/Login";
 import AsistenciaDashboard from "./pages/modulos/asistencia/Dashboard";
+/* RONDAS */
+import RondasLogin from "./pages/modulos/rondas/Login";
+import RondasDashboard from "./pages/modulos/rondas/Dashboard";
 export default function App() {
 
   return (
@@ -117,8 +120,8 @@ export default function App() {
       <Route path="/sismos/dashboard" element={<SismosDashboard />} />
       <Route path="/llaves/login" element={<LlavesLogin />} />
       <Route path="/llaves/dashboard" element={<LlavesDashboard />} />
-      <Route path="/asistencia/login" element={<AsistenciaLogin />} />
-      <Route path="/asistencia/dashboard" element={<AsistenciaDashboard />} />
+      <Route path="/rondas/login" element={<RondasLogin />} />
+      <Route path="/rondas/dashboard" element={<RondasDashboard />} />
     </Routes>
   );
 }

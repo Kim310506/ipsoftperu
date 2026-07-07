@@ -19,6 +19,7 @@ import proveedoresRoutes from "./modules/proveedores/contratas/contrata.routes";
 import proveedoresinhouseRoutes from "./modules/proveeinhouse/contratas/contrata.routes";
 import llavesRoutes from "./modules/llaves/llaves.routes";
 import asistenciaRoutes from "./modules/asistencia/asistencia.routes";
+import rondasRoutes from "./modules/rondas/rondas.routes";
 
 
 const app = express();
@@ -50,7 +51,7 @@ app.use( "/contratas",proveedoresRoutes);
 app.use( "/contratasinhouse",proveedoresinhouseRoutes);
 app.use( "/llaves",llavesRoutes);
 app.use( "/asistencia",asistenciaRoutes);
-
+app.use( "/rondas",rondasRoutes);
 app.use(
   "/uploads",
   express.static(

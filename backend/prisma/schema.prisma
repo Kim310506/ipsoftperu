@@ -40,6 +40,9 @@ model User {
   llaveros           Llavero[]
   biometria   BiometriaFacial?
   asistencias Asistencia[]
+  qrsCreados QRAmbiente[]
+  rondas Ronda[]
+
 }
 
 model UnidadNegocio {
@@ -121,7 +124,7 @@ model Ambiente {
   // RELACIONES
   visitas     Visita[]
   ocurrencias Ocurrencia[]
-
+  qr QRAmbiente?
   // 🎯 NUEVO: Los activos de tu inventario ahora viven dentro de los ambientes del CRM
   activos         Activo[]
   registroRiesgos RegistroRiesgo[]
@@ -821,4 +824,39 @@ model Asistencia {
   longitud       Float
   distancia      Float
   createdAt      DateTime @default(now())
+}
+model QRAmbiente {
+
+  id Int @id @default(autoincrement())
+
+  ambienteId Int @unique
+  ambiente Ambiente @relation(fields:[ambienteId], references:[id])
+
+  codigo String @unique
+
+  estado String @default("ACTIVO")
+
+  observacion String?
+
+  createdById Int
+  createdBy User @relation(fields:[createdById], references:[id])
+
+  createdAt DateTime @default(now())
+
+  rondas Ronda[]
+}
+model Ronda {
+
+  id Int @id @default(autoincrement())
+
+  userId Int
+  user User @relation(fields:[userId], references:[id])
+
+  qrId Int
+  qr QRAmbiente @relation(fields:[qrId], references:[id])
+
+  fecha DateTime @default(now())
+
+  observacion String?
+
 }
