@@ -188,7 +188,7 @@ export default function RegistroAsistencia() {
 
         <button
           onClick={activarCamara}
-          className="px-10 py-4 rounded-2xl bg-[#244db7] text-white font-bold"
+          className="px-10 py-4 rounded-2xl bg-[#F5B300] text-black font-bold"
         >
           Activar cámara
         </button>

@@ -161,7 +161,7 @@ const guardarBiometria = async () => {
           />
           <button
             className="
-            bg-[#244db7]
+            bg-[#F5B300]
             text-white
             rounded-xl
             px-6
@@ -298,8 +298,8 @@ const guardarBiometria = async () => {
 
         <button
           className="
-          bg-[#244db7]
-          text-white
+          bg-[#F5B300]
+          text-black
           px-8
           py-4
           rounded-2xl

@@ -8,10 +8,12 @@ import {
   Download,
   FileSpreadsheet,
   Printer,
+  Eye,
 } from "lucide-react";
 
 export default function ReportesAsistencia() {
-
+const [modalOpen, setModalOpen] = useState(false);
+const [detalle, setDetalle] = useState(null);
   const [asistencias, setAsistencias] = useState([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -32,21 +34,47 @@ export default function ReportesAsistencia() {
     obtenerDatos();
   }, []);
 
-  const filtrados = asistencias.filter((a) =>
-    a.user?.nombre?.toLowerCase().includes(busqueda.toLowerCase())
-  );
+ const agrupados = Object.values(
+  asistencias.reduce((acc, item) => {
+    const fecha = new Date(item.fecha).toLocaleDateString();
+    const key = `${item.userId}-${fecha}`;
 
+    if (!acc[key]) {
+      acc[key] = {
+        user: item.user,
+        fecha,
+        sede: item.sede,
+        registros: [],
+      };
+    }
+
+    acc[key].registros.push(item);
+
+    return acc;
+  }, {})
+)
+  .map((g) => ({
+    ...g,
+    registros: g.registros.sort(
+      (a, b) => new Date(a.fecha) - new Date(b.fecha)
+    ),
+  }))
+  .filter((g) =>
+    g.user.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+const abrirDetalle = (asistencia) => {
+  setDetalle(asistencia);
+  setModalOpen(true);
+};
   /* =======================
      EXPORTAR EXCEL
   ======================= */
   const exportExcel = () => {
-    const data = filtrados.map((a) => ({
-      Empleado: a.user?.nombre,
-      Fecha: new Date(a.fecha).toLocaleDateString(),
-      Tipo: a.tipo,
-      Latitud: a.latitud,
-      Longitud: a.longitud,
-      Distancia: a.distancia,
+    const data = agrupados.map((g) => ({
+      Empleado: g.user.nombre,
+      Fecha: g.fecha,
+      Entradas: g.registros.filter(r => r.tipo === "ENTRADA").length,
+      Salidas: g.registros.filter(r => r.tipo === "SALIDA").length,
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -65,17 +93,15 @@ export default function ReportesAsistencia() {
 
     doc.text("Reporte de Asistencia", 14, 10);
 
-    const tableData = filtrados.map((a) => [
-      a.user?.nombre,
-      new Date(a.fecha).toLocaleDateString(),
-      a.tipo,
-      a.latitud,
-      a.longitud,
-      a.distancia?.toFixed(2),
+    const tableData = agrupados.map((g) => [
+      g.user.nombre,
+      g.fecha,
+      g.registros.filter(r => r.tipo === "ENTRADA").length,
+      g.registros.filter(r => r.tipo === "SALIDA").length,
     ]);
 
     autoTable(doc, {
-      head: [["Empleado", "Fecha", "Tipo", "Lat", "Lon", "Distancia"]],
+      head: [["Empleado", "Fecha", "Entradas", "Salidas"]],
       body: tableData,
     });
 
@@ -136,7 +162,7 @@ export default function ReportesAsistencia() {
 
           <button
             onClick={obtenerDatos}
-            className="rounded-xl bg-[#244db7] text-white font-bold flex items-center justify-center gap-2"
+           className="rounded-xl bg-[#F5B300] hover:bg-[#d89d00] text-black font-bold flex items-center justify-center gap-2 transition"
           >
             <Search size={18}/>
             Buscar
@@ -179,16 +205,13 @@ export default function ReportesAsistencia() {
 
         <table className="w-full">
 
-          <thead className="bg-[#244db7] text-white">
+          <thead className="bg-[#F5B300] text-black">
             <tr>
-              <th className="p-4">Empleado</th>
-              <th>Fecha</th>
-              <th>Tipo</th>
-              <th>Lat</th>
-              <th>Lon</th>
-              <th>Distancia</th>
+                <th className="p-4">Empleado</th>
+                <th>Fecha</th>
+                <th>Acción</th>
             </tr>
-          </thead>
+            </thead>
 
           <tbody>
 
@@ -198,47 +221,163 @@ export default function ReportesAsistencia() {
                   Cargando...
                 </td>
               </tr>
-            ) : filtrados.length === 0 ? (
+            ) : agrupados.length === 0 ? (
               <tr>
                 <td colSpan="6" className="p-6 text-center text-gray-400">
                   Sin registros
                 </td>
               </tr>
             ) : (
-              filtrados.map((a) => (
-                <tr key={a.id} className="text-center border-b">
+              agrupados.map((grupo) => (
+              <tr
+                key={`${grupo.user.id}-${grupo.fecha}`}
+                className="border-b hover:bg-gray-50 transition"
+              >
 
-                  <td className="p-4">{a.user?.nombre}</td>
-                    <td>
-                    {new Date(a.fecha).toLocaleDateString()}{" "}
-                    {new Date(a.fecha).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    })}
-                    </td>
-                  <td>
-                    <span className={`
-                      px-3 py-1 rounded-full text-sm
-                      ${a.tipo === "ENTRADA"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"}
-                    `}>
-                      {a.tipo}
-                    </span>
+                  <td className="p-4 text-center font-medium">
+                    {grupo.user.nombre}
                   </td>
 
-                  <td>{a.latitud}</td>
-                  <td>{a.longitud}</td>
-                  <td>{a.distancia?.toFixed(2)} m</td>
+                  <td className="p-4 text-center">
+                    {grupo.fecha}
+                  </td>
+                  <td>
+                      <button
+                        onClick={() => abrirDetalle(grupo)}
+                        className="flex items-center gap-2 bg-[#F5B300] hover:bg-[#d89d00] text-black px-4 py-2 rounded-xl mx-auto transition font-semibold"
+                    >
+                        <Eye size={18}/>
+                        Ver
+                    </button>
+                  </td>
 
-                </tr>
+              </tr>
               ))
             )}
 
           </tbody>
 
         </table>
+{modalOpen && detalle && (
+  <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+    <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-8">
 
+      <div className="flex justify-between items-start border-b pb-5 mb-6">
+        <div>
+          <h2 className="text-3xl font-black text-[#F5B300]">
+            {detalle.user.nombre}
+          </h2>
+
+          <p className="text-gray-500">
+            {detalle.fecha}
+          </p>
+
+          <p className="mt-2">
+            <span className="font-semibold">Sede:</span>{" "}
+            {detalle.sede.nombre}
+          </p>
+        </div>
+
+        <button
+          onClick={() => setModalOpen(false)}
+          className="text-2xl text-gray-500 hover:text-red-500"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="space-y-5">
+
+        {detalle.registros.map((r) => (
+
+          <div
+            key={r.id}
+            className={`rounded-2xl border-l-8 shadow-md p-5 ${
+              r.tipo === "ENTRADA"
+                ? "border-green-500 bg-green-50"
+                : "border-red-500 bg-red-50"
+            }`}
+          >
+
+            <div className="flex justify-between items-center">
+
+              <div>
+
+                <h3
+                  className={`text-xl font-bold ${
+                    r.tipo === "ENTRADA"
+                      ? "text-green-700"
+                      : "text-red-700"
+                  }`}
+                >
+                  {r.tipo}
+                </h3>
+
+                <p className="text-gray-500">
+                  {new Date(r.fecha).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+
+              </div>
+
+              <div
+                className={`px-4 py-2 rounded-full font-bold ${
+                  r.tipo === "ENTRADA"
+                    ? "bg-green-200 text-green-800"
+                    : "bg-red-200 text-red-800"
+                }`}
+              >
+                {r.distancia.toFixed(2)} m
+              </div>
+
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 mt-5">
+
+              <div className="bg-white rounded-xl p-4 shadow">
+                <p className="text-sm text-gray-500">
+                  Latitud
+                </p>
+
+                <p className="font-semibold break-all">
+                  {r.latitud}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-4 shadow">
+                <p className="text-sm text-gray-500">
+                  Longitud
+                </p>
+
+                <p className="font-semibold break-all">
+                  {r.longitud}
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+      <div className="flex justify-end mt-8">
+
+        <button
+          onClick={() => setModalOpen(false)}
+          className="bg-[#F5B300] hover:bg-[#d89d00] text-black px-8 py-3 rounded-xl font-bold transition"
+        >
+          Cerrar
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
       </div>
 
     </div>

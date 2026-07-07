@@ -64,8 +64,8 @@ export default function SidebarAsistencia({
 
         ${
           menuActivo === menu
-            ? "bg-white text-[#244db7] shadow-lg"
-            : "text-white/80 hover:bg-white/10"
+          ? "bg-[#F5B300] text-black shadow-lg"
+          : "text-gray-300 hover:bg-white/10 hover:text-[#F5B300]"
         }
       `}
     >
@@ -94,7 +94,7 @@ export default function SidebarAsistencia({
           w-14
           h-14
           rounded-full
-          bg-[#244db7]
+          bg-[#1A1A1A]
           text-white
         "
       >
@@ -129,7 +129,7 @@ export default function SidebarAsistencia({
           right-0
           w-[280px]
           min-h-screen
-          bg-[#244db7]
+          bg-[#1A1A1A]
           text-white
           flex
           flex-col
@@ -163,10 +163,8 @@ export default function SidebarAsistencia({
 
         <div className="p-10">
 
-          <h1 className="text-2xl font-black">
-
-            ASISTENCIA
-
+          <h1 className="text-3xl font-black text-[#F5B300]">
+              ASISTENCIA
           </h1>
 
         </div>
@@ -233,9 +231,10 @@ export default function SidebarAsistencia({
               w-full
               py-4
               rounded-2xl
-              bg-white/10
-              hover:bg-white
-              hover:text-[#244db7]
+              bg-[#2A2A2A]
+              text-white
+              hover:bg-[#F5B300]
+              hover:text-black
               font-bold
               flex
               justify-center
